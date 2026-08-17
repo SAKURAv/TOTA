@@ -1,0 +1,301 @@
+{
+  "generatedAt": "2026-08-17T08:34:33.746Z",
+  "categories": [
+    {
+      "slug": "electronics",
+      "name": "إلكترونيات",
+      "order": 1,
+      "products": [
+        {
+          "id": "electronics/iphone-15-pro",
+          "slug": "iphone-15-pro",
+          "category": "electronics",
+          "categoryName": "إلكترونيات",
+          "name": "آيفون 15 برو",
+          "price": 52000,
+          "oldPrice": 58000,
+          "currency": "EGP",
+          "badge": "الأكثر مبيعًا",
+          "description": "شاشة تيتانيوم بمقاس 6.1 بوصة، شريحة A17 برو، وكاميرا احترافية بدقة 48 ميجابكسل. تصميم متين وأداء بلا حدود.",
+          "specs": [
+            {
+              "label": "الشاشة",
+              "value": "6.1 بوصة Super Retina XDR"
+            },
+            {
+              "label": "المعالج",
+              "value": "A17 Pro"
+            },
+            {
+              "label": "الذاكرة",
+              "value": "256 جيجا"
+            },
+            {
+              "label": "الكاميرا",
+              "value": "48 ميجابكسل"
+            },
+            {
+              "label": "اللون",
+              "value": "تيتانيوم طبيعي"
+            }
+          ],
+          "image": "products/electronics/iphone-15-pro/main.svg",
+          "images": [
+            "products/electronics/iphone-15-pro/main.svg"
+          ]
+        },
+        {
+          "id": "electronics/macbook-air",
+          "slug": "macbook-air",
+          "category": "electronics",
+          "categoryName": "إلكترونيات",
+          "name": "ماك بوك اير M2",
+          "price": 68000,
+          "oldPrice": null,
+          "currency": "EGP",
+          "badge": null,
+          "description": "تصميم خفيف ورفيع للغاية بشريحة M2، بطارية تدوم طوال اليوم، وشاشة Liquid Retina نابضة بالألوان.",
+          "specs": [
+            {
+              "label": "الشاشة",
+              "value": "13.6 بوصة Liquid Retina"
+            },
+            {
+              "label": "المعالج",
+              "value": "Apple M2"
+            },
+            {
+              "label": "الذاكرة",
+              "value": "8 جيجا رام / 256 جيجا تخزين"
+            },
+            {
+              "label": "البطارية",
+              "value": "حتى 18 ساعة"
+            },
+            {
+              "label": "الوزن",
+              "value": "1.24 كجم"
+            }
+          ],
+          "image": "products/electronics/macbook-air/main.svg",
+          "images": [
+            "products/electronics/macbook-air/main.svg"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "fashion",
+      "name": "أزياء",
+      "order": 2,
+      "products": [
+        {
+          "id": "fashion/leather-bag",
+          "slug": "leather-bag",
+          "category": "fashion",
+          "categoryName": "أزياء",
+          "name": "شنطة جلد طبيعي",
+          "price": 1850,
+          "oldPrice": null,
+          "currency": "EGP",
+          "badge": null,
+          "description": "شنطة يد نسائية من الجلد الطبيعي 100%، تصميم كلاسيكي أنيق يناسب الاستخدام اليومي والمناسبات.",
+          "specs": [
+            {
+              "label": "الخامة",
+              "value": "جلد طبيعي"
+            },
+            {
+              "label": "الأبعاد",
+              "value": "30 × 22 × 12 سم"
+            },
+            {
+              "label": "اللون",
+              "value": "بني تان"
+            }
+          ],
+          "image": "products/fashion/leather-bag/main.svg",
+          "images": [
+            "products/fashion/leather-bag/main.svg"
+          ]
+        },
+        {
+          "id": "fashion/nike-air-max",
+          "slug": "nike-air-max",
+          "category": "fashion",
+          "categoryName": "أزياء",
+          "name": "نايك اير ماكس",
+          "price": 3200,
+          "oldPrice": null,
+          "currency": "EGP",
+          "badge": "جديد",
+          "description": "حذاء رياضي بتقنية Air Max للراحة القصوى، مناسب للجري والاستخدام اليومي، بتصميم عصري وألوان جذابة.",
+          "specs": [
+            {
+              "label": "المقاس",
+              "value": "40 - 45"
+            },
+            {
+              "label": "الخامة",
+              "value": "شبك تنفس + جلد صناعي"
+            },
+            {
+              "label": "اللون",
+              "value": "أسود / أبيض"
+            },
+            {
+              "label": "الاستخدام",
+              "value": "رياضي - يومي"
+            }
+          ],
+          "image": "products/fashion/nike-air-max/main.svg",
+          "images": [
+            "products/fashion/nike-air-max/main.svg"
+          ]
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": "electronics/iphone-15-pro",
+      "slug": "iphone-15-pro",
+      "category": "electronics",
+      "categoryName": "إلكترونيات",
+      "name": "آيفون 15 برو",
+      "price": 52000,
+      "oldPrice": 58000,
+      "currency": "EGP",
+      "badge": "الأكثر مبيعًا",
+      "description": "شاشة تيتانيوم بمقاس 6.1 بوصة، شريحة A17 برو، وكاميرا احترافية بدقة 48 ميجابكسل. تصميم متين وأداء بلا حدود.",
+      "specs": [
+        {
+          "label": "الشاشة",
+          "value": "6.1 بوصة Super Retina XDR"
+        },
+        {
+          "label": "المعالج",
+          "value": "A17 Pro"
+        },
+        {
+          "label": "الذاكرة",
+          "value": "256 جيجا"
+        },
+        {
+          "label": "الكاميرا",
+          "value": "48 ميجابكسل"
+        },
+        {
+          "label": "اللون",
+          "value": "تيتانيوم طبيعي"
+        }
+      ],
+      "image": "products/electronics/iphone-15-pro/main.svg",
+      "images": [
+        "products/electronics/iphone-15-pro/main.svg"
+      ]
+    },
+    {
+      "id": "electronics/macbook-air",
+      "slug": "macbook-air",
+      "category": "electronics",
+      "categoryName": "إلكترونيات",
+      "name": "ماك بوك اير M2",
+      "price": 68000,
+      "oldPrice": null,
+      "currency": "EGP",
+      "badge": null,
+      "description": "تصميم خفيف ورفيع للغاية بشريحة M2، بطارية تدوم طوال اليوم، وشاشة Liquid Retina نابضة بالألوان.",
+      "specs": [
+        {
+          "label": "الشاشة",
+          "value": "13.6 بوصة Liquid Retina"
+        },
+        {
+          "label": "المعالج",
+          "value": "Apple M2"
+        },
+        {
+          "label": "الذاكرة",
+          "value": "8 جيجا رام / 256 جيجا تخزين"
+        },
+        {
+          "label": "البطارية",
+          "value": "حتى 18 ساعة"
+        },
+        {
+          "label": "الوزن",
+          "value": "1.24 كجم"
+        }
+      ],
+      "image": "products/electronics/macbook-air/main.svg",
+      "images": [
+        "products/electronics/macbook-air/main.svg"
+      ]
+    },
+    {
+      "id": "fashion/leather-bag",
+      "slug": "leather-bag",
+      "category": "fashion",
+      "categoryName": "أزياء",
+      "name": "شنطة جلد طبيعي",
+      "price": 1850,
+      "oldPrice": null,
+      "currency": "EGP",
+      "badge": null,
+      "description": "شنطة يد نسائية من الجلد الطبيعي 100%، تصميم كلاسيكي أنيق يناسب الاستخدام اليومي والمناسبات.",
+      "specs": [
+        {
+          "label": "الخامة",
+          "value": "جلد طبيعي"
+        },
+        {
+          "label": "الأبعاد",
+          "value": "30 × 22 × 12 سم"
+        },
+        {
+          "label": "اللون",
+          "value": "بني تان"
+        }
+      ],
+      "image": "products/fashion/leather-bag/main.svg",
+      "images": [
+        "products/fashion/leather-bag/main.svg"
+      ]
+    },
+    {
+      "id": "fashion/nike-air-max",
+      "slug": "nike-air-max",
+      "category": "fashion",
+      "categoryName": "أزياء",
+      "name": "نايك اير ماكس",
+      "price": 3200,
+      "oldPrice": null,
+      "currency": "EGP",
+      "badge": "جديد",
+      "description": "حذاء رياضي بتقنية Air Max للراحة القصوى، مناسب للجري والاستخدام اليومي، بتصميم عصري وألوان جذابة.",
+      "specs": [
+        {
+          "label": "المقاس",
+          "value": "40 - 45"
+        },
+        {
+          "label": "الخامة",
+          "value": "شبك تنفس + جلد صناعي"
+        },
+        {
+          "label": "اللون",
+          "value": "أسود / أبيض"
+        },
+        {
+          "label": "الاستخدام",
+          "value": "رياضي - يومي"
+        }
+      ],
+      "image": "products/fashion/nike-air-max/main.svg",
+      "images": [
+        "products/fashion/nike-air-max/main.svg"
+      ]
+    }
+  ]
+}
