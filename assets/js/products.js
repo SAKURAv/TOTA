@@ -2,6 +2,12 @@
   const cfg = await (window.TOTA_CONFIG_READY || Promise.resolve(window.TOTA_CONFIG || {}));
   const WHATSAPP_NUMBER = (cfg.whatsapp || '201000000000').replace(/\D/g,'');
 
+  // بينما البيانات لسه بتتحمل من data/products.json، تظهر علامة التحميل بدل ما الشبكة تفضل فاضية
+  const gridEl = document.getElementById('productGrid');
+  if (gridEl && window.totaLoaderHTML){
+    gridEl.innerHTML = `<div class="tota-loading-box">${totaLoaderHTML()}</div>`;
+  }
+
   let data, allProducts = [], categories = [];
   try{
     const res = await fetch('data/products.json', { cache:'no-store' });
@@ -122,6 +128,7 @@
     grid.innerHTML = list.map(p => cardHTML(p, activeQuery)).join('');
     grid.classList.add('reveal-stagger');
     window.observeReveals && observeReveals();
+    window.attachImageLoaders && attachImageLoaders(grid);
     grid.querySelectorAll('.card').forEach(c=>{
       c.addEventListener('click', (e)=>{
         e.preventDefault();
@@ -199,6 +206,7 @@
     galleryDots.innerHTML = galleryImgs.map((_,i) => `<button class="gallery-dot ${i===0?'active':''}" data-i="${i}" aria-label="صورة ${i+1}"></button>`).join('');
     galleryEl.classList.toggle('has-multi', galleryImgs.length > 1);
     galleryDots.classList.toggle('show', galleryImgs.length > 1);
+    window.attachImageLoaders && attachImageLoaders(document.querySelector('.modal-media'));
     updateGalleryPos();
     galleryDots.querySelectorAll('.gallery-dot').forEach(dot=>{
       dot.addEventListener('click', ()=>{ galleryIndex = +dot.dataset.i; updateGalleryPos(); });
@@ -247,7 +255,7 @@
     document.getElementById('modalSpecs').innerHTML = (p.specs||[]).map(s=>
       `<div class="modal-spec"><span>${s.label}</span><span>${s.value}</span></div>`
     ).join('');
-    const waText = encodeURIComponent(`${cfg.whatsappMessage || 'أهلاً، عايز أستفسر عن'}: ${p.name}`);
+    const waText = encodeURIComponent(`مرحبا اريد الاستفسار عن (${p.name})`);
     document.getElementById('modalWhatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
     document.getElementById('modalShare').onclick = (e)=>{
       e.preventDefault();

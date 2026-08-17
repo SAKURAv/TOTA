@@ -34,9 +34,34 @@
 
   // --- intro curtain ---
   const curtain = document.querySelector('.curtain');
-  window.addEventListener('load', () => {
-    setTimeout(() => curtain && curtain.classList.add('hide'), 320);
-  });
+  let curtainHidden = false;
+  function hideCurtain(){
+    if (curtainHidden) return;
+    curtainHidden = true;
+    curtain && curtain.classList.add('hide');
+  }
+  window.addEventListener('load', () => setTimeout(hideCurtain, 320));
+  // safety net: لو في مورد بطيء أو اتحجب (زي CDN خارجي) مبيخليش الستارة عالقة على الشاشة للأبد
+  setTimeout(hideCurtain, 2500);
+
+  // --- reusable "Tota" loading mark: letters fade out/in in sequence ---
+  window.totaLoaderHTML = function(size){
+    const cls = size === 'sm' ? 'tota-loader sm' : 'tota-loader';
+    return `<div class="${cls}"><span>T</span><span>o</span><span>t</span><span>a</span></div>`;
+  };
+
+  // --- image loading state: shows a shimmer + keeps the image hidden until it's actually ready ---
+  window.attachImageLoaders = function(root){
+    (root || document).querySelectorAll('.card-media, .modal-media').forEach(box => {
+      const img = box.querySelector('img');
+      if (!img) return;
+      const done = () => box.classList.remove('is-loading');
+      if (img.complete && img.naturalWidth > 0) { done(); return; }
+      box.classList.add('is-loading');
+      img.addEventListener('load', done, { once:true });
+      img.addEventListener('error', done, { once:true });
+    });
+  };
 
   // --- custom cursor (desktop only) ---
   if (matchMedia('(hover:hover) and (pointer:fine)').matches) {

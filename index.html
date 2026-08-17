@@ -5,32 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>المتجر | اكتشف مجموعتنا</title>
 <meta name="description" content="وجهتك المختارة لأفضل المنتجات، بجودة وثقة، وتواصل مباشر.">
-<!-- منع المتصفح من تخزين نسخة قديمة من صفحة الرئيسية نفسها -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<script>
-  // Hard refresh تلقائي مرة واحدة كل ما حد يفتح الرئيسية، لضمان إنه بياخد آخر نسخة
-  // من غير ما يحتاج يعمل Ctrl+Shift+R بنفسه. مبيعملش loop لأنه بيتأكد الأول
-  // إن الرابط الحالي معندوش علامة إنه اتعمله ريفريش أصلاً.
-  (function(){
-    try{
-      var url = new URL(window.location.href);
-      if(!url.searchParams.has('_hr')){
-        url.searchParams.set('_hr', Date.now());
-        window.location.replace(url.toString());
-      }
-    }catch(e){}
-  })();
-</script>
-<link rel="stylesheet" href="assets/css/style.css?v=20260817-1">
+<link rel="stylesheet" href="assets/css/style.css?v=20260817-2">
 <script>
   (function(){if(localStorage.getItem('theme')==='dark') document.documentElement.setAttribute('data-theme','dark');})();
 </script>
 </head>
 <body>
 
-<div class="curtain"><span class="curtain-word" data-site-name>Tota<span style="color:var(--accent)">.</span></span></div>
+<div class="curtain"><div class="tota-loader"><span>T</span><span>o</span><span>t</span><span>a</span></div></div>
 
 <header class="topbar">
   <div class="brand"><span data-site-name>Tota</span><span>.</span></div>
@@ -52,9 +34,9 @@
 </header>
 
 <section class="hero">
-  <div class="bg-bubbles" aria-hidden="true">
-    <span class="bg-bubble b1"></span><span class="bg-bubble b2"></span><span class="bg-bubble b3"></span>
-    <span class="bg-bubble b4"></span><span class="bg-bubble b5"></span><span class="bg-bubble b6"></span>
+  <div class="bg-bubbles" id="bgBubbles">
+    <a class="bg-bubble b1"></a><a class="bg-bubble b2"></a><a class="bg-bubble b3"></a>
+    <a class="bg-bubble b4"></a><a class="bg-bubble b5"></a><a class="bg-bubble b6"></a>
   </div>
   <div class="hero-tagcloud" id="tagCloud"></div>
   <h1>
@@ -116,9 +98,9 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
-<script src="assets/js/config.js?v=20260817-1"></script>
-<script src="assets/js/shared.js?v=20260817-1"></script>
+<script src="assets/js/config.js?v=20260817-2"></script>
+<script src="assets/js/shared.js?v=20260817-2"></script>
 <script>if(window.buildSocials){buildSocials('footerSocials');}</script>
-<script src="assets/js/home.js?v=20260817-1"></script>
+<script src="assets/js/home.js?v=20260817-2"></script>
 </body>
 </html>

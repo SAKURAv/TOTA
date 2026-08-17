@@ -1,16 +1,43 @@
 (async function(){
   const cfg = await (window.TOTA_CONFIG_READY || Promise.resolve(window.TOTA_CONFIG || {}));
+
+  // إظهار علامة التحميل في مكان المنتجات المقترحة لحد ما البيانات توصل
+  const featuredGridEl = document.getElementById('featuredGrid');
+  if (featuredGridEl && window.totaLoaderHTML){
+    featuredGridEl.innerHTML = `<div class="tota-loading-box">${totaLoaderHTML()}</div>`;
+  }
+
   let data;
   try{
     const res = await fetch('data/products.json', { cache:'no-store' });
     data = await res.json();
   }catch(e){
     console.error('تعذر تحميل المنتجات. لازم تشغل الموقع من خلال سيرفر محلي.', e);
+    if (featuredGridEl) featuredGridEl.innerHTML =
+      `<p style="color:var(--text-dim)">تعذر تحميل المنتجات — شغّل الموقع من خلال سيرفر محلي.</p>`;
     return;
   }
 
   const products = data.products || [];
   const categories = data.categories || [];
+
+  // --- floating product bubbles around the hero heading ---
+  const bubbles = document.querySelectorAll('#bgBubbles .bg-bubble');
+  if (bubbles.length){
+    const pickIds = (cfg.featuredProducts || []).filter(Boolean);
+    let picks = pickIds.length ? pickIds.map(id => products.find(p => p.id === id)).filter(Boolean) : [];
+    if (picks.length < bubbles.length){
+      const rest = products.filter(p => !picks.includes(p));
+      picks = picks.concat(rest).slice(0, bubbles.length);
+    }
+    bubbles.forEach((b,i)=>{
+      const p = picks[i % (picks.length || 1)];
+      if (!p) return;
+      b.href = `products.html?p=${encodeURIComponent(p.id)}`;
+      b.setAttribute('aria-label', p.name);
+      b.innerHTML = `<img src="${p.image}" alt="${p.name}" loading="lazy">`;
+    });
+  }
 
   // --- floating category buttons (fills the empty hero space) ---
   const cloud = document.getElementById('tagCloud');
@@ -50,6 +77,7 @@
       `<p style="color:var(--text-dim)">لسه مفيش منتجات مضافة في فولدر products/</p>`;
     grid.classList.add('reveal-stagger');
     window.observeReveals && observeReveals();
+    window.attachImageLoaders && attachImageLoaders(grid);
   }
 
   function cardHTML(p){

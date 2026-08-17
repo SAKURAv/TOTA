@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T08:34:33.746Z",
+  "generatedAt": "2026-08-17T13:39:58.320Z",
   "categories": [
     {
       "slug": "electronics",
@@ -41,7 +41,9 @@
           ],
           "image": "products/electronics/iphone-15-pro/main.svg",
           "images": [
-            "products/electronics/iphone-15-pro/main.svg"
+            "products/electronics/iphone-15-pro/main.svg",
+            "products/electronics/iphone-15-pro/2.svg",
+            "products/electronics/iphone-15-pro/3.svg"
           ]
         },
         {
@@ -79,7 +81,9 @@
           ],
           "image": "products/electronics/macbook-air/main.svg",
           "images": [
-            "products/electronics/macbook-air/main.svg"
+            "products/electronics/macbook-air/main.svg",
+            "products/electronics/macbook-air/2.svg",
+            "products/electronics/macbook-air/3.svg"
           ]
         }
       ]
@@ -116,7 +120,9 @@
           ],
           "image": "products/fashion/leather-bag/main.svg",
           "images": [
-            "products/fashion/leather-bag/main.svg"
+            "products/fashion/leather-bag/main.svg",
+            "products/fashion/leather-bag/2.svg",
+            "products/fashion/leather-bag/3.svg"
           ]
         },
         {
@@ -150,7 +156,9 @@
           ],
           "image": "products/fashion/nike-air-max/main.svg",
           "images": [
-            "products/fashion/nike-air-max/main.svg"
+            "products/fashion/nike-air-max/main.svg",
+            "products/fashion/nike-air-max/2.svg",
+            "products/fashion/nike-air-max/3.svg"
           ]
         }
       ]
@@ -192,7 +200,9 @@
       ],
       "image": "products/electronics/iphone-15-pro/main.svg",
       "images": [
-        "products/electronics/iphone-15-pro/main.svg"
+        "products/electronics/iphone-15-pro/main.svg",
+        "products/electronics/iphone-15-pro/2.svg",
+        "products/electronics/iphone-15-pro/3.svg"
       ]
     },
     {
@@ -230,7 +240,9 @@
       ],
       "image": "products/electronics/macbook-air/main.svg",
       "images": [
-        "products/electronics/macbook-air/main.svg"
+        "products/electronics/macbook-air/main.svg",
+        "products/electronics/macbook-air/2.svg",
+        "products/electronics/macbook-air/3.svg"
       ]
     },
     {
@@ -260,7 +272,9 @@
       ],
       "image": "products/fashion/leather-bag/main.svg",
       "images": [
-        "products/fashion/leather-bag/main.svg"
+        "products/fashion/leather-bag/main.svg",
+        "products/fashion/leather-bag/2.svg",
+        "products/fashion/leather-bag/3.svg"
       ]
     },
     {
@@ -294,7 +308,9 @@
       ],
       "image": "products/fashion/nike-air-max/main.svg",
       "images": [
-        "products/fashion/nike-air-max/main.svg"
+        "products/fashion/nike-air-max/main.svg",
+        "products/fashion/nike-air-max/2.svg",
+        "products/fashion/nike-air-max/3.svg"
       ]
     }
   ]
