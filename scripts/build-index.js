@@ -7,7 +7,9 @@
  *     category.json        { "name": "اسم التصنيف", "order": 1 }
  *     <product-slug>/
  *       data.json           { name, price, oldPrice, currency, badge, description, specs:[{label,value}] }
- *       main.(svg|jpg|png|webp)   -> أول صورة موجودة تتاخد كصورة رئيسية
+ *       1.(svg|jpg|jpeg|png|webp|avif)   -> الصورة الأولى بالترتيب = الصورة الرئيسية تلقائيًا
+ *       2.(svg|jpg|jpeg|png|webp|avif)   -> صور إضافية (اختياري، أي عدد)
+ * لترتيب/ترقيم صور مضافة بأسماء عشوائية تلقائيًا: npm run reorganize-images
  */
 const fs = require("fs");
 const path = require("path");
@@ -17,21 +19,27 @@ const PRODUCTS_DIR = path.join(ROOT, "products");
 const OUT_FILE = path.join(ROOT, "data", "products.json");
 const IMG_EXT = [".svg", ".jpg", ".jpeg", ".png", ".webp", ".avif"];
 
-function findImage(dir) {
-  const files = fs.readdirSync(dir);
-  const main = files.find((f) => /^main\.(svg|jpe?g|png|webp|avif)$/i.test(f));
-  if (main) return main;
-  const any = files.find((f) => IMG_EXT.includes(path.extname(f).toLowerCase()));
-  return any || null;
+// بيدور على كل صور المنتج أيًا كانت صيغتها وعددها وأسماؤها،
+// وبيرتبهم ترتيب طبيعي (natural sort) بحيث 1, 2, 3... 10 يبقوا مرتبين صح
+// (مش أبجدي عادي اللي بيحط "10" قبل "2"). أول صورة بعد الترتيب = الصورة الرئيسية
+// تلقائيًا (مفيش داعي لتسمية أي ملف "main" يدويًا، لكن لو موجود بيتاخد الأولوية).
+function findAllImages(dir) {
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => IMG_EXT.includes(path.extname(f).toLowerCase()))
+    .sort((a, b) => a.localeCompare(b, "ar", { numeric: true, sensitivity: "base" }));
+
+  const mainCandidate = files.find((f) => /^main\.(svg|jpe?g|png|webp|avif)$/i.test(f));
+  if (mainCandidate) {
+    const rest = files.filter((f) => f !== mainCandidate);
+    return [mainCandidate, ...rest];
+  }
+  return files;
 }
 
-// يرجع كل صور المنتج (main الأول، وبعدين أي صور تانية زي 2.jpg, 3.jpg, gallery-1.png...)
-// بيدور على أي ملف صورة في فولدر المنتج، مش بس main
-function findAllImages(dir) {
-  const files = fs.readdirSync(dir).filter((f) => IMG_EXT.includes(path.extname(f).toLowerCase()));
-  const main = files.find((f) => /^main\.(svg|jpe?g|png|webp|avif)$/i.test(f));
-  const rest = files.filter((f) => f !== main).sort();
-  return main ? [main, ...rest] : rest;
+function findImage(dir) {
+  const all = findAllImages(dir);
+  return all.length ? all[0] : null;
 }
 
 function build() {

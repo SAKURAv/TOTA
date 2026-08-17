@@ -11,15 +11,21 @@ products/
     category.json          { "name": "اسم التصنيف", "order": 1 }
     <product-slug>/
       data.json             { name, price, oldPrice, currency, badge, description, specs:[{label,value}] }
-      main.(svg|jpg|png|webp)
+      1.(svg|jpg|jpeg|png|webp|avif)   ← الصورة دي هي الأساسية (رقم 1)
+      2.(svg|jpg|jpeg|png|webp|avif)   ← صور إضافية (اختياري، أي عدد)
+      3...
 ```
 أضف فولدر منتج جديد بنفس الشكل، وشغّل البناء.
 
+بيتم التعرف على صور المنتج تلقائيًا أيًا كانت صيغتها وعددها — مفيش داعي تحدد يدوي إيه الصورة الرئيسية.
+لو حطيت الصور بأسماء عشوائية (زي أسماء الموبايل الطويلة)، شغّل الأمر `npm run reorganize-images` وهو هيرتبهم تلقائي أبجديًا ويسمي أول واحدة `1.<ext>` والباقي `2, 3, 4...`.
+
 ## التشغيل
 ```bash
-npm run build     # يبني data/products.json من فولدر products/
-npm run dev        # يراقب products/ ويعيد البناء تلقائيًا مع كل تعديل
-npm run serve       # يشغل سيرفر محلي على http://localhost:5500
+npm run build              # يبني data/products.json من فولدر products/
+npm run dev                 # يراقب products/ ويعيد البناء تلقائيًا مع كل تعديل
+npm run serve                # يشغل سيرفر محلي على http://localhost:5500
+npm run reorganize-images     # يعيد ترقيم صور كل المنتجات (1, 2, 3...) تلقائيًا
 ```
 ⚠️ افتح الموقع من خلال سيرفر محلي دايمًا — مش دبل كليك على index.html (fetch للـ JSON محتاج سيرفر).
 
@@ -78,7 +84,12 @@ npm run serve       # يشغل سيرفر محلي على http://localhost:5500
        ]
      }
      ```
-   - صورة المنتج باسم `main` وأي امتداد (`main.jpg`, `main.png`, `main.webp`, `main.svg`).
+   - صور المنتج: حط أي عدد من الصور بأي صيغة (`jpg`, `jpeg`, `png`, `webp`, `svg`, `avif`).
+     سمّي الصورة الأساسية `1` (زي `1.jpg`)، والباقي `2`, `3`, `4`... حسب الترتيب اللي عايزه يظهر بيه في الجاليري.
+     لو عندك صور بأسماء تانية وعايز ترقمها تلقائي، شغّل:
+     ```bash
+     npm run reorganize-images
+     ```
 3. شغّل أمر البناء عشان يجمع كل المنتجات في ملف واحد يقرأه الموقع:
    ```bash
    npm run build

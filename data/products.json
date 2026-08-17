@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T14:54:34.864Z",
+  "generatedAt": "2026-08-17T23:53:49.013Z",
   "categories": [
     {
       "slug": "accessories",
@@ -31,9 +31,9 @@
               "value": "آية الكرسي"
             }
           ],
-          "image": "products/accessories/ayat-alkursi-bracelet/main.jpeg",
+          "image": "products/accessories/ayat-alkursi-bracelet/1.jpeg",
           "images": [
-            "products/accessories/ayat-alkursi-bracelet/main.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/1.jpeg",
             "products/accessories/ayat-alkursi-bracelet/2.jpeg",
             "products/accessories/ayat-alkursi-bracelet/3.jpeg",
             "products/accessories/ayat-alkursi-bracelet/4.jpeg",
@@ -50,7 +50,7 @@
           "price": 110,
           "oldPrice": 150,
           "currency": "EGP",
-          "badge": "الأكثر مبيعًا",
+          "badge": "جديد",
           "description": "سلسلة الملاك الترند 🙈 متوفرة باللون السيلفر والجولد، من أعلى ماتريل وأقل سعر 😻☝️♥️",
           "specs": [
             {
@@ -66,9 +66,9 @@
               "value": "جناحين ملاك مرصع بالزركون"
             }
           ],
-          "image": "products/accessories/angel-necklace/main.jpg",
+          "image": "products/accessories/angel-necklace/1.jpg",
           "images": [
-            "products/accessories/angel-necklace/main.jpg",
+            "products/accessories/angel-necklace/1.jpg",
             "products/accessories/angel-necklace/2.jpg",
             "products/accessories/angel-necklace/3.jpg"
           ]
@@ -98,9 +98,9 @@
               "value": "يومي - مناسبات"
             }
           ],
-          "image": "products/accessories/horse-necklace/main.jpg",
+          "image": "products/accessories/horse-necklace/1.jpg",
           "images": [
-            "products/accessories/horse-necklace/main.jpg",
+            "products/accessories/horse-necklace/1.jpg",
             "products/accessories/horse-necklace/2.jpg"
           ]
         },
@@ -129,9 +129,9 @@
               "value": "يومي - مناسبات"
             }
           ],
-          "image": "products/accessories/butterfly-necklace/main.jpeg",
+          "image": "products/accessories/butterfly-necklace/1.jpeg",
           "images": [
-            "products/accessories/butterfly-necklace/main.jpeg",
+            "products/accessories/butterfly-necklace/1.jpeg",
             "products/accessories/butterfly-necklace/2.jpeg"
           ]
         },
@@ -156,9 +156,9 @@
               "value": "شكل نمر"
             }
           ],
-          "image": "products/accessories/tiger-necklace/main.jpeg",
+          "image": "products/accessories/tiger-necklace/1.jpeg",
           "images": [
-            "products/accessories/tiger-necklace/main.jpeg",
+            "products/accessories/tiger-necklace/1.jpeg",
             "products/accessories/tiger-necklace/2.jpeg",
             "products/accessories/tiger-necklace/3.jpeg",
             "products/accessories/tiger-necklace/4.jpeg"
@@ -193,14 +193,14 @@
           "value": "آية الكرسي"
         }
       ],
-      "image": "products/accessories/ayat-alkursi-bracelet/main.jpeg",
-          "images": [
-            "products/accessories/ayat-alkursi-bracelet/main.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/2.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/3.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/4.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/5.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/6.jpeg"
+      "image": "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+      "images": [
+        "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/2.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/3.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/4.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/5.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/6.jpeg"
       ]
     },
     {
@@ -212,7 +212,7 @@
       "price": 110,
       "oldPrice": 150,
       "currency": "EGP",
-      "badge": "ترند",
+      "badge": "جديد",
       "description": "سلسلة الملاك الترند 🙈 متوفرة باللون السيلفر والجولد، من أعلى ماتريل وأقل سعر 😻☝️♥️",
       "specs": [
         {
@@ -228,9 +228,9 @@
           "value": "جناحين ملاك مرصع بالزركون"
         }
       ],
-      "image": "products/accessories/angel-necklace/main.jpg",
+      "image": "products/accessories/angel-necklace/1.jpg",
       "images": [
-        "products/accessories/angel-necklace/main.jpg",
+        "products/accessories/angel-necklace/1.jpg",
         "products/accessories/angel-necklace/2.jpg",
         "products/accessories/angel-necklace/3.jpg"
       ]
@@ -260,9 +260,9 @@
           "value": "يومي - مناسبات"
         }
       ],
-      "image": "products/accessories/horse-necklace/main.jpg",
+      "image": "products/accessories/horse-necklace/1.jpg",
       "images": [
-        "products/accessories/horse-necklace/main.jpg",
+        "products/accessories/horse-necklace/1.jpg",
         "products/accessories/horse-necklace/2.jpg"
       ]
     },
@@ -291,10 +291,10 @@
           "value": "يومي - مناسبات"
         }
       ],
-      "image": "products/accessories/butterfly-necklace/main.jpeg",
-          "images": [
-            "products/accessories/butterfly-necklace/main.jpeg",
-            "products/accessories/butterfly-necklace/2.jpeg"
+      "image": "products/accessories/butterfly-necklace/1.jpeg",
+      "images": [
+        "products/accessories/butterfly-necklace/1.jpeg",
+        "products/accessories/butterfly-necklace/2.jpeg"
       ]
     },
     {
@@ -318,12 +318,12 @@
           "value": "شكل نمر"
         }
       ],
-      "image": "products/accessories/tiger-necklace/main.jpeg",
-          "images": [
-            "products/accessories/tiger-necklace/main.jpeg",
-            "products/accessories/tiger-necklace/2.jpeg",
-            "products/accessories/tiger-necklace/3.jpeg",
-            "products/accessories/tiger-necklace/4.jpeg"
+      "image": "products/accessories/tiger-necklace/1.jpeg",
+      "images": [
+        "products/accessories/tiger-necklace/1.jpeg",
+        "products/accessories/tiger-necklace/2.jpeg",
+        "products/accessories/tiger-necklace/3.jpeg",
+        "products/accessories/tiger-necklace/4.jpeg"
       ]
     }
   ]
