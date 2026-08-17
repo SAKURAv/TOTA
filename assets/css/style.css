@@ -295,7 +295,7 @@ h1,h2,h3{font-family:'Baloo Bhaijaan 2', sans-serif;}
 }
 .card:hover{border-color:var(--ink); box-shadow:var(--shadow); transform:translateY(-3px);}
 .card-media{position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--paper-dim); display:flex; align-items:center; justify-content:center;}
-.card-media img{width:100%; height:100%; object-fit:contain; padding:6%; transition:transform .6s var(--ease);}
+.card-media img{width:100%; height:100%; object-fit:cover; transition:transform .6s var(--ease);}
 .card:hover .card-media img{transform:scale(1.08);}
 .card-badge{
   position:absolute; top:12px; right:12px; background:var(--accent); color:#fff;
@@ -427,12 +427,12 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
   .modal{border-radius:22px; transform:scale(.96); opacity:0; display:grid; grid-template-columns:1fr 1fr;}
   .modal-overlay.open .modal{transform:scale(1); opacity:1;}
 }
-.modal-media{background:var(--paper-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px; aspect-ratio:1/1;}
+.modal-media{background:var(--paper-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0; aspect-ratio:1/1; overflow:hidden;}
 
 /* ===== modal image gallery / slider ===== */
-.modal-gallery{position:relative; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
-.gallery-track{display:flex; width:100%; transition:transform .45s var(--ease);}
-.gallery-track img{width:100%; max-width:300px; flex:0 0 100%; margin:0 auto; object-fit:contain;}
+.modal-gallery{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+.gallery-track{display:flex; width:100%; height:100%; transition:transform .45s var(--ease);}
+.gallery-track img{width:100%; height:100%; max-width:none; flex:0 0 100%; margin:0 auto; object-fit:cover;}
 .gallery-arrow{
   position:absolute; top:50%; transform:translateY(-50%); z-index:2;
   width:34px; height:34px; border-radius:50%; background:var(--paper); border:1px solid var(--line);

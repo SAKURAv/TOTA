@@ -1,164 +1,72 @@
 {
-  "generatedAt": "2026-08-17T13:39:58.320Z",
+  "generatedAt": "2026-08-17T14:24:16.369Z",
   "categories": [
     {
-      "slug": "electronics",
-      "name": "إلكترونيات",
+      "slug": "accessories",
+      "name": "إكسسوارات",
       "order": 1,
       "products": [
         {
-          "id": "electronics/iphone-15-pro",
-          "slug": "iphone-15-pro",
-          "category": "electronics",
-          "categoryName": "إلكترونيات",
-          "name": "آيفون 15 برو",
-          "price": 52000,
-          "oldPrice": 58000,
+          "id": "accessories/angel-necklace",
+          "slug": "angel-necklace",
+          "category": "accessories",
+          "categoryName": "إكسسوارات",
+          "name": "سلسلة الملاك ترندي",
+          "price": 110,
+          "oldPrice": 150,
           "currency": "EGP",
           "badge": "الأكثر مبيعًا",
-          "description": "شاشة تيتانيوم بمقاس 6.1 بوصة، شريحة A17 برو، وكاميرا احترافية بدقة 48 ميجابكسل. تصميم متين وأداء بلا حدود.",
-          "specs": [
-            {
-              "label": "الشاشة",
-              "value": "6.1 بوصة Super Retina XDR"
-            },
-            {
-              "label": "المعالج",
-              "value": "A17 Pro"
-            },
-            {
-              "label": "الذاكرة",
-              "value": "256 جيجا"
-            },
-            {
-              "label": "الكاميرا",
-              "value": "48 ميجابكسل"
-            },
-            {
-              "label": "اللون",
-              "value": "تيتانيوم طبيعي"
-            }
-          ],
-          "image": "products/electronics/iphone-15-pro/main.svg",
-          "images": [
-            "products/electronics/iphone-15-pro/main.svg",
-            "products/electronics/iphone-15-pro/2.svg",
-            "products/electronics/iphone-15-pro/3.svg"
-          ]
-        },
-        {
-          "id": "electronics/macbook-air",
-          "slug": "macbook-air",
-          "category": "electronics",
-          "categoryName": "إلكترونيات",
-          "name": "ماك بوك اير M2",
-          "price": 68000,
-          "oldPrice": null,
-          "currency": "EGP",
-          "badge": null,
-          "description": "تصميم خفيف ورفيع للغاية بشريحة M2، بطارية تدوم طوال اليوم، وشاشة Liquid Retina نابضة بالألوان.",
-          "specs": [
-            {
-              "label": "الشاشة",
-              "value": "13.6 بوصة Liquid Retina"
-            },
-            {
-              "label": "المعالج",
-              "value": "Apple M2"
-            },
-            {
-              "label": "الذاكرة",
-              "value": "8 جيجا رام / 256 جيجا تخزين"
-            },
-            {
-              "label": "البطارية",
-              "value": "حتى 18 ساعة"
-            },
-            {
-              "label": "الوزن",
-              "value": "1.24 كجم"
-            }
-          ],
-          "image": "products/electronics/macbook-air/main.svg",
-          "images": [
-            "products/electronics/macbook-air/main.svg",
-            "products/electronics/macbook-air/2.svg",
-            "products/electronics/macbook-air/3.svg"
-          ]
-        }
-      ]
-    },
-    {
-      "slug": "fashion",
-      "name": "أزياء",
-      "order": 2,
-      "products": [
-        {
-          "id": "fashion/leather-bag",
-          "slug": "leather-bag",
-          "category": "fashion",
-          "categoryName": "أزياء",
-          "name": "شنطة جلد طبيعي",
-          "price": 1850,
-          "oldPrice": null,
-          "currency": "EGP",
-          "badge": null,
-          "description": "شنطة يد نسائية من الجلد الطبيعي 100%، تصميم كلاسيكي أنيق يناسب الاستخدام اليومي والمناسبات.",
+          "description": "سلسلة الملاك الترند 🙈 متوفرة باللون السيلفر والجولد، من أعلى ماتريل وأقل سعر 😻☝️♥️",
           "specs": [
             {
               "label": "الخامة",
-              "value": "جلد طبيعي"
+              "value": "أعلى ماتريل"
             },
             {
-              "label": "الأبعاد",
-              "value": "30 × 22 × 12 سم"
+              "label": "الألوان المتاحة",
+              "value": "سيلفر / جولد"
             },
             {
-              "label": "اللون",
-              "value": "بني تان"
+              "label": "التصميم",
+              "value": "جناحين ملاك مرصع بالزركون"
             }
           ],
-          "image": "products/fashion/leather-bag/main.svg",
+          "image": "products/accessories/angel-necklace/main.jpg",
           "images": [
-            "products/fashion/leather-bag/main.svg",
-            "products/fashion/leather-bag/2.svg",
-            "products/fashion/leather-bag/3.svg"
+            "products/accessories/angel-necklace/main.jpg",
+            "products/accessories/angel-necklace/2.jpg",
+            "products/accessories/angel-necklace/3.jpg"
           ]
         },
         {
-          "id": "fashion/nike-air-max",
-          "slug": "nike-air-max",
-          "category": "fashion",
-          "categoryName": "أزياء",
-          "name": "نايك اير ماكس",
-          "price": 3200,
-          "oldPrice": null,
+          "id": "accessories/horse-necklace",
+          "slug": "horse-necklace",
+          "category": "accessories",
+          "categoryName": "إكسسوارات",
+          "name": "سلسلة حصان ترند",
+          "price": 70,
+          "oldPrice": 100,
           "currency": "EGP",
           "badge": "جديد",
-          "description": "حذاء رياضي بتقنية Air Max للراحة القصوى، مناسب للجري والاستخدام اليومي، بتصميم عصري وألوان جذابة.",
+          "description": "سلسلة حصان ترند 🙈♥️ تصميم أنيق ومميز يناسب كل الإطلالات",
           "specs": [
             {
-              "label": "المقاس",
-              "value": "40 - 45"
-            },
-            {
               "label": "الخامة",
-              "value": "شبك تنفس + جلد صناعي"
+              "value": "استانلس ستيل مطلي جولد"
             },
             {
-              "label": "اللون",
-              "value": "أسود / أبيض"
+              "label": "التصميم",
+              "value": "شكل رأس حصان مفرغ"
             },
             {
               "label": "الاستخدام",
-              "value": "رياضي - يومي"
+              "value": "يومي - مناسبات"
             }
           ],
-          "image": "products/fashion/nike-air-max/main.svg",
+          "image": "products/accessories/horse-necklace/main.jpg",
           "images": [
-            "products/fashion/nike-air-max/main.svg",
-            "products/fashion/nike-air-max/2.svg",
-            "products/fashion/nike-air-max/3.svg"
+            "products/accessories/horse-necklace/main.jpg",
+            "products/accessories/horse-necklace/2.jpg"
           ]
         }
       ]
@@ -166,151 +74,66 @@
   ],
   "products": [
     {
-      "id": "electronics/iphone-15-pro",
-      "slug": "iphone-15-pro",
-      "category": "electronics",
-      "categoryName": "إلكترونيات",
-      "name": "آيفون 15 برو",
-      "price": 52000,
-      "oldPrice": 58000,
+      "id": "accessories/angel-necklace",
+      "slug": "angel-necklace",
+      "category": "accessories",
+      "categoryName": "إكسسوارات",
+      "name": "سلسلة الملاك ترندي",
+      "price": 110,
+      "oldPrice": 150,
       "currency": "EGP",
       "badge": "الأكثر مبيعًا",
-      "description": "شاشة تيتانيوم بمقاس 6.1 بوصة، شريحة A17 برو، وكاميرا احترافية بدقة 48 ميجابكسل. تصميم متين وأداء بلا حدود.",
-      "specs": [
-        {
-          "label": "الشاشة",
-          "value": "6.1 بوصة Super Retina XDR"
-        },
-        {
-          "label": "المعالج",
-          "value": "A17 Pro"
-        },
-        {
-          "label": "الذاكرة",
-          "value": "256 جيجا"
-        },
-        {
-          "label": "الكاميرا",
-          "value": "48 ميجابكسل"
-        },
-        {
-          "label": "اللون",
-          "value": "تيتانيوم طبيعي"
-        }
-      ],
-      "image": "products/electronics/iphone-15-pro/main.svg",
-      "images": [
-        "products/electronics/iphone-15-pro/main.svg",
-        "products/electronics/iphone-15-pro/2.svg",
-        "products/electronics/iphone-15-pro/3.svg"
-      ]
-    },
-    {
-      "id": "electronics/macbook-air",
-      "slug": "macbook-air",
-      "category": "electronics",
-      "categoryName": "إلكترونيات",
-      "name": "ماك بوك اير M2",
-      "price": 68000,
-      "oldPrice": null,
-      "currency": "EGP",
-      "badge": null,
-      "description": "تصميم خفيف ورفيع للغاية بشريحة M2، بطارية تدوم طوال اليوم، وشاشة Liquid Retina نابضة بالألوان.",
-      "specs": [
-        {
-          "label": "الشاشة",
-          "value": "13.6 بوصة Liquid Retina"
-        },
-        {
-          "label": "المعالج",
-          "value": "Apple M2"
-        },
-        {
-          "label": "الذاكرة",
-          "value": "8 جيجا رام / 256 جيجا تخزين"
-        },
-        {
-          "label": "البطارية",
-          "value": "حتى 18 ساعة"
-        },
-        {
-          "label": "الوزن",
-          "value": "1.24 كجم"
-        }
-      ],
-      "image": "products/electronics/macbook-air/main.svg",
-      "images": [
-        "products/electronics/macbook-air/main.svg",
-        "products/electronics/macbook-air/2.svg",
-        "products/electronics/macbook-air/3.svg"
-      ]
-    },
-    {
-      "id": "fashion/leather-bag",
-      "slug": "leather-bag",
-      "category": "fashion",
-      "categoryName": "أزياء",
-      "name": "شنطة جلد طبيعي",
-      "price": 1850,
-      "oldPrice": null,
-      "currency": "EGP",
-      "badge": null,
-      "description": "شنطة يد نسائية من الجلد الطبيعي 100%، تصميم كلاسيكي أنيق يناسب الاستخدام اليومي والمناسبات.",
+      "description": "سلسلة الملاك الترند 🙈 متوفرة باللون السيلفر والجولد، من أعلى ماتريل وأقل سعر 😻☝️♥️",
       "specs": [
         {
           "label": "الخامة",
-          "value": "جلد طبيعي"
+          "value": "أعلى ماتريل"
         },
         {
-          "label": "الأبعاد",
-          "value": "30 × 22 × 12 سم"
+          "label": "الألوان المتاحة",
+          "value": "سيلفر / جولد"
         },
         {
-          "label": "اللون",
-          "value": "بني تان"
+          "label": "التصميم",
+          "value": "جناحين ملاك مرصع بالزركون"
         }
       ],
-      "image": "products/fashion/leather-bag/main.svg",
+      "image": "products/accessories/angel-necklace/main.jpg",
       "images": [
-        "products/fashion/leather-bag/main.svg",
-        "products/fashion/leather-bag/2.svg",
-        "products/fashion/leather-bag/3.svg"
+        "products/accessories/angel-necklace/main.jpg",
+        "products/accessories/angel-necklace/2.jpg",
+        "products/accessories/angel-necklace/3.jpg"
       ]
     },
     {
-      "id": "fashion/nike-air-max",
-      "slug": "nike-air-max",
-      "category": "fashion",
-      "categoryName": "أزياء",
-      "name": "نايك اير ماكس",
-      "price": 3200,
-      "oldPrice": null,
+      "id": "accessories/horse-necklace",
+      "slug": "horse-necklace",
+      "category": "accessories",
+      "categoryName": "إكسسوارات",
+      "name": "سلسلة حصان ترند",
+      "price": 70,
+      "oldPrice": 100,
       "currency": "EGP",
       "badge": "جديد",
-      "description": "حذاء رياضي بتقنية Air Max للراحة القصوى، مناسب للجري والاستخدام اليومي، بتصميم عصري وألوان جذابة.",
+      "description": "سلسلة حصان ترند 🙈♥️ تصميم أنيق ومميز يناسب كل الإطلالات",
       "specs": [
         {
-          "label": "المقاس",
-          "value": "40 - 45"
-        },
-        {
           "label": "الخامة",
-          "value": "شبك تنفس + جلد صناعي"
+          "value": "استانلس ستيل مطلي جولد"
         },
         {
-          "label": "اللون",
-          "value": "أسود / أبيض"
+          "label": "التصميم",
+          "value": "شكل رأس حصان مفرغ"
         },
         {
           "label": "الاستخدام",
-          "value": "رياضي - يومي"
+          "value": "يومي - مناسبات"
         }
       ],
-      "image": "products/fashion/nike-air-max/main.svg",
+      "image": "products/accessories/horse-necklace/main.jpg",
       "images": [
-        "products/fashion/nike-air-max/main.svg",
-        "products/fashion/nike-air-max/2.svg",
-        "products/fashion/nike-air-max/3.svg"
+        "products/accessories/horse-necklace/main.jpg",
+        "products/accessories/horse-necklace/2.jpg"
       ]
     }
   ]
