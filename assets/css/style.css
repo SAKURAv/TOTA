@@ -572,6 +572,7 @@ body.modal-locked .whatsapp-float{opacity:0; pointer-events:none;}
 .scroll-cta-card:hover{border-color:var(--accent); box-shadow:var(--shadow); transform:translateY(-4px);}
 .scroll-cta-visual{position:relative; width:96px; height:96px; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
 .scc-img{width:52px; height:52px; opacity:.85; object-fit:contain;}
+.scc-cart{color:var(--accent-dark, var(--accent));}
 .scc-orbit{
   position:absolute; inset:0; border:1.5px dashed var(--accent); border-radius:50%; opacity:.5;
   animation:orbitSpin 9s linear infinite;
