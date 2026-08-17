@@ -93,8 +93,12 @@ function build() {
         specs: Array.isArray(data.specs) ? data.specs : [],
         image: img ? `products/${catSlug}/${prodSlug}/${img}` : "assets/img/placeholder.svg",
         images: images,
+        _order: data.order ?? 999,
       });
     }
+
+    products.sort((a, b) => a._order - b._order || a.slug.localeCompare(b.slug));
+    products.forEach((p) => delete p._order);
 
     categories.push({
       slug: catSlug,
