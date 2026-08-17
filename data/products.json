@@ -31,9 +31,14 @@
               "value": "آية الكرسي"
             }
           ],
-          "image": "assets/img/placeholder.svg",
+          "image": "products/accessories/ayat-alkursi-bracelet/main.jpeg",
           "images": [
-            "assets/img/placeholder.svg"
+            "products/accessories/ayat-alkursi-bracelet/main.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/2.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/3.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/4.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/5.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/6.jpeg"
           ]
         },
         {
@@ -124,9 +129,10 @@
               "value": "يومي - مناسبات"
             }
           ],
-          "image": "assets/img/placeholder.svg",
+          "image": "products/accessories/butterfly-necklace/main.jpeg",
           "images": [
-            "assets/img/placeholder.svg"
+            "products/accessories/butterfly-necklace/main.jpeg",
+            "products/accessories/butterfly-necklace/2.jpeg"
           ]
         },
         {
@@ -150,9 +156,12 @@
               "value": "شكل نمر"
             }
           ],
-          "image": "assets/img/placeholder.svg",
+          "image": "products/accessories/tiger-necklace/main.jpeg",
           "images": [
-            "assets/img/placeholder.svg"
+            "products/accessories/tiger-necklace/main.jpeg",
+            "products/accessories/tiger-necklace/2.jpeg",
+            "products/accessories/tiger-necklace/3.jpeg",
+            "products/accessories/tiger-necklace/4.jpeg"
           ]
         }
       ]
@@ -184,9 +193,14 @@
           "value": "آية الكرسي"
         }
       ],
-      "image": "assets/img/placeholder.svg",
-      "images": [
-        "assets/img/placeholder.svg"
+      "image": "products/accessories/ayat-alkursi-bracelet/main.jpeg",
+          "images": [
+            "products/accessories/ayat-alkursi-bracelet/main.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/2.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/3.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/4.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/5.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/6.jpeg"
       ]
     },
     {
@@ -198,7 +212,7 @@
       "price": 110,
       "oldPrice": 150,
       "currency": "EGP",
-      "badge": "الأكثر مبيعًا",
+      "badge": "ترند",
       "description": "سلسلة الملاك الترند 🙈 متوفرة باللون السيلفر والجولد، من أعلى ماتريل وأقل سعر 😻☝️♥️",
       "specs": [
         {
@@ -277,9 +291,10 @@
           "value": "يومي - مناسبات"
         }
       ],
-      "image": "assets/img/placeholder.svg",
-      "images": [
-        "assets/img/placeholder.svg"
+      "image": "products/accessories/butterfly-necklace/main.jpeg",
+          "images": [
+            "products/accessories/butterfly-necklace/main.jpeg",
+            "products/accessories/butterfly-necklace/2.jpeg"
       ]
     },
     {
@@ -303,9 +318,12 @@
           "value": "شكل نمر"
         }
       ],
-      "image": "assets/img/placeholder.svg",
-      "images": [
-        "assets/img/placeholder.svg"
+      "image": "products/accessories/tiger-necklace/main.jpeg",
+          "images": [
+            "products/accessories/tiger-necklace/main.jpeg",
+            "products/accessories/tiger-necklace/2.jpeg",
+            "products/accessories/tiger-necklace/3.jpeg",
+            "products/accessories/tiger-necklace/4.jpeg"
       ]
     }
   ]
