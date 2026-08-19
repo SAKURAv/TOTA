@@ -15,7 +15,7 @@
     document.head.appendChild(base);
   })();
 </script>
-<title>المنتجات | المتجر</title>
+<title>المنتجات | Tota</title>
 <meta name="description" content="تصفح كل المنتجات، ابحث بسهولة حتى لو مش فاكر الاسم بالظبط، وتواصل مباشرة.">
 
 <meta property="og:type" content="website">
@@ -62,11 +62,12 @@
     <div>
       <h1>اختار براحتك،<br>واطلب في ثواني</h1>
     </div>
-    <div class="search-wrap" id="searchWrap">
+    <form class="search-wrap" id="searchWrap">
       <span class="search-icon">⌕</span>
       <input type="text" class="search-input" id="searchInput" placeholder="ابحث بالاسم... حتى لو مش فاكره بالظبط" autocomplete="off">
-      <button class="search-clear" id="searchClear" aria-label="مسح البحث">✕</button>
-    </div>
+      <button type="button" class="search-clear" id="searchClear" aria-label="مسح البحث">✕</button>
+      <button type="submit" class="search-submit" id="searchSubmit" aria-label="بحث">بحث</button>
+    </form>
   </div>
   <div class="search-meta" id="searchMeta"></div>
 </section>

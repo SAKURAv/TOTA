@@ -81,15 +81,43 @@
     updatePriceUI();
   }
 
+  // --- بناء لينكات الصفحة بحيث يحافظ على الفلاتر الحالية (تصنيف + بحث)،
+  // ويسمح بتغيير أي واحد فيهم لوحده عن طريق overrides ---
+  function currentFiltersUrl(overrides){
+    overrides = overrides || {};
+    const cat = 'cat' in overrides ? overrides.cat : activeCategory;
+    const q = 'q' in overrides ? overrides.q : activeQuery;
+    const params = new URLSearchParams();
+    if (cat && cat !== 'all') params.set('cat', cat);
+    if (q && q.trim()) params.set('q', q.trim());
+    const qs = params.toString();
+    return new URL('products.html' + (qs ? `?${qs}` : ''), document.baseURI).href;
+  }
+
   // --- build category chips ---
+  // بنستخدم document.baseURI (المضبوط بتاج <base>) بدل location.pathname مباشرة،
+  // بنفس المنطق المستخدم في لينكات المنتجات، عشان اللينك يتحسب صح دايمًا.
+  function categoryUrl(slug){
+    return currentFiltersUrl({ cat: slug });
+  }
   function buildTags(){
     const all = [{slug:'all', name:'الكل'}, ...categories.map(c=>({slug:c.slug, name:c.name}))];
+    // بقت <a> حقيقية بلينك فعلي لكل تصنيف (تفتح في تاب جديد بـ Ctrl+كليك، تتنسخ،
+    // وتتحفظ في المفضّلة) بدل ما تكون أزرار فلترة بس من غير أي لينك.
     tagScroll.innerHTML = all.map(c=>
-      `<button class="tag-chip ${c.slug===activeCategory?'active':''}" data-slug="${c.slug}">${c.name}</button>`
+      `<a href="${categoryUrl(c.slug)}" class="tag-chip ${c.slug===activeCategory?'active':''}" data-slug="${c.slug}">${c.name}</a>`
     ).join('');
-    tagScroll.querySelectorAll('.tag-chip').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        activeCategory = btn.dataset.slug;
+    tagScroll.querySelectorAll('.tag-chip').forEach(link=>{
+      link.addEventListener('click', (e)=>{
+        // كليك عادي: نفلتر في نفس الصفحة من غير إعادة تحميل، بس نحدّث شريط
+        // العنوان عشان اللينك يفضل صحيح ومتزامن مع التصنيف الظاهر.
+        // (Ctrl/Cmd/كليك بالنص الأوسط لسه بيفتح في تاب جديد عادي زي أي لينك)
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
+        e.preventDefault();
+        const slug = link.dataset.slug;
+        if (slug === activeCategory) return;
+        activeCategory = slug;
+        history.pushState({ category: activeCategory }, '', categoryUrl(activeCategory));
         buildTags();
         render();
       });
@@ -147,9 +175,11 @@
     suggestionChips.querySelectorAll('button').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         searchInput.value = '';
+        searchClear.classList.remove('show');
         activeQuery = '';
         const cat = categories.find(c=>c.name===btn.dataset.name);
         activeCategory = cat ? cat.slug : 'all';
+        history.pushState({ category: activeCategory }, '', currentFiltersUrl());
         buildTags();
         render();
       });
@@ -173,20 +203,26 @@
     </a>`;
   }
 
-  // --- search input events ---
-  let debounceT;
+  // --- search: بيتنفذ بس لما تدوس زرار "بحث" أو تدوس Enter، مش أول ما تكتب،
+  // وبيحدّث شريط العنوان بلينك فيه كلمة البحث نفسها (زي التصنيفات بالظبط) ---
   searchInput.addEventListener('input', ()=>{
-    activeQuery = searchInput.value;
-    searchClear.classList.toggle('show', !!activeQuery);
-    clearTimeout(debounceT);
-    debounceT = setTimeout(render, 150);
+    searchClear.classList.toggle('show', !!searchInput.value);
   });
   searchInput.addEventListener('focus', ()=> searchWrap.classList.add('focused'));
   searchInput.addEventListener('blur', ()=> searchWrap.classList.remove('focused'));
+  searchWrap.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const q = searchInput.value;
+    if (q.trim() === activeQuery.trim()) return;
+    activeQuery = q;
+    history.pushState({ query: activeQuery }, '', currentFiltersUrl({ q: activeQuery }));
+    render();
+  });
   searchClear.addEventListener('click', ()=>{
     searchInput.value = ''; activeQuery = '';
     searchClear.classList.remove('show');
     searchInput.focus();
+    history.pushState({ query: '' }, '', currentFiltersUrl({ q: '' }));
     render();
   });
 
@@ -257,7 +293,7 @@
     return new URL(`p/${encodeId(id)}/`, document.baseURI).href;
   }
   function productsPageUrl(){
-    return new URL('products.html' + (activeCategory!=='all' ? `?cat=${activeCategory}` : ''), document.baseURI).href;
+    return currentFiltersUrl();
   }
   function getIdFromLocation(){
     const m = location.pathname.match(/\/p\/(.+?)\/?$/);
@@ -316,14 +352,34 @@
   window.addEventListener('keydown', e=>{ if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal(false); });
   window.addEventListener('popstate', ()=>{
     const p = getIdFromLocation();
-    if (p) openModal(p, false);
-    else if (overlay.classList.contains('open')) closeModal(true);
+    if (p) { openModal(p, false); return; }
+    if (overlay.classList.contains('open')) closeModal(true);
+    // مفيش لينك منتج — يبقى نرجّع التصنيف وكلمة البحث لنفس اللي في اللينك (زرار الرجوع)
+    const params = new URLSearchParams(location.search);
+    const catParam = params.get('cat');
+    const qParam = params.get('q') || '';
+    const nextCategory = (catParam && categories.some(c=>c.slug===catParam)) ? catParam : 'all';
+    let changed = false;
+    if (nextCategory !== activeCategory){ activeCategory = nextCategory; buildTags(); changed = true; }
+    if (qParam !== activeQuery){
+      activeQuery = qParam;
+      searchInput.value = qParam;
+      searchClear.classList.toggle('show', !!qParam);
+      changed = true;
+    }
+    if (changed) render();
   });
 
   // --- init ---
   const initParams = new URLSearchParams(location.search);
   const initCat = initParams.get('cat');
   if (initCat && categories.some(c=>c.slug===initCat)) activeCategory = initCat;
+  const initQuery = initParams.get('q');
+  if (initQuery){
+    activeQuery = initQuery;
+    searchInput.value = initQuery;
+    searchClear.classList.add('show');
+  }
 
   buildTags();
   render();
