@@ -300,7 +300,7 @@
     if (m) return m[1].split('/').map(decodeURIComponent).join('/');
     return new URLSearchParams(location.search).get('p');
   }
-  function openModal(id, pushHistory){
+  function openModal(id, pushHistory, isBootstrap){
     if (pushHistory === undefined) pushHistory = true;
     const p = allProducts.find(x=>x.id === id);
     if (!p) {
@@ -336,6 +336,11 @@
     const url = productPageUrl(p.id);
     if (pushHistory) history.pushState({ modalId: p.id }, '', url);
     else history.replaceState({ modalId: p.id }, '', url);
+    // بنسجّل "زيارة افتراضية" في GoatCounter لكل فتح منتج حصل جوه الـ SPA
+    // من غير ريفريش حقيقي للصفحة (كارت أو رجوع/تقدّم بالمتصفح). أول تحميل
+    // فعلي للصفحة (isBootstrap) مش محتاج ده لأن GoatCounter بيسجّله لوحده
+    // تلقائي أول ما الصفحة تفتح.
+    if (!isBootstrap && window.TotaAnalytics) TotaAnalytics.trackProduct(p.id, p.name);
   }
   // fromPopstate: true when triggered by the browser's back/forward button —
   // in that case history already moved, so we just update the UI without touching it again.
@@ -385,5 +390,5 @@
   render();
 
   const initId = getIdFromLocation();
-  if (initId) openModal(initId, false);
+  if (initId) openModal(initId, false, true);
 })();

@@ -60,6 +60,7 @@ function build() {
     : {};
 
   const siteName = config.siteName || "المتجر";
+  const goatcounterSite = ((config.analytics && config.analytics.goatcounterSite) || "").trim();
   let siteUrl = (config.siteUrl || "").trim().replace(/\/+$/, "");
 
   if (!siteUrl) {
@@ -117,6 +118,20 @@ function build() {
     const dir = path.join(OUT_DIR, p.id);
     fs.mkdirSync(dir, { recursive: true });
 
+    // بيسجّل "فتحة من رابط مشاركة" كـ Event منفصل في GoatCounter (مش كزيارة
+    // صفحة عادية) قبل ما يحوّل فورًا لصفحة المنتج الحقيقية. بنسجّلها كـ Event
+    // مش Pageview عشان منعملش عد مزدوج: صفحة المنتج نفسها (products.html)
+    // هتتعد لوحدها زيارة عادية أول ما تفتح بعد التحويل. الفايدة إنك تقدر
+    // تشوف بالظبط عدد اللي داسوا على لينك اتبعت على واتساب تحديدًا، منفصل
+    // عن عدد اللي بيتصفحوا الموقع عادي ووصلوا لنفس المنتج.
+    const trackingScript = goatcounterSite
+      ? `<script>(function(){try{var i=new Image();i.referrerPolicy="unsafe-url";i.src=${JSON.stringify(
+          `https://${goatcounterSite}.goatcounter.com/count`
+        )}+"?p="+encodeURIComponent(${JSON.stringify(`/share-click/p/${encodePath(p.id)}/`)})+"&t="+encodeURIComponent(${JSON.stringify(
+          title
+        )})+"&e=true&r="+encodeURIComponent(document.referrer||"")+"&rnd="+Math.random().toString(36).slice(2);}catch(e){}})();</script>\n`
+      : "";
+
     // تليجرام (على عكس واتساب) بيميل يتجاهل og:image من غير أبعاد صريحة،
     // فبنكتبها لما تكون معروفة (JPG/PNG محلي قدرنا نقرا أبعاده).
     const imageMetaLines = imageDims
@@ -147,7 +162,7 @@ ${imageMetaLines}
 <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
 
 <link rel="canonical" href="${escapeHtml(pageUrl)}">
-<script>location.replace(${JSON.stringify(targetUrl)});</script>
+${trackingScript}<script>location.replace(${JSON.stringify(targetUrl)});</script>
 </head>
 <body>
 <p>تحويل لصفحة <a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>...</p>
