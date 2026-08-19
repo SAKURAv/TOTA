@@ -242,6 +242,21 @@
 
   // --- modal ---
   const overlay = document.getElementById('modalOverlay');
+  // فولدر p/ فيه صفحة ثابتة لكل منتج (بتتولد وقت الـ build) بمقاسات Open Graph
+  // صحيحة، وبتحوّل فورًا لصفحة المنتج الحقيقية دي. بنستخدم نفس اللينك ده في
+  // شريط العنوان أثناء التصفح العادي كمان، عشان أي نسخ للينك (مش بس زرار
+  // "مشاركة") يدّي نفس المعاينة الصحيحة على واتساب/فيسبوك.
+  function siteBase(){
+    return location.pathname.replace(/products\.html$/, '');
+  }
+  function productPageUrl(id){
+    return `${siteBase()}p/${id}/`;
+  }
+  function getIdFromLocation(){
+    const m = location.pathname.match(/\/p\/(.+?)\/?$/);
+    if (m) return decodeURIComponent(m[1]);
+    return new URLSearchParams(location.search).get('p');
+  }
   function openModal(id, pushHistory){
     if (pushHistory === undefined) pushHistory = true;
     const p = allProducts.find(x=>x.id === id);
@@ -259,17 +274,13 @@
     document.getElementById('modalWhatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
     document.getElementById('modalShare').onclick = (e)=>{
       e.preventDefault();
-      // بنشارك لينك صفحة المعاينة الثابتة (p/) عشان واتساب/فيسبوك يظهروا
-      // صورة واسم المنتج صح؛ الصفحة دي بتحوّل تلقائي لصفحة المنتج الحقيقية
-      // لما حد يفتحها في متصفح فعلي.
-      const shareBase = location.origin + location.pathname.replace(/products\.html$/, '');
-      const url = `${shareBase}p/${p.id}/`;
+      const url = `${location.origin}${productPageUrl(p.id)}`;
       if (navigator.share) navigator.share({ title:p.name, url });
       else { navigator.clipboard.writeText(url); document.getElementById('modalShare').textContent='تم النسخ ✓'; }
     };
     overlay.classList.add('open');
     document.body.classList.add('modal-locked');
-    const url = `${location.pathname}?p=${encodeURIComponent(p.id)}`;
+    const url = productPageUrl(p.id);
     if (pushHistory) history.pushState({ modalId: p.id }, '', url);
     else history.replaceState({ modalId: p.id }, '', url);
   }
@@ -280,14 +291,14 @@
     document.body.classList.remove('modal-locked');
     if (!fromPopstate){
       if (history.state && history.state.modalId) history.back();
-      else history.replaceState(null,'', location.pathname + (activeCategory!=='all' ? `?cat=${activeCategory}` : ''));
+      else history.replaceState(null,'', location.pathname.replace(/\/p\/.*$/, 'products.html') + (activeCategory!=='all' ? `?cat=${activeCategory}` : ''));
     }
   }
   document.getElementById('modalClose').addEventListener('click', ()=>closeModal(false));
   overlay.addEventListener('click', e=>{ if (e.target === overlay) closeModal(false); });
   window.addEventListener('keydown', e=>{ if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal(false); });
   window.addEventListener('popstate', ()=>{
-    const p = new URLSearchParams(location.search).get('p');
+    const p = getIdFromLocation();
     if (p) openModal(p, false);
     else if (overlay.classList.contains('open')) closeModal(true);
   });
@@ -300,5 +311,6 @@
   buildTags();
   render();
 
-  if (initParams.get('p')) openModal(initParams.get('p'), false);
+  const initId = getIdFromLocation();
+  if (initId) openModal(initId, false);
 })();
