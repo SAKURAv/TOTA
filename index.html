@@ -3,6 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script>
+  // بيثبّت جذر الموقع الحقيقي كأساس لأي رابط أو صورة نسبية في الصفحة،
+  // عشان لو شريط العنوان اتغيّر شكله (زي لينكات المنتجات /p/...) الصور
+  // والروابط الداخلية (زي "الرئيسية") تفضل شغالة صح من غير ما تتكسر.
+  // لازم يجري ده أول حاجة في <head> قبل أي رابط نسبي تاني.
+  (function(){
+    var dir = location.pathname.replace(/[^/]*$/, '');
+    var base = document.createElement('base');
+    base.href = location.origin + dir;
+    document.head.appendChild(base);
+  })();
+</script>
 <title>المتجر | اكتشف مجموعتنا</title>
 <meta name="description" content="وجهتك المختارة لأفضل المنتجات، بجودة وثقة، وتواصل مباشر.">
 

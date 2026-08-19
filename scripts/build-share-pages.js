@@ -20,6 +20,12 @@ const ROOT = path.join(__dirname, "..");
 const PRODUCTS_JSON = path.join(ROOT, "data", "products.json");
 const CONFIG_JSON = path.join(ROOT, "data", "config.json");
 const OUT_DIR = path.join(ROOT, "p");
+// الصيغ دي بس اللي واتساب/فيسبوك مضمون يعرضوها كصورة معاينة (og:image).
+// SVG مش بيتعرض خالص كمعاينة، وWebP/AVIF مش مدعومين على كل نسخ واتساب،
+// فلو صورة المنتج مش من الصيغ المضمونة دي، بنستخدم لوجو الموقع بدالها.
+const SAFE_OG_IMAGE_EXT = [".jpg", ".jpeg", ".png"];
+const FALLBACK_OG_IMAGE = "assets/img/og-image.jpg";
+const MAX_DESC_LENGTH = 200;
 
 function escapeHtml(str) {
   return String(str ?? "")
@@ -28,6 +34,18 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+// بتشفّر كل جزء من المسار لوحده (مش الـ "/" الفاصلة بينهم) عشان أي سلاج
+// فيه مسافة أو حرف عربي (لو حصل بالغلط من غير ما يتراجع في برنامج الأدمن)
+// ميبوظش شكل اللينك.
+function encodePath(id) {
+  return id.split("/").map(encodeURIComponent).join("/");
+}
+
+function truncate(str, max) {
+  if (str.length <= max) return str;
+  return str.slice(0, max - 1).trimEnd() + "…";
 }
 
 function build() {
@@ -49,21 +67,38 @@ function build() {
       "  ضيف مثلاً: \"siteUrl\": \"https://username.github.io/repo-name\" في config.json وابني تاني."
     );
   }
+  const absBase = siteUrl ? `${siteUrl}/` : "";
+  const hasLogo = fs.existsSync(path.join(ROOT, FALLBACK_OG_IMAGE));
 
   // نضف القديم عشان منتج اتمسح ميفضلش ليه صفحة ميتة
   fs.rmSync(OUT_DIR, { recursive: true, force: true });
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   let count = 0;
+  let skippedImages = 0;
   for (const p of products) {
-    const absBase = siteUrl ? `${siteUrl}/` : "";
-    const pageUrl = `${absBase}p/${p.id}/`;
+    const pageUrl = `${absBase}p/${encodePath(p.id)}/`;
     const targetUrl = `${absBase}products.html?p=${encodeURIComponent(p.id)}`;
-    const imageUrl = `${absBase}${p.image || "assets/img/placeholder.svg"}`;
+
+    const rawImage = p.image || "assets/img/placeholder.svg";
+    const imageExt = path.extname(rawImage).toLowerCase();
+    let imageUrl;
+    if (SAFE_OG_IMAGE_EXT.includes(imageExt)) {
+      imageUrl = `${absBase}${rawImage}`;
+    } else if (hasLogo) {
+      imageUrl = `${absBase}${FALLBACK_OG_IMAGE}`;
+      skippedImages++;
+    } else {
+      // مفيش لوجو احتياطي لسه — أحسن نبعت الصورة الأصلية بدل مفيش صورة خالص،
+      // حتى لو مش مضمونة تظهر في كل تطبيقات المعاينة.
+      imageUrl = `${absBase}${rawImage}`;
+      skippedImages++;
+    }
+
     const title = p.name || siteName;
     const priceText =
       p.price != null ? ` — ${p.price.toLocaleString("ar-EG")} ${p.currency || ""}`.trim() : "";
-    const description = (p.description || `تفاصيل ${title}`) + priceText;
+    const description = truncate((p.description || `تفاصيل ${title}`) + priceText, MAX_DESC_LENGTH);
 
     const dir = path.join(OUT_DIR, p.id);
     fs.mkdirSync(dir, { recursive: true });
@@ -102,6 +137,14 @@ function build() {
   }
 
   console.log(`✔ تم بناء ${count} صفحة معاينة جوه /p`);
+  if (skippedImages) {
+    console.warn(
+      `⚠ ${skippedImages} منتج صورته مش JPG/PNG (SVG أو WebP أو AVIF) — واتساب ممكن ميعرضش المعاينة صح.\n` +
+      (hasLogo
+        ? "  استخدمنا لوجو الموقع بدالها."
+        : "  ضيف صورة لوجو في assets/img/og-image.jpg عشان تتستخدم كبديل تلقائي.")
+    );
+  }
 }
 
 build();

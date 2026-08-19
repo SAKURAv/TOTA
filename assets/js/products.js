@@ -246,21 +246,38 @@
   // صحيحة، وبتحوّل فورًا لصفحة المنتج الحقيقية دي. بنستخدم نفس اللينك ده في
   // شريط العنوان أثناء التصفح العادي كمان، عشان أي نسخ للينك (مش بس زرار
   // "مشاركة") يدّي نفس المعاينة الصحيحة على واتساب/فيسبوك.
-  function siteBase(){
-    return location.pathname.replace(/products\.html$/, '');
+  // بنستخدم document.baseURI (المضبوط مرة واحدة بتاج <base> في الصفحة) بدل
+  // location.pathname مباشرة، عشان لو المستخدم فتح أكتر من منتج في نفس
+  // الجلسة من غير ريفريش، شريط العنوان اللي اتغيّر بـ pushState قبل كده
+  // ميأثرش على حساب الروابط الجديدة.
+  function encodeId(id){
+    return id.split('/').map(encodeURIComponent).join('/');
   }
   function productPageUrl(id){
-    return `${siteBase()}p/${id}/`;
+    return new URL(`p/${encodeId(id)}/`, document.baseURI).href;
+  }
+  function productsPageUrl(){
+    return new URL('products.html' + (activeCategory!=='all' ? `?cat=${activeCategory}` : ''), document.baseURI).href;
   }
   function getIdFromLocation(){
     const m = location.pathname.match(/\/p\/(.+?)\/?$/);
-    if (m) return decodeURIComponent(m[1]);
+    if (m) return m[1].split('/').map(decodeURIComponent).join('/');
     return new URLSearchParams(location.search).get('p');
   }
   function openModal(id, pushHistory){
     if (pushHistory === undefined) pushHistory = true;
     const p = allProducts.find(x=>x.id === id);
-    if (!p) return;
+    if (!p) {
+      // حد فتح لينك منتج اتمسح أو غلط — بدل ما الموقع يسكت، بنورّيه رسالة
+      // واضحة ونرجّعه لقائمة المنتجات بدل ما يفضل واقف على صفحة فاضية.
+      if (noResults){
+        noResults.classList.add('show');
+        const t = document.getElementById('noResultsText');
+        if (t) t.textContent = 'المنتج ده مش موجود أو اتشال من الموقع';
+      }
+      history.replaceState(null, '', productsPageUrl());
+      return;
+    }
     renderGallery(p);
     document.getElementById('modalCat').textContent = p.categoryName;
     document.getElementById('modalTitle').textContent = p.name;
@@ -274,7 +291,7 @@
     document.getElementById('modalWhatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
     document.getElementById('modalShare').onclick = (e)=>{
       e.preventDefault();
-      const url = `${location.origin}${productPageUrl(p.id)}`;
+      const url = productPageUrl(p.id);
       if (navigator.share) navigator.share({ title:p.name, url });
       else { navigator.clipboard.writeText(url); document.getElementById('modalShare').textContent='تم النسخ ✓'; }
     };
@@ -291,7 +308,7 @@
     document.body.classList.remove('modal-locked');
     if (!fromPopstate){
       if (history.state && history.state.modalId) history.back();
-      else history.replaceState(null,'', location.pathname.replace(/\/p\/.*$/, 'products.html') + (activeCategory!=='all' ? `?cat=${activeCategory}` : ''));
+      else history.replaceState(null,'', productsPageUrl());
     }
   }
   document.getElementById('modalClose').addEventListener('click', ()=>closeModal(false));
