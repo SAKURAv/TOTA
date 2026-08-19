@@ -146,7 +146,7 @@ ${imageMetaLines}
 <meta name="twitter:description" content="${escapeHtml(description)}">
 <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
 
-<link rel="canonical" href="${escapeHtml(targetUrl)}">
+<link rel="canonical" href="${escapeHtml(pageUrl)}">
 <script>location.replace(${JSON.stringify(targetUrl)});</script>
 </head>
 <body>
