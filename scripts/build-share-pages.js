@@ -147,7 +147,6 @@ ${imageMetaLines}
 <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
 
 <link rel="canonical" href="${escapeHtml(targetUrl)}">
-<meta http-equiv="refresh" content="0; url=${escapeHtml(targetUrl)}">
 <script>location.replace(${JSON.stringify(targetUrl)});</script>
 </head>
 <body>

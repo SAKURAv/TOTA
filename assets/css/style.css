@@ -36,7 +36,7 @@
 }
 
 *{box-sizing:border-box; margin:0; padding:0;}
-html{scroll-behavior:auto;}
+html{scroll-behavior:auto; overflow-x:hidden;}
 body{
   background:var(--paper);
   color:var(--ink);
@@ -357,7 +357,7 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
 }
 .search-wrap.focused{border-color:var(--accent); box-shadow:0 0 0 4px rgba(232,93,44,.12);}
 .search-icon{padding:0 14px; color:var(--ink-soft); font-size:17px;}
-.search-input{flex:1; background:none; border:none; outline:none; color:var(--ink); font-family:inherit; font-size:15px; padding:12px 0;}
+.search-input{flex:1; min-width:0; background:none; border:none; outline:none; color:var(--ink); font-family:inherit; font-size:15px; padding:12px 0;}
 .search-input::placeholder{color:var(--ink-soft);}
 .search-clear{width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); opacity:0; transform:scale(.7); transition:.25s;}
 .search-clear.show{opacity:1; transform:scale(1);}
