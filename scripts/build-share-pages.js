@@ -15,6 +15,7 @@
  */
 const fs = require("fs");
 const path = require("path");
+const { getImageSize } = require("./lib/image-size");
 
 const ROOT = path.join(__dirname, "..");
 const PRODUCTS_JSON = path.join(ROOT, "data", "products.json");
@@ -68,7 +69,17 @@ function build() {
     );
   }
   const absBase = siteUrl ? `${siteUrl}/` : "";
-  const hasLogo = fs.existsSync(path.join(ROOT, FALLBACK_OG_IMAGE));
+
+  // لوجو الموقع الاحتياطي: لو config.logo متظبط (سلوت مستقبلي لبرنامج الأدمن)
+  // بنستخدمه، وإلا بنرجع لمسار assets/img/og-image.jpg الثابت زي ما هو من الأول.
+  const configLogo = (config.logo || "").trim();
+  const isRemoteLogo = /^https?:\/\//i.test(configLogo);
+  const logoRelPath = configLogo && !isRemoteLogo ? configLogo : FALLBACK_OG_IMAGE;
+  const logoAbsUrl = configLogo && isRemoteLogo ? configLogo : `${absBase}${logoRelPath}`;
+  const logoLocalPath = path.join(ROOT, logoRelPath);
+  const hasLogo = isRemoteLogo || fs.existsSync(logoLocalPath);
+  // بنحسب أبعاد اللوجو مرة واحدة بس (بيتكرر استخدامه في كل منتج مالوش صورة مضمونة)
+  const logoDims = !isRemoteLogo && hasLogo ? getImageSize(logoLocalPath) : null;
 
   // نضف القديم عشان منتج اتمسح ميفضلش ليه صفحة ميتة
   fs.rmSync(OUT_DIR, { recursive: true, force: true });
@@ -83,10 +94,13 @@ function build() {
     const rawImage = p.image || "assets/img/placeholder.svg";
     const imageExt = path.extname(rawImage).toLowerCase();
     let imageUrl;
+    let imageDims = null;
     if (SAFE_OG_IMAGE_EXT.includes(imageExt)) {
       imageUrl = `${absBase}${rawImage}`;
+      imageDims = getImageSize(path.join(ROOT, rawImage));
     } else if (hasLogo) {
-      imageUrl = `${absBase}${FALLBACK_OG_IMAGE}`;
+      imageUrl = logoAbsUrl;
+      imageDims = logoDims;
       skippedImages++;
     } else {
       // مفيش لوجو احتياطي لسه — أحسن نبعت الصورة الأصلية بدل مفيش صورة خالص،
@@ -103,6 +117,14 @@ function build() {
     const dir = path.join(OUT_DIR, p.id);
     fs.mkdirSync(dir, { recursive: true });
 
+    // تليجرام (على عكس واتساب) بيميل يتجاهل og:image من غير أبعاد صريحة،
+    // فبنكتبها لما تكون معروفة (JPG/PNG محلي قدرنا نقرا أبعاده).
+    const imageMetaLines = imageDims
+      ? `<meta property="og:image:width" content="${imageDims.width}">
+<meta property="og:image:height" content="${imageDims.height}">
+<meta property="og:image:type" content="${imageDims.type}">`
+      : "";
+
     const html = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -116,6 +138,7 @@ function build() {
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:image" content="${escapeHtml(imageUrl)}">
 <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
+${imageMetaLines}
 <meta property="og:url" content="${escapeHtml(pageUrl)}">
 
 <meta name="twitter:card" content="summary_large_image">

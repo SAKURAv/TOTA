@@ -19,10 +19,12 @@
  */
 const fs = require("fs");
 const path = require("path");
+const { getImageSize } = require("./lib/image-size");
 
 const ROOT = path.join(__dirname, "..");
 const CONFIG_JSON = path.join(ROOT, "data", "config.json");
 const TARGET_FILES = ["index.html", "products.html"];
+const FALLBACK_OG_IMAGE = "assets/img/og-image.jpg";
 
 function escapeHtml(str) {
   return String(str ?? "")
@@ -42,6 +44,15 @@ function build() {
   const rawSiteName = config.siteName || "Tota";
   const siteName = escapeHtml(rawSiteName);
 
+  const siteUrl = (config.siteUrl || "").trim().replace(/\/+$/, "");
+  const absBase = siteUrl ? `${siteUrl}/` : "";
+  const configLogo = (config.logo || "").trim();
+  const isRemoteLogo = /^https?:\/\//i.test(configLogo);
+  const logoRelPath = configLogo && !isRemoteLogo ? configLogo : FALLBACK_OG_IMAGE;
+  const logoAbsUrl = configLogo && isRemoteLogo ? configLogo : `${absBase}${logoRelPath}`;
+  const logoLocalPath = path.join(ROOT, logoRelPath);
+  const logoDims = !isRemoteLogo && fs.existsSync(logoLocalPath) ? getImageSize(logoLocalPath) : null;
+
   for (const file of TARGET_FILES) {
     const filePath = path.join(ROOT, file);
     if (!fs.existsSync(filePath)) continue;
@@ -52,6 +63,32 @@ function build() {
       /(<meta property="og:site_name" content=")[^"]*(">)/,
       `$1${siteName}$2`
     );
+
+    // og:image / twitter:image: بيتظبط على اللوجو (سلوت config.logo لو متظبط،
+    // وإلا assets/img/og-image.jpg الافتراضي) — عشان أي لينك غير لينكات
+    // المنتجات (الصفحة الرئيسية، صفحة المنتجات) يظهر بمعاينة لوجو الموقع.
+    html = html.replace(
+      /(<meta property="og:image" content=")[^"]*(">)/,
+      `$1${escapeHtml(logoAbsUrl)}$2`
+    );
+    html = html.replace(
+      /(<meta name="twitter:image" content=")[^"]*(">)/,
+      `$1${escapeHtml(logoAbsUrl)}$2`
+    );
+
+    // بنشيل أي og:image:width/height/type قديمة مكتوبة إيدويًا، وبعدين
+    // بنضيفها تاني (لو الأبعاد معروفة) جنب og:image مباشرة — تليجرام محتاجها
+    // عشان يعرض المعاينة بثقة.
+    html = html.replace(
+      /\n<meta property="og:image:(?:width|height|type)" content="[^"]*">/g,
+      ""
+    );
+    if (logoDims) {
+      html = html.replace(
+        /(<meta property="og:image" content="[^"]*">)/,
+        `$1\n<meta property="og:image:width" content="${logoDims.width}">\n<meta property="og:image:height" content="${logoDims.height}">\n<meta property="og:image:type" content="${logoDims.type}">`
+      );
+    }
 
     if (file === "index.html") {
       // <title>اسم الموقع | اكتشف مجموعتنا</title>
