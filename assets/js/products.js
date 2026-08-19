@@ -259,7 +259,11 @@
     document.getElementById('modalWhatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
     document.getElementById('modalShare').onclick = (e)=>{
       e.preventDefault();
-      const url = `${location.origin}${location.pathname}?p=${encodeURIComponent(p.id)}`;
+      // بنشارك لينك صفحة المعاينة الثابتة (p/) عشان واتساب/فيسبوك يظهروا
+      // صورة واسم المنتج صح؛ الصفحة دي بتحوّل تلقائي لصفحة المنتج الحقيقية
+      // لما حد يفتحها في متصفح فعلي.
+      const shareBase = location.origin + location.pathname.replace(/products\.html$/, '');
+      const url = `${shareBase}p/${p.id}/`;
       if (navigator.share) navigator.share({ title:p.name, url });
       else { navigator.clipboard.writeText(url); document.getElementById('modalShare').textContent='تم النسخ ✓'; }
     };
