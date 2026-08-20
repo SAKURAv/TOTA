@@ -477,6 +477,19 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
 .modal-spec span:first-child{color:var(--ink-soft);}
 .modal-spec span:last-child{font-weight:700;}
 .modal-actions{display:flex; gap:12px; flex-wrap:wrap;}
+
+/* شريط "شفتها مؤخرًا" — هادئ، مش لافت للنظر، جوه نافذة المنتج نفسها */
+.recently-viewed{ margin-top:22px; padding-top:16px; border-top:1px solid var(--line); }
+.recently-viewed-title{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; }
+.recently-viewed-track{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; }
+.recently-viewed-item{
+  flex:0 0 auto; width:92px; display:flex; flex-direction:column; gap:4px;
+  background:none; border:none; cursor:pointer; text-align:right; padding:0; opacity:.9;
+}
+.recently-viewed-item:hover{ opacity:1; }
+.recently-viewed-item img{ width:92px; height:92px; object-fit:cover; border-radius:12px; border:1px solid var(--line); background:var(--paper-dim); }
+.recently-viewed-name{ font-size:11.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.recently-viewed-price{ font-size:11px; color:var(--ink-soft); }
 .btn-whatsapp{
   background:var(--accent-2); color:#fff; padding:15px 26px; border-radius:100px; font-weight:700; font-size:14.5px;
   display:inline-flex; align-items:center; gap:10px; transition:.3s var(--ease);
@@ -696,4 +709,24 @@ body.tota-modal-open{ overflow:hidden; }
 }
 .card-fav-btn:hover{ border-color:var(--accent); color:var(--accent-dark); transform:scale(1.08); }
 .card-fav-btn.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }
+
+/* الزائر اللي مسجّلش حساب يشوف زرار واتساب والمشاركة بس — أي عنصر
+   محتاج حساب (مفضلة/عربة/إضافة للسلة...) بيتخفي تمامًا لحد ما يسجّل دخوله */
+.tota-is-guest [data-favorite-toggle-slug],
+.tota-is-guest [data-add-to-cart-slug],
+.tota-is-guest .card-fav-btn,
+.tota-is-guest [data-requires-auth]{
+  display:none !important;
+}
 #modalFavorite.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }
+
+/* إظهار/إخفاء كلمة المرور */
+.tota-pass-wrap{ position:relative; display:flex; }
+.tota-pass-wrap .tota-pass-input{ width:100%; padding-left:40px; }
+.tota-pass-toggle{
+  position:absolute; left:6px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; font-size:16px; padding:4px 6px;
+  color:var(--muted); line-height:1;
+}
+.tota-pass-toggle:hover{ color:var(--accent-dark); }
+.tota-auth-success{ font-size:13.5px; }

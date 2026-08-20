@@ -78,6 +78,17 @@
     grid.classList.add('reveal-stagger');
     window.observeReveals && observeReveals();
     window.attachImageLoaders && attachImageLoaders(grid);
+    if (window.totaGetFavoriteSlugs){
+      window.totaGetFavoriteSlugs().then(function (slugs) {
+        if (!slugs.size) return;
+        grid.querySelectorAll('[data-favorite-toggle-slug]').forEach(function (btn) {
+          if (slugs.has(btn.getAttribute('data-favorite-toggle-slug'))) {
+            btn.classList.add('is-favorited');
+            btn.textContent = '♥';
+          }
+        });
+      });
+    }
   }
 
   function cardHTML(p){
@@ -88,6 +99,7 @@
     <a class="card" href="products.html?p=${encodeURIComponent(p.id)}">
       ${badge}
       <span class="card-cat-tag">${p.categoryName}</span>
+      <button type="button" class="card-fav-btn" data-favorite-toggle-slug="${p.id}" aria-label="أضف للمفضلة" onclick="event.preventDefault();event.stopPropagation();">♡</button>
       <div class="card-media"><img src="${p.image}" alt="${p.name}" loading="lazy"></div>
       <div class="card-body">
         <div class="card-name">${p.name}</div>

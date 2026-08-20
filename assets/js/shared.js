@@ -63,6 +63,28 @@
     });
   };
 
+  // --- toast: رسالة صغيرة تظهر تحت وتختفي لوحدها، لأي رد فعل محتاج
+  // "تم/فشل" واضح للمستخدم بدل ما الزرار يفضل ساكت من غير أي تفاعل ---
+  window.totaToast = function (msg, kind) {
+    let box = document.getElementById('totaToastBox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'totaToastBox';
+      box.style.cssText = 'position:fixed; bottom:20px; right:50%; transform:translateX(50%); z-index:9999; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;';
+      document.body.appendChild(box);
+    }
+    const el = document.createElement('div');
+    const bg = kind === 'error' ? '#d64545' : (kind === 'success' ? '#2e7d32' : '#333');
+    el.textContent = msg;
+    el.style.cssText = `background:${bg}; color:#fff; padding:10px 18px; border-radius:20px; font-size:13.5px; box-shadow:0 4px 16px rgba(0,0,0,.18); opacity:0; transform:translateY(8px); transition:opacity .2s,transform .2s; max-width:88vw; text-align:center;`;
+    box.appendChild(el);
+    requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; });
+    setTimeout(() => {
+      el.style.opacity = '0'; el.style.transform = 'translateY(8px)';
+      setTimeout(() => el.remove(), 250);
+    }, 2600);
+  };
+
   // --- custom cursor (desktop only) ---
   if (matchMedia('(hover:hover) and (pointer:fine)').matches) {
     const dot = document.createElement('div');

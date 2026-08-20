@@ -65,6 +65,7 @@
       <button type="button" data-acc-tab="favorites">المفضلة</button>
       <button type="button" data-acc-tab="cart">عربة الشراء</button>
       <button type="button" data-acc-tab="addresses">عناويني</button>
+      <button type="button" data-acc-tab="danger" style="color:#d64545;">حذف الحساب</button>
       <button type="button" id="totaLogoutBtn">تسجيل الخروج</button>
     </nav>
 
@@ -82,9 +83,16 @@
               <div id="accAvatarStatus" style="font-size:12.5px; color:var(--muted); margin-top:6px;"></div>
             </div>
           </div>
-          <p><strong>الاسم:</strong> <span id="accFullName">—</span></p>
           <p><strong>البريد الإلكتروني:</strong> <span id="accEmail">—</span></p>
-          <p><strong>رقم الهاتف:</strong> <span id="accPhone">—</span>
+          <form id="accNameForm" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:flex-end;">
+            <label style="flex:1; min-width:160px; display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted);">
+              الاسم الكامل
+              <input type="text" name="full_name" id="accFullNameInput" placeholder="اسمك بالكامل"
+                style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
+            </label>
+            <button type="submit" class="btn-primary" style="font-size:13px; padding:10px 18px;">حفظ الاسم</button>
+          </form>
+          <p style="margin-top:14px;"><strong>رقم الهاتف:</strong> <span id="accPhone">—</span>
             <span id="accPhoneMissing" hidden style="display:inline-block; margin-inline-start:8px; padding:2px 10px; border-radius:20px; background:#fff3cd; color:#8a6300; font-size:12.5px;">أضف رقمك</span>
           </p>
           <form id="accPhoneForm" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
@@ -92,6 +100,7 @@
               style="flex:1; min-width:160px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
             <button type="submit" class="btn-primary" style="font-size:13px; padding:10px 18px;">حفظ الرقم</button>
           </form>
+          <div id="accProfileStatus" style="font-size:12.5px; color:#2e7d32; margin-top:8px;"></div>
         </div>
       </section>
 
@@ -137,6 +146,23 @@
             <input type="tel" name="phone" placeholder="رقم التواصل لهذا العنوان"
               style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
             <button type="submit" class="btn-primary">إضافة عنوان</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- حذف الحساب -->
+      <section class="acc-panel" data-acc-panel="danger">
+        <div class="acc-card" style="border-color:#f0b8b8;">
+          <h2 style="margin-top:0; font-size:18px; color:#d64545;">حذف الحساب</h2>
+          <p style="color:var(--muted); font-size:14px;">
+            حذف الحساب نهائي وبيشيل بياناتك وطلباتك ومفضلتك وعناوينك. الطلب مش بيتنفذ فورًا —
+            بيتراجع من فريقنا الأول وبنوافق عليه قبل الحذف الفعلي، فممكن ياخد شوية وقت.
+          </p>
+          <div id="accDeleteRequestStatus"></div>
+          <form id="accDeleteRequestForm" style="display:flex; flex-direction:column; gap:10px; margin-top:12px; max-width:420px;">
+            <textarea name="reason" rows="2" placeholder="ليه عايز تحذف حسابك؟ (اختياري)"
+              style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:inherit;"></textarea>
+            <button type="submit" class="btn-primary" style="background:#d64545;">تأكيد طلب حذف الحساب</button>
           </form>
         </div>
       </section>
@@ -188,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     activateTab(btn.dataset.accTab);
   });
   var initialTab = (location.hash || '').replace('#', '');
-  var validTabs = ['profile', 'orders', 'favorites', 'cart', 'addresses'];
+  var validTabs = ['profile', 'orders', 'favorites', 'cart', 'addresses', 'danger'];
   if (validTabs.includes(initialTab)) activateTab(initialTab);
 
   // ---------------- الملف الشخصي (الاسم + الهاتف) ----------------
@@ -197,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     var { data: profile } = await client.from('profiles').select('full_name, phone, avatar_path').eq('id', user.id).single();
     profileRow = profile;
     if (profile) {
-      document.getElementById('accFullName').textContent = profile.full_name || '—';
+      document.getElementById('accFullNameInput').value = profile.full_name || '';
       document.getElementById('accPhone').textContent = profile.phone || '—';
       document.getElementById('accPhoneMissing').hidden = !!profile.phone;
       var img = document.getElementById('accAvatarImg');
@@ -209,14 +235,81 @@ document.addEventListener('DOMContentLoaded', async function(){
   }
   await loadProfile();
 
+  var profileStatusEl = document.getElementById('accProfileStatus');
+  function flashProfileStatus(msg) {
+    profileStatusEl.textContent = msg;
+    setTimeout(function () { profileStatusEl.textContent = ''; }, 2500);
+  }
+
+  document.getElementById('accNameForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var fd = new FormData(e.target);
+    var fullName = (fd.get('full_name') || '').trim();
+    if (!fullName) { alert('من فضلك اكتب اسمك.'); return; }
+    var { error } = await client.from('profiles').update({ full_name: fullName }).eq('id', user.id);
+    if (error) { alert('تعذر حفظ الاسم، حاول تاني.'); return; }
+    await loadProfile();
+    flashProfileStatus('تم حفظ الاسم ✓');
+  });
+
   document.getElementById('accPhoneForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     var fd = new FormData(e.target);
     var phone = (fd.get('phone') || '').trim();
     if (phone && !/^01[0-9]{9}$/.test(phone)) { alert('رقم الهاتف غير صحيح (11 رقم يبدأ بـ 01).'); return; }
-    await client.from('profiles').update({ phone: phone }).eq('id', user.id);
+    var { error } = await client.from('profiles').update({ phone: phone }).eq('id', user.id);
+    if (error) { alert('تعذر حفظ الرقم، حاول تاني.'); return; }
     e.target.reset();
     await loadProfile();
+    flashProfileStatus('تم حفظ الرقم ✓');
+  });
+
+  // ---------------- طلب حذف الحساب (يحتاج موافقة الأدمن) ----------------
+  var deleteStatusEl = document.getElementById('accDeleteRequestStatus');
+  var deleteForm = document.getElementById('accDeleteRequestForm');
+  async function loadDeleteRequest() {
+    var { data: reqs } = await client.from('account_delete_requests')
+      .select('id, status, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    var latest = reqs && reqs[0];
+    if (latest && latest.status === 'pending') {
+      deleteStatusEl.innerHTML = '<div style="padding:10px 12px; border-radius:12px; background:#fff3cd; color:#8a6300; font-size:13.5px; margin-bottom:10px;">' +
+        'طلب حذف الحساب قيد المراجعة من فريقنا. ' +
+        '<button type="button" id="accCancelDeleteReq" style="background:none; border:none; text-decoration:underline; color:#8a6300; cursor:pointer; font-size:13.5px;">إلغاء الطلب</button>' +
+        '</div>';
+      deleteForm.hidden = true;
+      document.getElementById('accCancelDeleteReq').addEventListener('click', async function () {
+        await client.from('account_delete_requests').delete().eq('id', latest.id).eq('user_id', user.id);
+        await loadDeleteRequest();
+      });
+    } else if (latest && latest.status === 'rejected') {
+      deleteStatusEl.innerHTML = '<div style="padding:10px 12px; border-radius:12px; background:#f4f4f4; color:var(--muted); font-size:13.5px; margin-bottom:10px;">' +
+        'كان فيه طلب سابق واتراجع، وقررنا نأجّل الحذف. تقدر تبعت طلب جديد لو لسه عايز.</div>';
+      deleteForm.hidden = false;
+    } else {
+      deleteStatusEl.innerHTML = '';
+      deleteForm.hidden = false;
+    }
+  }
+  await loadDeleteRequest();
+
+  deleteForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var sure = confirm('متأكد إنك عايز تحذف حسابك؟ الطلب هيتبعت لفريقنا للموافقة، وبعد الموافقة هتتشال بياناتك نهائيًا.');
+    if (!sure) return;
+    var fd = new FormData(deleteForm);
+    var btn = deleteForm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    var { error } = await client.from('account_delete_requests').insert({
+      user_id: user.id,
+      reason: (fd.get('reason') || '').trim() || null
+    });
+    btn.disabled = false;
+    if (error) { alert('تعذر إرسال الطلب، حاول تاني.'); return; }
+    deleteForm.reset();
+    await loadDeleteRequest();
   });
 
   // ---------------- تغيير صورة الحساب (تحويل لـ WebP في المتصفح قبل الرفع) ----------------

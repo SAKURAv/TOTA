@@ -163,10 +163,28 @@
         openModal(c.dataset.id);
       });
     });
+    syncFavoriteHearts();
 
     searchMeta.innerHTML = activeQuery.trim()
       ? `لقينا <b>${list.length}</b> نتيجة قريبة من بحثك`
       : '';
+  }
+
+  // بيظبط شكل قلوب المفضلة على كل كروت المنتجات المعروضة دلوقتي بطلب
+  // واحد بس لقاعدة البيانات (شايف toggleFavorite/getFavoriteSlugs في
+  // cart-favorites.js)، بدل ما القلب يفضل فاضي حتى لو المنتج متضاف
+  // بالفعل للمفضلة.
+  async function syncFavoriteHearts(){
+    if (!window.totaGetFavoriteSlugs) return;
+    const slugs = await window.totaGetFavoriteSlugs();
+    if (!slugs.size) return;
+    grid.querySelectorAll('[data-favorite-toggle-slug]').forEach(function (btn) {
+      const slug = btn.getAttribute('data-favorite-toggle-slug');
+      if (slugs.has(slug)) {
+        btn.classList.add('is-favorited');
+        btn.textContent = '♥';
+      }
+    });
   }
 
   function buildSuggestions(){
@@ -316,6 +334,9 @@
       return;
     }
     renderGallery(p);
+    // بتوصل لسكريبت "شفتها مؤخرًا" (recently-viewed.js) عشان يسجل المنتج
+    // ده ويحدّث الشريط — بدون أي ربط مباشر بين الملفين.
+    window.dispatchEvent(new CustomEvent('tota:product-viewed', { detail: p }));
     document.getElementById('modalCat').textContent = p.categoryName;
     document.getElementById('modalTitle').textContent = p.name;
     document.getElementById('modalDesc').textContent = p.description || '';
@@ -325,7 +346,16 @@
       `<div class="modal-spec"><span>${s.label}</span><span>${s.value}</span></div>`
     ).join('');
     const waText = encodeURIComponent(`مرحبا اريد الاستفسار عن (${p.name})\n${productPageUrl(p.id)}`);
-    document.getElementById('modalWhatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
+    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
+    const waBtn = document.getElementById('modalWhatsapp');
+    // لازم المستخدم يكون مسجّل رقم هاتفه الأول قبل ما يقدر يستفسر عن منتج
+    // على واتساب — عشان أي طلب فعلي يوصل ومعاه رقم يقدر الأدمن يرد عليه.
+    waBtn.removeAttribute('href');
+    waBtn.onclick = function (e) {
+      e.preventDefault();
+      if (!window.totaEnsurePhone) { window.open(waUrl, '_blank'); return; }
+      window.totaEnsurePhone(function () { window.open(waUrl, '_blank'); });
+    };
     const addToCartBtn = document.getElementById('modalAddToCart');
     if (addToCartBtn) addToCartBtn.setAttribute('data-add-to-cart-slug', p.id);
     const favBtn = document.getElementById('modalFavorite');
@@ -343,8 +373,22 @@
     document.getElementById('modalShare').onclick = (e)=>{
       e.preventDefault();
       const url = productPageUrl(p.id);
-      if (navigator.share) navigator.share({ title:p.name, url });
-      else { navigator.clipboard.writeText(url); document.getElementById('modalShare').textContent='تم النسخ ✓'; }
+      const shareBtn = document.getElementById('modalShare');
+      if (navigator.share) {
+        navigator.share({ title:p.name, url }).catch(()=>{ /* المستخدم لغى المشاركة، مفيش داعي لرسالة خطأ */ });
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(()=>{
+          shareBtn.textContent = 'تم النسخ ✓';
+          window.totaToast && window.totaToast('اتنسخ لينك المنتج ✓', 'success');
+          setTimeout(()=>{ shareBtn.textContent = 'مشاركة'; }, 1800);
+        }).catch(()=>{
+          window.totaToast && window.totaToast('تعذر نسخ اللينك، انسخه يدويًا من شريط العنوان.', 'error');
+        });
+      } else {
+        window.totaToast && window.totaToast('تعذر نسخ اللينك، انسخه يدويًا من شريط العنوان.', 'error');
+      }
     };
     overlay.classList.add('open');
     document.body.classList.add('modal-locked');
@@ -367,6 +411,10 @@
       else history.replaceState(null,'', productsPageUrl());
     }
   }
+  // بيتاح لأي سكريبت تاني في الصفحة (زي recently-viewed.js) إنه يفتح
+  // منتج بالـ id من غير ما يحتاج يعرف تفاصيل تنفيذ المودال نفسه.
+  window.totaOpenProduct = function (id) { openModal(id, true); };
+
   document.getElementById('modalClose').addEventListener('click', ()=>closeModal(false));
   overlay.addEventListener('click', e=>{ if (e.target === overlay) closeModal(false); });
   window.addEventListener('keydown', e=>{ if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal(false); });
