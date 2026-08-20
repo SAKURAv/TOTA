@@ -1,0 +1,41 @@
+name: Deploy Supabase Edge Functions
+
+# بيتشغّل تلقائيًا أول ما أي ملف جوه supabase/functions يتغيّر، وبينشر كل
+# الدوال (زي verify-turnstile) مباشرة على مشروع Supabase، وبيحط السر
+# TURNSTILE_SECRET_KEY كـ environment variable للدالة نفسها.
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'supabase/functions/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "${{ secrets.SUPABASE_PROJECT_REF }}" ]; then
+            echo "❌ السر SUPABASE_PROJECT_REF مش مضاف في GitHub Secrets — راجع ENV_SETUP.md"
+            exit 1
+          fi
+          supabase functions deploy verify-turnstile \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} \
+            --no-verify-jwt
+
+      - name: Set function secrets
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase secrets set TURNSTILE_SECRET_KEY="${{ secrets.TURNSTILE_SECRET_KEY }}" \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}

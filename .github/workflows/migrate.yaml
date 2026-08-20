@@ -1,0 +1,35 @@
+name: Run Database Migrations
+
+# بيتشغّل تلقائيًا أول ما أي ملف جوه supabase/migrations يتغيّر أو يتضاف،
+# وبيطبّق كل ملفات الـ .sql بالترتيب الأبجدي/الرقمي مباشرة على قاعدة
+# بيانات Supabase الحقيقية عن طريق psql. من غيره، أي migration جديد بتضيفه
+# هيفضل مجرد ملف SQL في الريبو من غير ما يتشغّل فعليًا على القاعدة.
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Apply migrations in order
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "❌ السر SUPABASE_DB_URL مش مضاف في GitHub Secrets — راجع ENV_SETUP.md"
+            exit 1
+          fi
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "▶ تشغيل: $f"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+          echo "✅ كل الـ migrations اتشغلت بنجاح"
