@@ -30,22 +30,41 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// بيدعم أكتر من أدمن واحد: TELEGRAM_ADMIN_CHAT_IDS = "111111,222222,333333"
+// (مفصولين بفاصلة، مسافات زيادة حوالين كل id متجاهلة تلقائيًا). لو مش
+// موجود، بيرجع للسر القديم TELEGRAM_ADMIN_CHAT_ID (id واحد بس) عشان
+// أي إعداد قديم يفضل شغال من غير ما يحتاج تغيير.
+function getAdminChatIds(): string[] {
+  const multi = Deno.env.get("TELEGRAM_ADMIN_CHAT_IDS");
+  if (multi) {
+    return multi.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+  const single = Deno.env.get("TELEGRAM_ADMIN_CHAT_ID");
+  return single ? [single.trim()] : [];
+}
+
 async function sendTelegram(text: string) {
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
-  const chatId = Deno.env.get("TELEGRAM_ADMIN_CHAT_ID");
-  if (!token || !chatId) {
-    console.error("TELEGRAM_BOT_TOKEN أو TELEGRAM_ADMIN_CHAT_ID مش متظبطين في secrets.");
+  const chatIds = getAdminChatIds();
+  if (!token || chatIds.length === 0) {
+    console.error("TELEGRAM_BOT_TOKEN أو TELEGRAM_ADMIN_CHAT_IDS مش متظبطين في secrets.");
     return;
   }
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
-  });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    console.error("فشل إرسال تليجرام:", res.status, body);
-  }
+  // بتتبعت لكل الأدمنز في نفس الوقت (مش واحد ورا التاني) عشان الإشعار
+  // يوصل بسرعة للكل، وفشل رسالة لأدمن واحد ميوقفش باقي الإشعارات.
+  await Promise.all(
+    chatIds.map(async (chatId) => {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        console.error(`فشل إرسال تليجرام لـ ${chatId}:`, res.status, body);
+      }
+    })
+  );
 }
 
 function esc(v: unknown) {

@@ -203,6 +203,13 @@
     }
   }
 
+  // ملحوظة مهمة: الاستماع هنا لازم يكون في مرحلة الـ capture (المعامل
+  // الأخير true) مش الـ bubble العادية. زرار المفضلة جوه كارت المنتج
+  // (products.js / home.js) بيعمل event.stopPropagation() على طول عشان
+  // يمنع فتح المودال لما تدوس على القلب، ولو استنينا الـ bubble فالحدث
+  // بيتوقف قبل ما يوصل هنا خالص والزرار مبيعملش أي حاجة. مرحلة الـ
+  // capture بتتنفذ قبل ما stopPropagation في زرار نفسه يشتغل، فالحدث
+  // بيتلقط هنا الأول بغض النظر.
   document.addEventListener('click', function (e) {
     const favBtn = e.target.closest('[data-favorite-toggle-slug]');
     if (favBtn) {
@@ -216,7 +223,7 @@
       const qty = parseInt(cartBtn.dataset.qty || '1', 10) || 1;
       if (slug) addToCart(slug, qty, cartBtn);
     }
-  });
+  }, true);
 
   window.addEventListener('tota:auth-required', function () {
     const openBtn = document.querySelector('[data-account-link]');

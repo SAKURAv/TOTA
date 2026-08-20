@@ -463,6 +463,24 @@
     if (client) {
       const { data } = await client.auth.getSession();
       updateAccountUI(data.session);
+      // getSession() بيرجع بيانات من localStorage بس (توكن لسه ما
+      // انتهاش وقته)، مش بيتأكد إن الحساب لسه موجود فعليًا على السيرفر.
+      // فلو المستخدم اتحذف حسابه من برنامج الأدمن، هيفضل شكله "مسجل
+      // دخول" في المتصفح لحد ما التوكن ينتهي بنفسه. getUser() بالعكس
+      // بيبعت طلب فعلي لسيرفر Supabase Auth للتأكد، فلو رجع خطأ (يعني
+      // الحساب مش موجود / اتحذف) بنعمل تسجيل خروج فوري ونحدّث الواجهة.
+      if (data.session) {
+        client.auth.getUser().then(function (r) {
+          if (r.error) {
+            client.auth.signOut().then(function () {
+              updateAccountUI(null);
+              if (window.location.pathname.indexOf('account.html') !== -1) {
+                window.location.href = 'index.html';
+              }
+            });
+          }
+        });
+      }
       client.auth.onAuthStateChange(function (_evt, session) {
         updateAccountUI(session);
         if (_evt === 'PASSWORD_RECOVERY') openSetNewPasswordModal();
