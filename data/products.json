@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T09:24:14.955Z",
+  "generatedAt": "2026-08-20T02:30:37.800Z",
   "categories": [
     {
       "slug": "accessories",
@@ -31,15 +31,16 @@
               "value": "آية الكرسي"
             }
           ],
-          "image": "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+          "image": "products/accessories/ayat-alkursi-bracelet/1.webp",
           "images": [
-            "products/accessories/ayat-alkursi-bracelet/1.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/2.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/3.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/4.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/5.jpeg",
-            "products/accessories/ayat-alkursi-bracelet/6.jpeg"
-          ]
+            "products/accessories/ayat-alkursi-bracelet/1.webp",
+            "products/accessories/ayat-alkursi-bracelet/2.webp",
+            "products/accessories/ayat-alkursi-bracelet/3.webp",
+            "products/accessories/ayat-alkursi-bracelet/4.webp",
+            "products/accessories/ayat-alkursi-bracelet/5.webp",
+            "products/accessories/ayat-alkursi-bracelet/6.webp"
+          ],
+          "ogImage": "products/accessories/ayat-alkursi-bracelet/1.jpeg"
         },
         {
           "id": "accessories/angel-necklace",
@@ -66,12 +67,13 @@
               "value": "جناحين ملاك مرصع بالزركون"
             }
           ],
-          "image": "products/accessories/angel-necklace/1.jpg",
+          "image": "products/accessories/angel-necklace/1.webp",
           "images": [
-            "products/accessories/angel-necklace/1.jpg",
-            "products/accessories/angel-necklace/2.jpg",
-            "products/accessories/angel-necklace/3.jpg"
-          ]
+            "products/accessories/angel-necklace/1.webp",
+            "products/accessories/angel-necklace/2.webp",
+            "products/accessories/angel-necklace/3.webp"
+          ],
+          "ogImage": "products/accessories/angel-necklace/1.jpg"
         },
         {
           "id": "accessories/horse-necklace",
@@ -98,11 +100,12 @@
               "value": "يومي - مناسبات"
             }
           ],
-          "image": "products/accessories/horse-necklace/1.jpg",
+          "image": "products/accessories/horse-necklace/1.webp",
           "images": [
-            "products/accessories/horse-necklace/1.jpg",
-            "products/accessories/horse-necklace/2.jpg"
-          ]
+            "products/accessories/horse-necklace/1.webp",
+            "products/accessories/horse-necklace/2.webp"
+          ],
+          "ogImage": "products/accessories/horse-necklace/1.jpg"
         },
         {
           "id": "accessories/butterfly-necklace",
@@ -129,11 +132,12 @@
               "value": "يومي - مناسبات"
             }
           ],
-          "image": "products/accessories/butterfly-necklace/1.jpeg",
+          "image": "products/accessories/butterfly-necklace/1.webp",
           "images": [
-            "products/accessories/butterfly-necklace/1.jpeg",
-            "products/accessories/butterfly-necklace/2.jpeg"
-          ]
+            "products/accessories/butterfly-necklace/1.webp",
+            "products/accessories/butterfly-necklace/2.webp"
+          ],
+          "ogImage": "products/accessories/butterfly-necklace/1.jpeg"
         },
         {
           "id": "accessories/tiger-necklace",
@@ -156,13 +160,14 @@
               "value": "شكل نمر"
             }
           ],
-          "image": "products/accessories/tiger-necklace/1.jpeg",
+          "image": "products/accessories/tiger-necklace/1.webp",
           "images": [
-            "products/accessories/tiger-necklace/1.jpeg",
-            "products/accessories/tiger-necklace/2.jpeg",
-            "products/accessories/tiger-necklace/3.jpeg",
-            "products/accessories/tiger-necklace/4.jpeg"
-          ]
+            "products/accessories/tiger-necklace/1.webp",
+            "products/accessories/tiger-necklace/2.webp",
+            "products/accessories/tiger-necklace/3.webp",
+            "products/accessories/tiger-necklace/4.webp"
+          ],
+          "ogImage": "products/accessories/tiger-necklace/1.jpeg"
         }
       ]
     }
@@ -193,15 +198,16 @@
           "value": "آية الكرسي"
         }
       ],
-      "image": "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+      "image": "products/accessories/ayat-alkursi-bracelet/1.webp",
       "images": [
-        "products/accessories/ayat-alkursi-bracelet/1.jpeg",
-        "products/accessories/ayat-alkursi-bracelet/2.jpeg",
-        "products/accessories/ayat-alkursi-bracelet/3.jpeg",
-        "products/accessories/ayat-alkursi-bracelet/4.jpeg",
-        "products/accessories/ayat-alkursi-bracelet/5.jpeg",
-        "products/accessories/ayat-alkursi-bracelet/6.jpeg"
-      ]
+        "products/accessories/ayat-alkursi-bracelet/1.webp",
+        "products/accessories/ayat-alkursi-bracelet/2.webp",
+        "products/accessories/ayat-alkursi-bracelet/3.webp",
+        "products/accessories/ayat-alkursi-bracelet/4.webp",
+        "products/accessories/ayat-alkursi-bracelet/5.webp",
+        "products/accessories/ayat-alkursi-bracelet/6.webp"
+      ],
+      "ogImage": "products/accessories/ayat-alkursi-bracelet/1.jpeg"
     },
     {
       "id": "accessories/angel-necklace",
@@ -228,12 +234,13 @@
           "value": "جناحين ملاك مرصع بالزركون"
         }
       ],
-      "image": "products/accessories/angel-necklace/1.jpg",
+      "image": "products/accessories/angel-necklace/1.webp",
       "images": [
-        "products/accessories/angel-necklace/1.jpg",
-        "products/accessories/angel-necklace/2.jpg",
-        "products/accessories/angel-necklace/3.jpg"
-      ]
+        "products/accessories/angel-necklace/1.webp",
+        "products/accessories/angel-necklace/2.webp",
+        "products/accessories/angel-necklace/3.webp"
+      ],
+      "ogImage": "products/accessories/angel-necklace/1.jpg"
     },
     {
       "id": "accessories/horse-necklace",
@@ -260,11 +267,12 @@
           "value": "يومي - مناسبات"
         }
       ],
-      "image": "products/accessories/horse-necklace/1.jpg",
+      "image": "products/accessories/horse-necklace/1.webp",
       "images": [
-        "products/accessories/horse-necklace/1.jpg",
-        "products/accessories/horse-necklace/2.jpg"
-      ]
+        "products/accessories/horse-necklace/1.webp",
+        "products/accessories/horse-necklace/2.webp"
+      ],
+      "ogImage": "products/accessories/horse-necklace/1.jpg"
     },
     {
       "id": "accessories/butterfly-necklace",
@@ -291,11 +299,12 @@
           "value": "يومي - مناسبات"
         }
       ],
-      "image": "products/accessories/butterfly-necklace/1.jpeg",
+      "image": "products/accessories/butterfly-necklace/1.webp",
       "images": [
-        "products/accessories/butterfly-necklace/1.jpeg",
-        "products/accessories/butterfly-necklace/2.jpeg"
-      ]
+        "products/accessories/butterfly-necklace/1.webp",
+        "products/accessories/butterfly-necklace/2.webp"
+      ],
+      "ogImage": "products/accessories/butterfly-necklace/1.jpeg"
     },
     {
       "id": "accessories/tiger-necklace",
@@ -318,13 +327,14 @@
           "value": "شكل نمر"
         }
       ],
-      "image": "products/accessories/tiger-necklace/1.jpeg",
+      "image": "products/accessories/tiger-necklace/1.webp",
       "images": [
-        "products/accessories/tiger-necklace/1.jpeg",
-        "products/accessories/tiger-necklace/2.jpeg",
-        "products/accessories/tiger-necklace/3.jpeg",
-        "products/accessories/tiger-necklace/4.jpeg"
-      ]
+        "products/accessories/tiger-necklace/1.webp",
+        "products/accessories/tiger-necklace/2.webp",
+        "products/accessories/tiger-necklace/3.webp",
+        "products/accessories/tiger-necklace/4.webp"
+      ],
+      "ogImage": "products/accessories/tiger-necklace/1.jpeg"
     }
   ]
 }

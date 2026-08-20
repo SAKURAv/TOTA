@@ -646,3 +646,54 @@ body.modal-locked .whatsapp-float{opacity:0; pointer-events:none;}
   .bg-bubble{opacity:.5;}
   .bg-bubble.b1{width:64px; height:64px;} .bg-bubble.b4{width:56px; height:56px;}
 }
+
+/* ============================================================
+   تسجيل الدخول / إنشاء حساب — المودال
+   ============================================================ */
+.tota-modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.tota-modal-overlay[hidden]{ display:none; }
+body.tota-modal-open{ overflow:hidden; }
+.tota-modal{
+  position:relative; background:var(--paper); border-radius:var(--radius);
+  padding:32px 28px; width:100%; max-width:400px; box-shadow:var(--shadow);
+  border:1px solid var(--line);
+}
+.tota-modal-close{
+  position:absolute; top:14px; left:14px; background:none; border:none;
+  font-size:26px; line-height:1; cursor:pointer; color:var(--muted);
+}
+.tota-modal-close:hover{ color:var(--ink); }
+.tota-modal-title{ margin:0 0 18px; font-family:'Baloo Bhaijaan 2'; font-weight:800; }
+.tota-auth-tabs{ display:flex; gap:8px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+.tota-auth-tab{
+  flex:1; background:none; border:none; padding:10px 0; cursor:pointer;
+  font-weight:700; color:var(--muted); border-bottom:2px solid transparent;
+}
+.tota-auth-tab.is-active{ color:var(--accent-dark); border-color:var(--accent); }
+.tota-auth-form{ display:flex; flex-direction:column; gap:14px; }
+.tota-auth-form[hidden]{ display:none; }
+.tota-auth-form label{ display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:600; }
+.tota-auth-form input{
+  padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink); font-family:inherit; font-size:15px;
+}
+.tota-auth-form input:focus{ outline:none; border-color:var(--accent); }
+.tota-auth-submit{ margin-top:4px; width:100%; text-align:center; }
+.tota-auth-error{ color:#d64545; font-size:13.5px; }
+.tota-auth-privacy{ font-size:12px; color:var(--muted); margin:0; }
+[data-account-link].is-logged-in{ color:var(--accent-dark); }
+
+/* زرار المفضلة على بطاقة المنتج */
+.card{ position:relative; }
+.card-fav-btn{
+  position:absolute; top:12px; left:12px; z-index:2; width:34px; height:34px;
+  border-radius:50%; border:1px solid var(--line); background:var(--paper);
+  color:var(--muted); font-size:17px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; transition:all .2s var(--ease);
+}
+.card-fav-btn:hover{ border-color:var(--accent); color:var(--accent-dark); transform:scale(1.08); }
+.card-fav-btn.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }
+#modalFavorite.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }

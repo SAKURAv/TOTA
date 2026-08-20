@@ -92,7 +92,7 @@ function build() {
     const pageUrl = `${absBase}p/${encodePath(p.id)}/`;
     const targetUrl = `${absBase}products.html?p=${encodeURIComponent(p.id)}`;
 
-    const rawImage = p.image || "assets/img/placeholder.svg";
+    const rawImage = p.ogImage || p.image || "assets/img/placeholder.svg";
     const imageExt = path.extname(rawImage).toLowerCase();
     let imageUrl;
     let imageDims = null;

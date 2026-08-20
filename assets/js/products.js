@@ -195,6 +195,7 @@
     <a class="card" href="#" data-id="${p.id}">
       ${badge}
       <span class="card-cat-tag">${p.categoryName}</span>
+      <button type="button" class="card-fav-btn" data-favorite-toggle-slug="${p.id}" aria-label="أضف للمفضلة" onclick="event.preventDefault();event.stopPropagation();">♡</button>
       <div class="card-media"><img src="${p.image}" alt="${p.name}" loading="lazy"></div>
       <div class="card-body">
         <div class="card-name">${name}</div>
@@ -323,8 +324,22 @@
     document.getElementById('modalSpecs').innerHTML = (p.specs||[]).map(s=>
       `<div class="modal-spec"><span>${s.label}</span><span>${s.value}</span></div>`
     ).join('');
-    const waText = encodeURIComponent(`مرحبا اريد الاستفسار عن (${p.name})`);
+    const waText = encodeURIComponent(`مرحبا اريد الاستفسار عن (${p.name})\n${productPageUrl(p.id)}`);
     document.getElementById('modalWhatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
+    const addToCartBtn = document.getElementById('modalAddToCart');
+    if (addToCartBtn) addToCartBtn.setAttribute('data-add-to-cart-slug', p.id);
+    const favBtn = document.getElementById('modalFavorite');
+    if (favBtn) {
+      favBtn.setAttribute('data-favorite-toggle-slug', p.id);
+      favBtn.textContent = '♡ أضف للمفضلة';
+      favBtn.classList.remove('is-favorited');
+      if (window.totaCheckFavorite) {
+        window.totaCheckFavorite(p.id).then(function (isFav) {
+          favBtn.classList.toggle('is-favorited', isFav);
+          favBtn.textContent = isFav ? '♥ في المفضلة' : '♡ أضف للمفضلة';
+        });
+      }
+    }
     document.getElementById('modalShare').onclick = (e)=>{
       e.preventDefault();
       const url = productPageUrl(p.id);

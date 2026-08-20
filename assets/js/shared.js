@@ -136,12 +136,17 @@
   }
 
   // --- 3D tilt on cards ---
+  // خفيف افتراضيًا للجميع (زاوية أقل)، وأخف جدًا (شبه مسطّح) لمين مفعّل "تقليل الحركة"
+  const prefersReducedMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const TILT_DEG = prefersReducedMotion ? 1.5 : 4;
+  const TILT_LIFT = prefersReducedMotion ? 0 : 3;
   window.enableTilt = function(el){
+    el.style.transition = 'transform .15s ease-out';
     el.addEventListener('mousemove', e=>{
       const r = el.getBoundingClientRect();
       const px = (e.clientX - r.left)/r.width - 0.5;
       const py = (e.clientY - r.top)/r.height - 0.5;
-      el.style.transform = `perspective(900px) rotateY(${px*8}deg) rotateX(${-py*8}deg) translateY(-4px)`;
+      el.style.transform = `perspective(900px) rotateY(${px*TILT_DEG}deg) rotateX(${-py*TILT_DEG}deg) translateY(-${TILT_LIFT}px)`;
     });
     el.addEventListener('mouseleave', ()=>{ el.style.transform = ''; });
   };
