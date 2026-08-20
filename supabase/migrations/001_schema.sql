@@ -79,14 +79,19 @@ create table if not exists public.cart_items (
 -- orders + order_items
 -- status: يمثل حالة الأوردر (تُعرض في صفحة "الأوردرات" بالبرنامج)
 -- ------------------------------------------------------------
-create type public.order_status as enum (
-  'pending_payment',   -- لسه ما اتدفعش
-  'paid',              -- تم الدفع
-  'shipped',           -- تم الشحن
-  'delivered',         -- تم التوصيل
-  'cancelled',         -- ملغي
-  'issue'              -- فيه مشكلة
-);
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'order_status') then
+    create type public.order_status as enum (
+      'pending_payment',   -- لسه ما اتدفعش
+      'paid',              -- تم الدفع
+      'shipped',           -- تم الشحن
+      'delivered',         -- تم التوصيل
+      'cancelled',         -- ملغي
+      'issue'              -- فيه مشكلة
+    );
+  end if;
+end $$;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),

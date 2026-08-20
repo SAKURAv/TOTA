@@ -4,13 +4,18 @@
 -- من إعدادات الموقع في البرنامج نفسه)
 -- ============================================================
 
-create type public.chat_label as enum (
-  'new_request',     -- طالب أوردر
-  'awaiting_payment',-- لسه لم يتم الدفع
-  'paid',            -- تم الدفع
-  'issue',           -- فيه مشكلة
-  'closed'           -- انتهى
-);
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'chat_label') then
+    create type public.chat_label as enum (
+      'new_request',     -- طالب أوردر
+      'awaiting_payment',-- لسه لم يتم الدفع
+      'paid',            -- تم الدفع
+      'issue',           -- فيه مشكلة
+      'closed'           -- انتهى
+    );
+  end if;
+end $$;
 
 create table if not exists public.chats (
   id uuid primary key default gen_random_uuid(),
