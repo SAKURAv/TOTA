@@ -11,13 +11,14 @@ where exists (select 1 from cron.job where jobname = 'purge-expired-chats');
 -- 2) حذف عمود الربط بالشات من الأوردرات (كان تجهيز للمستقبل ومفضل فاضي دايمًا)
 alter table public.orders drop column if exists chat_id;
 
--- 3) حذف جداول الشات نفسها (وأي دالة/trigger مرتبطة بيهم)
-drop function if exists public.purge_expired_chats();
-drop table if exists public.chat_messages;
-drop table if exists public.chats;
-
--- 4) حذف سياسات وbucket مرفقات الشات في storage
+-- 3) حذف سياسات وbucket مرفقات الشات في storage (لازم تتمسح الأول
+--    لأنها معتمدة/مرتبطة بجدول chats، فلازم تتمسح قبل الجدول نفسه)
 drop policy if exists "chat-attachments: owner read" on storage.objects;
 drop policy if exists "chat-attachments: owner upload" on storage.objects;
 delete from storage.objects where bucket_id = 'chat-attachments';
 delete from storage.buckets where id = 'chat-attachments';
+
+-- 4) حذف جداول الشات نفسها (وأي دالة/trigger مرتبطة بيهم)
+drop function if exists public.purge_expired_chats();
+drop table if exists public.chat_messages;
+drop table if exists public.chats;
