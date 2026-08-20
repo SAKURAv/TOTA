@@ -29,6 +29,22 @@ jobs:
       - name: Build products index
         run: npm run build
 
+      # بيولّد data/env.json من GitHub Secrets وقت النشر بس — الملف ده
+      # مش موجود في الكود المصدري إطلاقًا، ومن غيره الموقع مبيقدرش
+      # يتصل بـ Supabase خالص (تسجيل الدخول/حساب جديد بيفشلوا برسالة
+      # "الخدمة غير متاحة"). لازم تضيف الأسرار دي في Settings → Secrets
+      # and variables → Actions (تفاصيلها في ENV_SETUP.md)
+      - name: Generate env.json
+        run: |
+          mkdir -p data
+          cat > data/env.json << EOF
+          {
+            "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
+            "SUPABASE_ANON_KEY": "${{ secrets.SUPABASE_ANON_KEY }}",
+            "TURNSTILE_SITE_KEY": "${{ secrets.TURNSTILE_SITE_KEY }}"
+          }
+          EOF
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:

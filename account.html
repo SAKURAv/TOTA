@@ -151,7 +151,17 @@
 <script>
 document.addEventListener('DOMContentLoaded', async function(){
   var client = window.TOTA_SUPABASE || await window.TOTA_SUPABASE_READY;
-  if (!client) return;
+  if (!client) {
+    // فشل الاتصال بـ Supabase (غالبًا data/env.json مش موجود أو ناقص) —
+    // بدل ما الصفحة تفضل فاضية بصمت، نورّي شاشة الضيف مع رسالة واضحة
+    document.getElementById('totaAccountGuest').hidden = false;
+    var guestErr = document.createElement('p');
+    guestErr.style.color = '#d64545';
+    guestErr.style.fontSize = '13.5px';
+    guestErr.textContent = 'تعذر الاتصال بالخدمة الآن، حاول تاني بعد شوية.';
+    document.getElementById('totaAccountGuest').appendChild(guestErr);
+    return;
+  }
   var { data } = await client.auth.getSession();
   if (!data.session) {
     document.getElementById('totaAccountGuest').hidden = false;
