@@ -99,7 +99,6 @@ create table if not exists public.orders (
   address_id uuid references public.addresses(id) on delete set null,
   status public.order_status not null default 'pending_payment',
   total numeric(10,2) not null default 0,
-  chat_id uuid,                  -- بيتربط بالشات بعد إنشاء جدول chats (يتحدث في 002)
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
