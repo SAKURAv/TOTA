@@ -138,7 +138,10 @@
   function renderTurnstile() {
     const env = window.TOTA_ENV || {};
     const el = document.getElementById('totaTurnstileWidget');
-    if (!el || !window.turnstile || !env.TURNSTILE_SITE_KEY) return;
+    if (!el) return;
+    if (!env.TURNSTILE_SITE_KEY) { el.hidden = true; return; }
+    el.hidden = false;
+    if (!window.turnstile) return;
     if (turnstileWidgetId !== null) {
       try { window.turnstile.remove(turnstileWidgetId); } catch (e) {}
     }
@@ -295,31 +298,42 @@
       const phone = (fd.get('phone') || '').trim();
       if (phone && !/^01[0-9]{9}$/.test(phone)) { showError(errEl, 'رقم الهاتف غير صحيح (11 رقم يبدأ بـ 01).'); return; }
 
-      const turnstileToken = window.turnstile && turnstileWidgetId !== null
-        ? window.turnstile.getResponse(turnstileWidgetId) : '';
-      if (!turnstileToken) { showError(errEl, 'من فضلك أكمل التحقق (أنا لست روبوت) قبل المتابعة.'); return; }
+      // Turnstile اختياري بالكامل: لو مفيش TURNSTILE_SITE_KEY متظبط في
+      // GitHub Secrets (data/env.json)، الـ widget أصلاً مش بيتعرض
+      // (شوف renderTurnstile فوق)، فمينفعش نطلب توكن منه — ده كان بيمنع
+      // إنشاء أي حساب نهائيًا زي ما لوحظ. لو الـ site key متظبط فعلاً،
+      // التحقق بيفضل إجباري زي ما هو.
+      const env = window.TOTA_ENV || {};
+      const turnstileEnabled = !!env.TURNSTILE_SITE_KEY;
+      let turnstileToken = '';
+      if (turnstileEnabled) {
+        turnstileToken = window.turnstile && turnstileWidgetId !== null
+          ? window.turnstile.getResponse(turnstileWidgetId) : '';
+        if (!turnstileToken) { showError(errEl, 'من فضلك أكمل التحقق (أنا لست روبوت) قبل المتابعة.'); return; }
+      }
 
       const btn = signupForm.querySelector('.tota-auth-submit');
       btn.disabled = true;
 
-      const env = window.TOTA_ENV || {};
-      try {
-        const verifyRes = await fetch(env.SUPABASE_URL + '/functions/v1/verify-turnstile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: turnstileToken })
-        });
-        const verifyData = await verifyRes.json();
-        if (!verifyData.success) {
+      if (turnstileEnabled) {
+        try {
+          const verifyRes = await fetch(env.SUPABASE_URL + '/functions/v1/verify-turnstile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: turnstileToken })
+          });
+          const verifyData = await verifyRes.json();
+          if (!verifyData.success) {
+            btn.disabled = false;
+            showError(errEl, 'فشل التحقق الأمني، حاول مرة أخرى.');
+            if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
+            return;
+          }
+        } catch (e) {
           btn.disabled = false;
-          showError(errEl, 'فشل التحقق الأمني، حاول مرة أخرى.');
-          if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
+          showError(errEl, 'تعذر التحقق الأمني الآن، حاول لاحقًا.');
           return;
         }
-      } catch (e) {
-        btn.disabled = false;
-        showError(errEl, 'تعذر التحقق الأمني الآن، حاول لاحقًا.');
-        return;
       }
       const { data: signUpData, error } = await client.auth.signUp({
         email: fd.get('email'),
@@ -334,7 +348,11 @@
         }
       });
       btn.disabled = false;
-      if (error) { showError(errEl, error.message === 'User already registered' ? 'الإيميل مسجل بالفعل.' : 'حدث خطأ، حاول مرة أخرى.'); return; }
+      if (error) {
+        console.error('signUp error:', error);
+        showError(errEl, error.message === 'User already registered' ? 'الإيميل مسجل بالفعل.' : 'حدث خطأ، حاول مرة أخرى.');
+        return;
+      }
 
       // لو Supabase مظبّط على "تأكيد الإيميل مطلوب" (الوضع الموصى بيه)،
       // مش بيرجّع session فورًا — الحساب بيتفعّل لما يدوس على لينك
