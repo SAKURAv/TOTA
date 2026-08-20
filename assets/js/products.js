@@ -348,11 +348,16 @@
     const waText = encodeURIComponent(`مرحبا اريد الاستفسار عن (${p.name})\n${productPageUrl(p.id)}`);
     const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
     const waBtn = document.getElementById('modalWhatsapp');
-    // لازم المستخدم يكون مسجّل رقم هاتفه الأول قبل ما يقدر يستفسر عن منتج
-    // على واتساب — عشان أي طلب فعلي يوصل ومعاه رقم يقدر الأدمن يرد عليه.
+    // لو المستخدم مسجّل دخول ومحفوظش رقم هاتفه، بنطلبه منه الأول (عشان
+    // الأدمن يقدر يتابع معاه من داخل النظام). لكن الزائر اللي مسجّلش
+    // حساب أصلاً مفيهوش داعي يتسجل عشان يستفسر على واتساب — بيروح
+    // مباشرة على طول، هو أصلاً هيدّي رقمه بنفسه جوه المحادثة.
     waBtn.removeAttribute('href');
-    waBtn.onclick = function (e) {
+    waBtn.onclick = async function (e) {
       e.preventDefault();
+      const client = window.TOTA_SUPABASE || (await window.TOTA_SUPABASE_READY);
+      const session = client ? (await client.auth.getSession()).data.session : null;
+      if (!session) { window.open(waUrl, '_blank'); return; }
       if (!window.totaEnsurePhone) { window.open(waUrl, '_blank'); return; }
       window.totaEnsurePhone(function () { window.open(waUrl, '_blank'); });
     };

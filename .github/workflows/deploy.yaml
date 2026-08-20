@@ -45,6 +45,23 @@ jobs:
           }
           EOF
 
+      # بيولّد supabase/sync/products_sync.sql من data/products.json،
+      # وبعدين يطبّقه على طول على قاعدة البيانات الحقيقية. من غير
+      # الخطوة دي، جدول public.products في Supabase مبيتحدّثش خالص
+      # مهما نشرت الموقع — ده كان السبب في رسالة "المنتج ده لسه بيتزامن
+      # مع النظام" اللي بتظهر لأي منتج تحاول تضيفه للمفضلة أو تطلبه،
+      # لأن الجدول كان فاضي/قديم من الأساس.
+      - name: Sync products to database
+        run: |
+          node scripts/sync-products.js
+          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ]; then
+            echo "❌ السر SUPABASE_DB_URL مش مضاف في GitHub Secrets — منتجات الموقع مش هتتزامن مع القاعدة."
+            exit 1
+          fi
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          psql "${{ secrets.SUPABASE_DB_URL }}" -v ON_ERROR_STOP=1 -f supabase/sync/products_sync.sql
+          echo "✅ اتزامنت المنتجات مع القاعدة"
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
