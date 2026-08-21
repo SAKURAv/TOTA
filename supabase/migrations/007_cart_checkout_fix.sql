@@ -17,6 +17,7 @@
 -- ============================================================
 
 drop policy if exists "order_items: insert into own pending order" on public.order_items;
+drop policy if exists "order_items: insert into own order" on public.order_items;
 create policy "order_items: insert into own order" on public.order_items
   for insert
   with check (
