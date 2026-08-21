@@ -100,6 +100,7 @@
       ${badge}
       <span class="card-cat-tag">${p.categoryName}</span>
       <button type="button" class="card-fav-btn" data-favorite-toggle-slug="${p.id}" aria-label="أضف للمفضلة" onclick="event.preventDefault();event.stopPropagation();">♡</button>
+      <button type="button" class="card-cart-btn" data-add-to-cart-slug="${p.id}" data-qty="1" aria-label="أضف للسلة" onclick="event.preventDefault();event.stopPropagation();">🛒</button>
       <div class="card-media"><img src="${p.image}" alt="${p.name}" loading="lazy"></div>
       <div class="card-body">
         <div class="card-name">${p.name}</div>

@@ -17,8 +17,11 @@
 // ⚠️ ليه كانت الرسايل مش بتوصل قبل كده / حلول لو استمرت المشكلة:
 //   1) لازم الـ Webhooks نفسهم يكونوا متعملين من Dashboard → Database
 //      → Webhooks (خطوة يدوية، مفيش كود ممكن يعملها بدل الأدمن):
-//        - Webhook على جدول orders، الحدث Insert بس، Type: Supabase
-//          Edge Functions → notify-telegram.
+//        - Webhook على جدول orders، لازم الحدثين Insert و Update مع
+//          بعض (مش Insert بس!) — Insert لرسالة "أوردر جديد"، وUpdate
+//          لرسالة "تم تسليم الأوردر". لو الـ webhook متظبط Insert بس
+//          هتوصلك رسالة الأوردر الجديد بس ومستحيل توصل رسالة "تم
+//          التوصيل" أبدًا. Type: Supabase Edge Functions → notify-telegram.
 //        - Webhook على جدول account_delete_requests، الحدث Insert،
 //          نفس الوجهة.
 //      لو الجدولين دول مش متسجلين في Database Webhooks في الداشبورد،

@@ -36,13 +36,23 @@ Migrations → Run workflow**.
    supabase functions deploy notify-telegram
    ```
 4. من لوحة تحكم المشروع: **Database → Webhooks → Create a new hook**،
-   واعمل webhook منفصل لكل جدول من الأربعة دول (Insert بس، بدون
-   Update/Delete)، ووجّه كل واحد لـ Edge Function اللي اسمها
-   `notify-telegram`:
-   - `orders`
-   - `order_items`
-   - `account_delete_requests`
-   - `profiles`
+   واعمل webhook منفصل لكل جدول، ووجّه كل واحد لـ Edge Function اللي
+   اسمها `notify-telegram`:
+   - `orders` → **⚠️ لازم تفعّل Insert و Update مع بعض** (مش Insert
+     بس): الـ Insert هو رسالة "أوردر جديد"، والـ Update هو اللي بيبعت
+     رسالة "تم تسليم الأوردر" لما الأدمن يعلّم الأوردر إنه اتوصّل —
+     لو الـ webhook متظبط على Insert بس، رسالة "تم التوصيل" مستحيل
+     توصل تليجرام أبدًا مهما كان الكود صح، لأن الفنكشن أصلاً مش
+     هيتنادى وقت الـ Update.
+   - `order_items` → Insert بس
+   - `account_delete_requests` → Insert بس
+   - `profiles` → Insert بس
+
+   ملحوظة: لو الرسايل لسه مش وصلة بعد التأكد من الخطوة دي، تأكد كمان
+   إن الـ webhook حالته Enabled مش Disabled، وإن الـ secrets في خطوة
+   3 اتظبطت صح (`supabase secrets list` يوريك أسماءها بس مش قيمها)،
+   وشوف Function Logs (Dashboard → Edge Functions → notify-telegram
+   → Logs) لتفاصيل أي خطأ فعلي وقت الإرسال.
 
 بعد كده أي حدث من دول هيوصلك في الخاص على تليجرام فورًا، من غير ما
 تحتاج تفتح برنامج الأدمن أو الموقع خالص. الرسائل بتتبعت من قاعدة

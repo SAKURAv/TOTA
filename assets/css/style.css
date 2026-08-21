@@ -105,22 +105,23 @@ h1,h2,h3{font-family:'Baloo Bhaijaan 2', sans-serif;}
 /* ===== Top bar ===== */
 .topbar{
   position:sticky; top:0; z-index:500;
-  display:flex; align-items:center; justify-content:space-between;
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
   padding:16px min(6vw,60px);
   background:rgba(255,251,246,.86);
   backdrop-filter:blur(12px);
   border-bottom:1px solid var(--line);
 }
 [data-theme="dark"] .topbar{background:rgba(20,19,16,.82);}
-.brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:21px; letter-spacing:-.5px;}
+.brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:21px; letter-spacing:-.5px; justify-self:start;}
 .brand span{color:var(--accent);}
-.nav-links{display:flex; gap:30px; font-weight:600; font-size:14.5px;}
+.nav-links{display:flex; gap:30px; font-weight:600; font-size:14.5px; justify-self:center;}
 .nav-links a{position:relative; padding:4px 0; color:var(--ink-soft); transition:color .3s;}
 .nav-links a:hover, .nav-links a.active{color:var(--ink);}
 .nav-links a::after{content:""; position:absolute; right:0; bottom:0; height:2px; width:0; background:var(--accent); transition:width .3s var(--ease);}
 .nav-links a:hover::after, .nav-links a.active::after{width:100%;}
 @media(max-width:780px){.nav-links{display:none;}}
-.topbar-actions{display:flex; gap:8px; align-items:center;}
+.topbar-actions{display:flex; gap:8px; align-items:center; justify-self:end;}
+@media(max-width:780px){.topbar{display:flex; justify-content:space-between;}}
 
 /* ===== mobile menu ===== */
 /* ===== mobile page-switch button (replaces hamburger — site only has 2 pages) ===== */
@@ -555,8 +556,14 @@ body.modal-locked{overflow:hidden;}
   0%{transform:scale(1); opacity:.55;}
   100%{transform:scale(1.7); opacity:0;}
 }
+@media(max-width:780px){
+  /* على الموبايل الشريط السفلي (bottom-nav) بيبقى فوق زرار الواتساب
+     العائم بالظبط، فبنرفعه فوق ارتفاع الشريط ده + هامش أمان، عشان
+     ميدّاريش على زراير التبديل بين الصفحات. */
+  .whatsapp-float{bottom:calc(72px + env(safe-area-inset-bottom, 0) + 14px); left:16px;}
+}
 @media(max-width:600px){
-  .whatsapp-float{width:50px; height:50px; bottom:16px; left:16px;}
+  .whatsapp-float{width:50px; height:50px;}
   .whatsapp-float svg{width:22px; height:22px;}
 }
 body.modal-locked .whatsapp-float{opacity:0; pointer-events:none;}
@@ -766,14 +773,17 @@ body.tota-modal-open{ overflow:hidden; }
 .card-fav-btn:hover{ border-color:var(--accent); color:var(--accent-dark); transform:scale(1.08); }
 .card-fav-btn.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }
 
-/* الزائر اللي مسجّلش حساب يشوف زرار واتساب والمشاركة بس — أي عنصر
-   محتاج حساب (مفضلة/عربة/إضافة للسلة...) بيتخفي تمامًا لحد ما يسجّل دخوله */
-.tota-is-guest [data-favorite-toggle-slug],
-.tota-is-guest [data-add-to-cart-slug],
-.tota-is-guest .card-fav-btn,
-.tota-is-guest [data-requires-auth]{
-  display:none !important;
+/* زرار الإضافة للسلة على بطاقة المنتج، جنب زرار المفضلة */
+.card-cart-btn{
+  position:absolute; top:12px; left:54px; z-index:2; width:34px; height:34px;
+  border-radius:50%; border:1px solid var(--line); background:var(--paper);
+  color:var(--muted); font-size:15px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; transition:all .2s var(--ease);
 }
+.card-cart-btn:hover{ border-color:var(--accent); color:var(--accent-dark); transform:scale(1.08); }
+
+/* زرار المفضلة/العربة تفضل ظاهرة حتى للزوار اللي مسجّلوش حساب —
+   لو دوسوا عليها هيتفتحله تسجيل الدخول تلقائيًا (شوف cart-favorites.js) */
 #modalFavorite.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }
 
 /* إظهار/إخفاء كلمة المرور */
