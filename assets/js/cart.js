@@ -15,28 +15,82 @@
     const user = session.user;
     document.getElementById('cartBody').hidden = false;
 
-    // ---------------- تابات "السلة" / "أوردراتي" ----------------
+    // ---------------- تابات "السلة" / "المفضلة" / "أوردراتي" ----------------
     const tabsEl = document.getElementById('cartTabs');
     const ordersPanelEl = document.getElementById('cartOrders');
+    const favoritesPanelEl = document.getElementById('cartFavorites');
     const cartBodyEl = document.getElementById('cartBody');
     tabsEl.hidden = false;
     let ordersLoaded = false;
+    let favoritesLoaded = false;
     function switchCartTab(tab) {
       tabsEl.querySelectorAll('[data-cart-tab]').forEach(function (btn) {
         btn.classList.toggle('is-active', btn.getAttribute('data-cart-tab') === tab);
       });
-      if (tab === 'orders') {
-        cartBodyEl.hidden = true;
-        ordersPanelEl.hidden = false;
-        if (!ordersLoaded) { ordersLoaded = true; loadMyOrders(); }
-      } else {
-        cartBodyEl.hidden = false;
-        ordersPanelEl.hidden = true;
-      }
+      cartBodyEl.hidden = tab !== 'cart';
+      ordersPanelEl.hidden = tab !== 'orders';
+      favoritesPanelEl.hidden = tab !== 'favorites';
+      if (tab === 'orders' && !ordersLoaded) { ordersLoaded = true; loadMyOrders(); }
+      if (tab === 'favorites' && !favoritesLoaded) { favoritesLoaded = true; loadFavorites(); }
     }
     tabsEl.addEventListener('click', function (e) {
       const btn = e.target.closest('[data-cart-tab]');
       if (btn) switchCartTab(btn.getAttribute('data-cart-tab'));
+    });
+
+    // ---------------- المفضلة ----------------
+    async function loadFavorites() {
+      const listEl = document.getElementById('cartFavoritesList');
+      listEl.innerHTML = 'جاري التحميل...';
+      const { data: favorites, error } = await client.from('favorites')
+        .select('product_id, products(id, name, slug, price)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error || !favorites || !favorites.length) {
+        listEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>';
+        return;
+      }
+      listEl.innerHTML = favorites.map(function (f) {
+        const p = f.products;
+        if (!p) return '';
+        const catalog = productsCatalog[p.slug] || {};
+        const img = catalog.image ? ('<img src="' + catalog.image + '" alt="">') : '';
+        return (
+          '<div class="fav-item" data-fav="' + p.id + '" data-slug="' + p.slug + '">' +
+          '<div class="fav-item-media">' + img + '</div>' +
+          '<div class="fav-item-info">' +
+          '<a href="p/' + p.slug + '/">' + (p.name || 'منتج') + '</a>' +
+          (p.price ? ('<div class="fav-item-price">' + money(p.price) + ' ج.م</div>') : '') +
+          '</div>' +
+          '<div class="fav-item-actions">' +
+          '<button type="button" class="btn-primary" data-fav-add-cart>أضف للسلة</button>' +
+          '<button type="button" class="fav-remove-btn" data-fav-remove>حذف من المفضلة</button>' +
+          '</div>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    document.getElementById('cartFavoritesList').addEventListener('click', async function (e) {
+      const row = e.target.closest('[data-fav]');
+      if (!row) return;
+      const productId = row.dataset.fav;
+      if (e.target.closest('[data-fav-remove]')) {
+        await client.from('favorites').delete().eq('user_id', user.id).eq('product_id', productId);
+        row.remove();
+        window.dispatchEvent(new CustomEvent('tota:favorite-updated'));
+      } else if (e.target.closest('[data-fav-add-cart]')) {
+        const { data: existing } = await client.from('cart_items')
+          .select('id, quantity').eq('user_id', user.id).eq('product_id', productId).maybeSingle();
+        if (existing) {
+          await client.from('cart_items').update({ quantity: existing.quantity + 1 }).eq('id', existing.id);
+        } else {
+          await client.from('cart_items').insert({ user_id: user.id, product_id: productId, quantity: 1 });
+        }
+        if (window.totaToast) window.totaToast('اتضاف للسلة ✓', 'success');
+        window.dispatchEvent(new CustomEvent('tota:cart-updated'));
+        await loadCart();
+      }
     });
 
     const PAYMENT_STATUS_LABELS = { unpaid: 'لم يتم الدفع', partial: 'تم دفع جزء من المبلغ', paid: 'تم الدفع بالكامل' };
