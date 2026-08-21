@@ -782,6 +782,12 @@ body.tota-modal-open{ overflow:hidden; }
 }
 .card-cart-btn:hover{ border-color:var(--accent); color:var(--accent-dark); transform:scale(1.08); }
 
+/* حالة الطلب (دفع/توصيل) — نفس الشكل في صفحة السلة وصفحة الحساب */
+.orders-status-badge{padding:3px 12px; border-radius:20px; font-size:12px; font-weight:700; white-space:nowrap; background:var(--paper); border:1px solid var(--line); display:inline-block;}
+.orders-status-badge.is-done{background:#e6f4ea; color:#2e7d32; border-color:#c5e6cd;}
+.orders-status-badge.is-progress{background:#fff3cd; color:#8a6300; border-color:#f0e0a6;}
+.orders-status-badge.is-cancelled{background:#fbe4e4; color:#b23b3b; border-color:#f2c6c6;}
+
 /* زرار المفضلة/العربة تفضل ظاهرة حتى للزوار اللي مسجّلوش حساب —
    لو دوسوا عليها هيتفتحله تسجيل الدخول تلقائيًا (شوف cart-favorites.js) */
 #modalFavorite.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }

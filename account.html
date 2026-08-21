@@ -371,11 +371,13 @@ document.addEventListener('DOMContentLoaded', async function(){
     cancelled: 'ملغي',
     issue: 'فيه مشكلة'
   };
+  var PAYMENT_STATUS_LABELS = { unpaid: 'لم يتم الدفع', partial: 'تم دفع جزء من المبلغ', paid: 'تم الدفع بالكامل' };
+  var DELIVERY_STATUS_LABELS = { not_shipped: 'لم يشحن', out_for_delivery: 'خرج للتوصيل', shipping: 'جار التوصيل', delivered: 'تم التوصيل' };
   (async function loadOrders(){
     var pendingEl = document.getElementById('accOrdersPending');
     var doneEl = document.getElementById('accOrdersDone');
     var { data: orders, error } = await client.from('orders')
-      .select('id, status, total, created_at, order_items(id, product_name_snapshot, unit_price, quantity)')
+      .select('id, status, payment_status, delivery_status, paid_amount, total, created_at, order_items(id, product_name_snapshot, unit_price, quantity)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     if (error || !orders || !orders.length) {
@@ -386,13 +388,22 @@ document.addEventListener('DOMContentLoaded', async function(){
       var itemsHtml = (o.order_items || []).map(function (it) {
         return '<li>' + it.product_name_snapshot + ' × ' + it.quantity + ' — ' + it.unit_price + ' ج.م</li>';
       }).join('');
+      var paymentLabel = PAYMENT_STATUS_LABELS[o.payment_status] || o.payment_status || 'لم يتم الدفع';
+      var deliveryLabel = DELIVERY_STATUS_LABELS[o.delivery_status] || o.delivery_status || 'لم يشحن';
+      var paymentClass = o.payment_status === 'paid' ? 'is-done' : (o.payment_status === 'partial' ? 'is-progress' : 'is-cancelled');
+      var deliveryClass = o.delivery_status === 'delivered' ? 'is-done' : 'is-progress';
       return '<div style="padding:12px 0; border-bottom:1px solid var(--line);">' +
         '<div style="display:flex; justify-content:space-between; align-items:center;">' +
         '<strong>أوردر #' + o.id.slice(0, 8) + '</strong>' +
         '<span style="padding:3px 10px; border-radius:20px; font-size:12.5px; background:var(--paper); border:1px solid var(--line);">' +
         (ORDER_STATUS_LABELS[o.status] || o.status) + '</span></div>' +
+        '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">' +
+        '<span class="orders-status-badge ' + paymentClass + '">💳 ' + paymentLabel + '</span>' +
+        '<span class="orders-status-badge ' + deliveryClass + '">🚚 ' + deliveryLabel + '</span>' +
+        '</div>' +
         '<ul style="margin:8px 0 4px; padding-inline-start:18px; color:var(--muted); font-size:14px;">' + itemsHtml + '</ul>' +
-        '<div style="font-size:13px; color:var(--muted);">الإجمالي: ' + o.total + ' ج.م</div>' +
+        '<div style="font-size:13px; color:var(--muted);">الإجمالي: ' + o.total + ' ج.م' +
+        (o.payment_status === 'partial' ? (' (اتدفع ' + (o.paid_amount || 0) + ' ج.م)') : '') + '</div>' +
         '</div>';
     }
     var pending = orders.filter(function (o) { return o.status !== 'delivered' && o.status !== 'cancelled'; });

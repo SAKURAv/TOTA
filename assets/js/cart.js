@@ -39,25 +39,13 @@
       if (btn) switchCartTab(btn.getAttribute('data-cart-tab'));
     });
 
-    const ORDER_STATUS_LABELS = {
-      placed: 'اتبعت',
-      pending_payment: 'لسه ما اتدفعش',
-      paid: 'تم الدفع',
-      shipped: 'تم الشحن',
-      delivered: 'تم التوصيل',
-      cancelled: 'ملغي',
-      issue: 'فيه مشكلة'
-    };
-    function orderStatusClass(status) {
-      if (status === 'delivered') return 'is-done';
-      if (status === 'cancelled' || status === 'issue') return 'is-cancelled';
-      return 'is-progress';
-    }
+    const PAYMENT_STATUS_LABELS = { unpaid: 'لم يتم الدفع', partial: 'تم دفع جزء من المبلغ', paid: 'تم الدفع بالكامل' };
+    const DELIVERY_STATUS_LABELS = { not_shipped: 'لم يشحن', out_for_delivery: 'خرج للتوصيل', shipping: 'جار التوصيل', delivered: 'تم التوصيل' };
     async function loadMyOrders() {
       const pendingEl = document.getElementById('cartOrdersPending');
       const doneEl = document.getElementById('cartOrdersDone');
       const { data: orders, error } = await client.from('orders')
-        .select('id, status, delivery_status, total, created_at, order_items(id, product_name_snapshot, unit_price, quantity)')
+        .select('id, status, payment_status, delivery_status, paid_amount, total, created_at, order_items(id, product_name_snapshot, unit_price, quantity)')
         .eq('user_id', user.id)
         .neq('status', 'pending_payment')
         .order('created_at', { ascending: false });
@@ -70,14 +58,21 @@
         const itemsHtml = (o.order_items || []).map(function (it) {
           return '<li>' + it.product_name_snapshot + ' × ' + it.quantity + ' — ' + it.unit_price + ' ج.م</li>';
         }).join('');
-        const statusKey = o.delivery_status === 'delivered' ? 'delivered' : o.status;
-        const label = ORDER_STATUS_LABELS[statusKey] || statusKey;
+        const paymentLabel = PAYMENT_STATUS_LABELS[o.payment_status] || o.payment_status || 'لم يتم الدفع';
+        const deliveryLabel = DELIVERY_STATUS_LABELS[o.delivery_status] || o.delivery_status || 'لم يشحن';
+        const paymentClass = o.payment_status === 'paid' ? 'is-done' : (o.payment_status === 'partial' ? 'is-progress' : 'is-cancelled');
+        const deliveryClass = o.delivery_status === 'delivered' ? 'is-done' : 'is-progress';
         return '<div class="orders-list-item">' +
           '<div class="orders-list-head">' +
           '<strong>أوردر #' + o.id.slice(0, 8) + '</strong>' +
-          '<span class="orders-status-badge ' + orderStatusClass(statusKey) + '">' + label + '</span></div>' +
+          '</div>' +
+          '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">' +
+          '<span class="orders-status-badge ' + paymentClass + '">💳 ' + paymentLabel + '</span>' +
+          '<span class="orders-status-badge ' + deliveryClass + '">🚚 ' + deliveryLabel + '</span>' +
+          '</div>' +
           '<ul class="orders-list-items">' + itemsHtml + '</ul>' +
-          '<div class="orders-list-total">الإجمالي: ' + o.total + ' ج.م</div>' +
+          '<div class="orders-list-total">الإجمالي: ' + o.total + ' ج.م' +
+          (o.payment_status === 'partial' ? (' (اتدفع ' + (o.paid_amount || 0) + ' ج.م)') : '') + '</div>' +
           '</div>';
       }
       const isDone = function (o) { return o.status === 'delivered' || o.delivery_status === 'delivered' || o.status === 'cancelled'; };
