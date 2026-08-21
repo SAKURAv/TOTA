@@ -340,8 +340,12 @@
 
     async function placeOrder() {
       try {
-        const { data: profile } = await client.from('profiles').select('country_code').eq('id', user.id).maybeSingle();
+        const { data: profile } = await client.from('profiles').select('full_name, phone, country_code').eq('id', user.id).maybeSingle();
         const countryCode = (profile && profile.country_code) || '+20';
+        const { data: selectedAddress } = await client.from('addresses')
+          .select('label, full_address, city')
+          .eq('id', selectedAddressId)
+          .maybeSingle();
         const subtotal = computeSubtotal();
         const note = (document.getElementById('cartNoteInput').value || '').trim();
 
@@ -372,11 +376,24 @@
 
         await client.from('cart_items').delete().eq('user_id', user.id);
 
-        // إشعار تليجرام فوري بالأوردر الجديد — مباشرة من هنا، مش
-        // منتظرين Database Webhook. فشل الإشعار (لو حصل) متعمّد إنه
-        // ميوقفش أو يفشّل عملية الطلب نفسها.
-        if (window.totaNotifyTelegram) {
-          window.totaNotifyTelegram(client, 'orders', 'INSERT', order);
+        // إشعار تليجرام فوري بالأوردر الجديد — مباشرة من المتصفح لـ
+        // Telegram API (بدون أي سيرفر وسيط). فشل الإشعار (لو حصل)
+        // متعمّد إنه ميوقفش أو يفشّل عملية الطلب نفسها.
+        if (window.totaNotifyOrderTelegram) {
+          window.totaNotifyOrderTelegram({
+            name: (profile && profile.full_name) || 'بدون اسم',
+            phone: (profile && profile.phone) || '',
+            countryCode: countryCode,
+            address: selectedAddress
+              ? ((selectedAddress.label || 'عنوان') + ': ' + selectedAddress.full_address + (selectedAddress.city ? (' — ' + selectedAddress.city) : ''))
+              : 'بدون عنوان',
+            items: cartRows.map(function (r) {
+              return { name: r.name || 'منتج', quantity: r.quantity, price: r.price || 0 };
+            }),
+            deliveryPrice: deliveryPrice,
+            total: subtotal + deliveryPrice,
+            note: note
+          });
         }
 
         submitStatusEl.style.color = '#2e7d32';

@@ -1,0 +1,51 @@
+name: Notify Telegram on New Products
+
+# منفصل تمامًا عن نشر الموقع (deploy.yaml) — بيشتغل لوحده على سيرفرات
+# GitHub، من غير ما حد يكون فاتح الموقع أو برنامج الأدمن. لو الـ workflow
+# ده فشل لأي سبب، الموقع نفسه مش بيتأثر خالص لأنه ملف منفصل بالكامل.
+on:
+  schedule:
+    # كل ٦ ساعات. عدّل الـ cron ده لو عايز توقيت مختلف — الوقت هنا بتوقيت UTC.
+    - cron: '0 */6 * * *'
+  workflow_dispatch: {} # يسمح بتشغيله يدوي من تبويب Actions لو حبيت تجربه فورًا
+
+permissions:
+  contents: write
+
+concurrency:
+  group: telegram-notify
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build products index
+        run: node scripts/build-index.js
+
+      - name: Notify Telegram of new products
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scripts/telegram-notify.js
+
+      - name: Commit updated sent-products list
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain -- .telegram/sent.json)" ]; then
+            git add .telegram/sent.json
+            git commit -m "chore: تحديث قائمة منتجات تليجرام المُرسلة [skip ci]"
+            git push
+          else
+            echo "مفيش تغيير في .telegram/sent.json — مفيش حاجة نكوميتها."
+          fi

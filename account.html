@@ -309,8 +309,13 @@ document.addEventListener('DOMContentLoaded', async function(){
     // إشعار تليجرام فوري بطلب حذف الحساب — مباشرة من هنا، مش منتظرين
     // Database Webhook. فشل الإشعار (لو حصل) مبيمنعش الطلب من إنه
     // يتسجل ويتفتح للمراجعة.
-    if (window.totaNotifyTelegram) {
-      window.totaNotifyTelegram(client, 'account_delete_requests', 'INSERT', data);
+    if (window.totaNotifyTextTelegram) {
+      var delName = (fd.get('reason') || '').trim();
+      window.totaNotifyTextTelegram(
+        '⚠️ <b>طلب حذف حساب جديد</b>\n' +
+        (delName ? ('📝 السبب: ' + delName + '\n') : '') +
+        'يحتاج مراجعة من برنامج الأدمن.'
+      );
     }
     deleteForm.reset();
     await loadDeleteRequest();

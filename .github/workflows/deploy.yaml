@@ -1,0 +1,75 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build products index
+        run: npm run build
+
+      # بيولّد data/env.json من GitHub Secrets وقت النشر بس — الملف ده
+      # مش موجود في الكود المصدري إطلاقًا، ومن غيره الموقع مبيقدرش
+      # يتصل بـ Supabase خالص (تسجيل الدخول/حساب جديد بيفشلوا برسالة
+      # "الخدمة غير متاحة")، ومبيقدرش يبعت إشعارات الأوردرات لتليجرام
+      # (الموقع بيبعتها مباشرة من المتصفح، من غير أي سيرفر وسيط). لازم
+      # تضيف الأسرار دي في Settings → Secrets and variables → Actions
+      # (تفاصيلها في ENV_SETUP.md)
+      - name: Generate env.json
+        run: |
+          mkdir -p data
+          cat > data/env.json << EOF
+          {
+            "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
+            "SUPABASE_ANON_KEY": "${{ secrets.SUPABASE_ANON_KEY }}",
+            "TURNSTILE_SITE_KEY": "${{ secrets.TURNSTILE_SITE_KEY }}",
+            "TELEGRAM_BOT_TOKEN": "${{ secrets.TELEGRAM_BOT_TOKEN }}",
+            "TELEGRAM_ADMIN_CHAT_IDS": "${{ secrets.TELEGRAM_ADMIN_CHAT_IDS }}"
+          }
+          EOF
+
+      # بيولّد supabase/sync/products_sync.sql من data/products.json،
+      # وبعدين يطبّقه على طول على قاعدة البيانات الحقيقية. من غير
+      # الخطوة دي، جدول public.products في Supabase مبيتحدّثش خالص
+      # مهما نشرت الموقع — ده كان السبب في رسالة "المنتج ده لسه بيتزامن
+      # مع النظام" اللي بتظهر لأي منتج تحاول تضيفه للمفضلة أو تطلبه،
+      # لأن الجدول كان فاضي/قديم من الأساس.
+      - name: Sync products to database
+        run: |
+          node scripts/sync-products.js
+          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ]; then
+            echo "❌ السر SUPABASE_DB_URL مش مضاف في GitHub Secrets — منتجات الموقع مش هتتزامن مع القاعدة."
+            exit 1
+          fi
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          psql "${{ secrets.SUPABASE_DB_URL }}" -v ON_ERROR_STOP=1 -f supabase/sync/products_sync.sql
+          echo "✅ اتزامنت المنتجات مع القاعدة"
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          exclude_assets: '.github,scripts,README.md,package.json,.gitignore,.telegram'
+          force_orphan: true
