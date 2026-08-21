@@ -108,23 +108,18 @@
     return slugs;
   }
 
+  // إضافة للسلة بسيطة وسريعة: من غير ما نطلب رقم هاتف أو أي بيانات
+  // إضافية هنا خالص — ده كله بقى بيحصل في صفحة "السلة" لما المستخدم
+  // يضغط "اطلب الآن" مش وقت الإضافة، عشان تجربة تصفح وشراء سلسة.
   async function addToCart(slug, qty, btn) {
     const client = await getClient();
     if (!client) { toast('تعذر الاتصال بالخدمة الآن، حاول لاحقًا.', 'error'); return; }
     const session = await requireSession(client);
     if (!session) {
-      toast('سجّل دخولك الأول عشان تضيف للعربة');
+      toast('سجّل دخولك الأول عشان تضيف للسلة');
       window.dispatchEvent(new CustomEvent('tota:auth-required'));
       return;
     }
-    // لازم رقم هاتف واتساب مسجّل قبل أي طلب — عشان الأدمن يقدر يتواصل
-    // مع صاحب الأوردر فعليًا. لو مش موجود، بتفتح نافذة صغيرة تطلبه
-    // وترجع تكمل نفس العملية تلقائيًا بعد ما يحفظه.
-    if (!window.totaEnsurePhone) { toast('حصل خطأ غير متوقع، حاول تاني.', 'error'); return; }
-    window.totaEnsurePhone(function () { _addToCartAfterPhone(client, session, slug, qty, btn); });
-  }
-
-  async function _addToCartAfterPhone(client, session, slug, qty, btn) {
     const product = await resolveProduct(client, slug);
     if (!product) { toast('المنتج ده لسه بيتزامن مع النظام، جرب تاني بعد شوية.', 'error'); return; }
     const userId = session.user.id;
@@ -139,68 +134,16 @@
     } else {
       ({ error } = await client.from('cart_items').insert({ user_id: userId, product_id: product.id, quantity: qty }));
     }
-    if (error) {
-      if (btn) btn.disabled = false;
-      toast('تعذر الإضافة للعربة، حاول تاني.', 'error');
-      return;
-    }
-
-    // كل ما حد يضيف منتج للعربة، ده معناه طلب فعلي — فبنسجله كـ "أوردر"
-    // (أو نضيفه لأوردر pending_payment مفتوح بالفعل لنفس المستخدم) عشان
-    // يظهر فورًا في برنامج الأدمن برقم الهاتف وبيانات الحساب.
-    await ensureOrderForCartAdd(client, userId, product, qty);
+    if (btn) btn.disabled = false;
+    if (error) { toast('تعذر الإضافة للسلة، حاول تاني.', 'error'); return; }
 
     if (btn) {
-      btn.disabled = false;
       const original = btn.textContent;
       btn.textContent = 'تمت الإضافة ✓';
       setTimeout(function () { btn.textContent = original; }, 1500);
     }
-    toast('تمام، هيتم التواصل معاك في أقرب وقت ✓', 'success');
-  }
-
-  // بيدوّر على أوردر "لسه ماتدفعش" (pending_payment) مفتوح لنفس المستخدم
-  // ويضيفله المنتج ده، أو ينشئ أوردر جديد لو مفيش. كده كل منتجات العربة
-  // بتتجمع في أوردر واحد بدل ما كل ضغطة تعمل أوردر منفصل.
-  async function ensureOrderForCartAdd(client, userId, product, qty) {
-    try {
-      const { data: openOrder } = await client.from('orders')
-        .select('id').eq('user_id', userId).eq('status', 'pending_payment')
-        .order('created_at', { ascending: false }).limit(1).maybeSingle();
-
-      let orderId = openOrder && openOrder.id;
-      if (!orderId) {
-        const { data: newOrder, error: orderErr } = await client.from('orders')
-          .insert({ user_id: userId, status: 'pending_payment', total: 0 })
-          .select('id').single();
-        if (orderErr || !newOrder) return;
-        orderId = newOrder.id;
-      }
-
-      const unitPrice = product.price != null ? product.price : 0;
-      const { data: existingItem } = await client.from('order_items')
-        .select('id, quantity').eq('order_id', orderId).eq('product_id', product.id).maybeSingle();
-
-      if (existingItem) {
-        await client.from('order_items').update({ quantity: existingItem.quantity + qty }).eq('id', existingItem.id);
-      } else {
-        await client.from('order_items').insert({
-          order_id: orderId,
-          product_id: product.id,
-          product_name_snapshot: product.name,
-          unit_price: unitPrice,
-          quantity: qty
-        });
-      }
-
-      // إعادة حساب الإجمالي من كل عناصر الأوردر عشان يفضل مطابق دايمًا
-      const { data: items } = await client.from('order_items').select('unit_price, quantity').eq('order_id', orderId);
-      const total = (items || []).reduce(function (sum, it) { return sum + (it.unit_price * it.quantity); }, 0);
-      await client.from('orders').update({ total: total }).eq('id', orderId);
-    } catch (e) {
-      // لو فشل تسجيل الأوردر لأي سبب، العربة نفسها لسه اتسجلت بنجاح —
-      // منسيبش المستخدم يشوف رسالة فشل غير حقيقية
-    }
+    window.dispatchEvent(new CustomEvent('tota:cart-updated'));
+    toast('اتضاف للسلة ✓', 'success');
   }
 
   // ملحوظة مهمة: الاستماع هنا لازم يكون في مرحلة الـ capture (المعامل

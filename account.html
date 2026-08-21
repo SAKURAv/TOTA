@@ -63,7 +63,6 @@
       <button type="button" data-acc-tab="profile" class="is-active">الملف الشخصي</button>
       <button type="button" data-acc-tab="orders">أوردراتي</button>
       <button type="button" data-acc-tab="favorites">المفضلة</button>
-      <button type="button" data-acc-tab="cart">عربة الشراء</button>
       <button type="button" data-acc-tab="addresses">عناويني</button>
       <button type="button" data-acc-tab="danger" style="color:#d64545;">حذف الحساب</button>
       <button type="button" id="totaLogoutBtn">تسجيل الخروج</button>
@@ -95,9 +94,10 @@
           <p style="margin-top:14px;"><strong>رقم الهاتف:</strong> <span id="accPhone">—</span>
             <span id="accPhoneMissing" hidden style="display:inline-block; margin-inline-start:8px; padding:2px 10px; border-radius:20px; background:#fff3cd; color:#8a6300; font-size:12.5px;">أضف رقمك</span>
           </p>
-          <form id="accPhoneForm" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-            <input type="tel" name="phone" placeholder="01xxxxxxxxx" pattern="01[0-9]{9}"
-              style="flex:1; min-width:160px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
+          <form id="accPhoneForm" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center;">
+            <span data-phone-country-wrap style="flex:1; min-width:220px;">
+              <input type="tel" name="phone" data-phone-local placeholder="1xxxxxxxxx">
+            </span>
             <button type="submit" class="btn-primary" style="font-size:13px; padding:10px 18px;">حفظ الرقم</button>
           </form>
           <div id="accProfileStatus" style="font-size:12.5px; color:#2e7d32; margin-top:8px;"></div>
@@ -120,14 +120,6 @@
         <div class="acc-card">
           <h2 style="margin-top:0; font-size:18px;">منتجاتي المفضلة</h2>
           <div id="accFavoritesList">جاري التحميل...</div>
-        </div>
-      </section>
-
-      <!-- العربة -->
-      <section class="acc-panel" data-acc-panel="cart">
-        <div class="acc-card">
-          <h2 style="margin-top:0; font-size:18px;">عربة الشراء</h2>
-          <div id="accCartList">جاري التحميل...</div>
         </div>
       </section>
 
@@ -173,9 +165,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="assets/js/env.js?v=20260820-1" defer></script>
 <script src="assets/js/supabase-client.js?v=20260820-1" defer></script>
+<script src="assets/js/country-code.js?v=20260821-1" defer></script>
 <script src="assets/js/config.js?v=20260817-2" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', async function(){
+  if (window.totaScanPhoneInputs) window.totaScanPhoneInputs();
   var client = window.TOTA_SUPABASE || await window.TOTA_SUPABASE_READY;
   if (!client) {
     // فشل الاتصال بـ Supabase (غالبًا data/env.json مش موجود أو ناقص) —
@@ -214,7 +208,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     activateTab(btn.dataset.accTab);
   });
   var initialTab = (location.hash || '').replace('#', '');
-  var validTabs = ['profile', 'orders', 'favorites', 'cart', 'addresses', 'danger'];
+  var validTabs = ['profile', 'orders', 'favorites', 'addresses', 'danger'];
   if (validTabs.includes(initialTab)) activateTab(initialTab);
 
   // ---------------- الملف الشخصي (الاسم + الهاتف) ----------------
@@ -254,12 +248,15 @@ document.addEventListener('DOMContentLoaded', async function(){
 
   document.getElementById('accPhoneForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    var fd = new FormData(e.target);
-    var phone = (fd.get('phone') || '').trim();
-    if (phone && !/^01[0-9]{9}$/.test(phone)) { alert('رقم الهاتف غير صحيح (11 رقم يبدأ بـ 01).'); return; }
-    var { error } = await client.from('profiles').update({ phone: phone }).eq('id', user.id);
+    var localInput = e.target.querySelector('[data-phone-local]');
+    var wrap = localInput.closest('[data-phone-country-wrap]');
+    var countryCode = wrap && wrap._totaCountrySelect ? wrap._totaCountrySelect.value : '+20';
+    var fullPhone = window.totaGetFullPhone ? window.totaGetFullPhone(localInput) : (countryCode + (localInput.value || '').replace(/\D/g,'').replace(/^0+/, ''));
+    if (!fullPhone || fullPhone.length < 6) { alert('رقم الهاتف غير صحيح.'); return; }
+    var { error } = await client.from('profiles').update({ phone: fullPhone, country_code: countryCode }).eq('id', user.id);
     if (error) { alert('تعذر حفظ الرقم، حاول تاني.'); return; }
     e.target.reset();
+    if (window.totaScanPhoneInputs) window.totaScanPhoneInputs();
     await loadProfile();
     flashProfileStatus('تم حفظ الرقم ✓');
   });
@@ -445,35 +442,6 @@ document.addEventListener('DOMContentLoaded', async function(){
     if (!btn) return;
     await client.from('addresses').delete().eq('id', btn.dataset.delAddress).eq('user_id', user.id);
     await loadAddresses();
-  });
-
-  // ---------------- عربة الشراء ----------------
-  var cartListEl = document.getElementById('accCartList');
-  async function loadCart() {
-    var { data: cartItems, error } = await client.from('cart_items')
-      .select('id, quantity, products(id, name, slug, price)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (error || !cartItems || !cartItems.length) {
-      cartListEl.innerHTML = '<p style="color:var(--muted);">العربة فاضية دلوقتي.</p>';
-      return;
-    }
-    cartListEl.innerHTML = cartItems.map(function (item) {
-      var p = item.products;
-      if (!p) return '';
-      return '<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line);">' +
-        '<span><a href="p/' + p.slug + '/">' + p.name + '</a> × ' + item.quantity +
-        (p.price ? (' — ' + (p.price * item.quantity) + ' جنيه') : '') + '</span>' +
-        '<button type="button" data-del-cart="' + item.id + '" style="background:none; border:none; color:#d64545; cursor:pointer;">حذف</button>' +
-        '</div>';
-    }).join('');
-  }
-  await loadCart();
-  cartListEl.addEventListener('click', async function (e) {
-    var btn = e.target.closest('[data-del-cart]');
-    if (!btn) return;
-    await client.from('cart_items').delete().eq('id', btn.dataset.delCart).eq('user_id', user.id);
-    await loadCart();
   });
 
   // ---------------- المفضلة ----------------

@@ -39,7 +39,11 @@
         <form id="totaSignupForm" class="tota-auth-form" hidden>
           <label>الاسم<input type="text" name="full_name" required autocomplete="name"></label>
           <label>البريد الإلكتروني<input type="email" name="email" required autocomplete="email"></label>
-          <label>رقم الهاتف (اختياري)<input type="tel" name="phone" pattern="01[0-9]{9}" placeholder="01xxxxxxxxx" autocomplete="tel"></label>
+          <label>رقم الهاتف (اختياري)
+            <span data-phone-country-wrap>
+              <input type="tel" name="phone" data-phone-local placeholder="1xxxxxxxxx" autocomplete="tel">
+            </span>
+          </label>
           <label>كلمة المرور
             <span class="tota-pass-wrap">
               <input type="password" name="password" required minlength="6" autocomplete="new-password" class="tota-pass-input">
@@ -89,7 +93,11 @@
         <h2 id="totaCompleteProfileTitle" class="tota-modal-title">كمّل بياناتك</h2>
         <p style="color:var(--muted); font-size:14px; margin-top:-6px;">تقدر تضيف رقم هاتفك دلوقتي أو بعدين من صفحة حسابك.</p>
         <form id="totaCompleteProfileForm" class="tota-auth-form">
-          <label>رقم الهاتف (اختياري)<input type="tel" name="phone" pattern="01[0-9]{9}" placeholder="01xxxxxxxxx" autocomplete="tel"></label>
+          <label>رقم الهاتف (اختياري)
+            <span data-phone-country-wrap>
+              <input type="tel" name="phone" data-phone-local placeholder="1xxxxxxxxx" autocomplete="tel">
+            </span>
+          </label>
           <div class="tota-auth-error" data-complete-profile-error hidden></div>
           <div style="display:flex; gap:10px;">
             <button type="submit" class="btn-primary tota-auth-submit">حفظ</button>
@@ -107,7 +115,11 @@
           عشان نقدر نتواصل معاك بخصوص طلبك، لازم تسجّل رقم هاتفك (نفس رقم الواتساب) الأول.
         </p>
         <form id="totaPhoneGateForm" class="tota-auth-form">
-          <label>رقم الهاتف<input type="tel" name="phone" required pattern="01[0-9]{9}" placeholder="01xxxxxxxxx" autocomplete="tel"></label>
+          <label>رقم الهاتف
+            <span data-phone-country-wrap>
+              <input type="tel" name="phone" required data-phone-local placeholder="1xxxxxxxxx" autocomplete="tel">
+            </span>
+          </label>
           <div class="tota-auth-error" data-phone-gate-error hidden></div>
           <button type="submit" class="btn-primary tota-auth-submit">حفظ ومتابعة</button>
         </form>
@@ -174,6 +186,9 @@
 
   async function init() {
     injectModalMarkup();
+    // الفورمز اللي فيها رقم هاتف اتضافت للـ DOM لسه دلوقتي، لازم نطلب
+    // من country-code.js يفحصها ويضيفلها كود الدولة (لو الملف اتحمّل).
+    if (window.totaScanPhoneInputs) window.totaScanPhoneInputs();
 
     document.body.addEventListener('click', function (e) {
       const openBtn = e.target.closest('[data-account-link]');
@@ -295,8 +310,10 @@
       const client = await getClient();
       if (!client) { showError(errEl, 'الخدمة غير متاحة الآن، حاول لاحقًا.'); return; }
       const fd = new FormData(signupForm);
-      const phone = (fd.get('phone') || '').trim();
-      if (phone && !/^01[0-9]{9}$/.test(phone)) { showError(errEl, 'رقم الهاتف غير صحيح (11 رقم يبدأ بـ 01).'); return; }
+      const phoneInput = signupForm.querySelector('[data-phone-local]');
+      const phone = phoneInput && phoneInput.value.trim() ? window.totaGetFullPhone(phoneInput) : '';
+      const phoneDial = phoneInput ? window.totaGetPhoneDial(phoneInput) : '+20';
+      if (phoneInput && phoneInput.value.trim() && phone.length < 8) { showError(errEl, 'رقم الهاتف غير صحيح.'); return; }
 
       // Turnstile اختياري بالكامل: لو مفيش TURNSTILE_SITE_KEY متظبط في
       // GitHub Secrets (data/env.json)، الـ widget أصلاً مش بيتعرض
@@ -339,7 +356,7 @@
         email: fd.get('email'),
         password: fd.get('password'),
         options: {
-          data: { full_name: fd.get('full_name'), phone: phone },
+          data: { full_name: fd.get('full_name'), phone: phone, country_code: phoneDial },
           // بيرجّع المستخدم لنفس صفحة الموقع بعد ما يدوس على لينك التأكيد
           // في إيميله — وبما إن detectSessionInUrl مفعّل في supabase-client.js،
           // هيتسجّل دخوله تلقائيًا فور الرجوع من غير ما يحتاج يفتح شاشة
@@ -406,14 +423,15 @@
       e.preventDefault();
       const errEl = completeProfileForm.querySelector('[data-complete-profile-error]');
       clearError(errEl);
-      const fd = new FormData(completeProfileForm);
-      const phone = (fd.get('phone') || '').trim();
-      if (phone && !/^01[0-9]{9}$/.test(phone)) { showError(errEl, 'رقم الهاتف غير صحيح (11 رقم يبدأ بـ 01).'); return; }
+      const phoneInput = completeProfileForm.querySelector('[data-phone-local]');
+      const phone = phoneInput && phoneInput.value.trim() ? window.totaGetFullPhone(phoneInput) : '';
+      const phoneDial = phoneInput ? window.totaGetPhoneDial(phoneInput) : '+20';
+      if (phoneInput && phoneInput.value.trim() && phone.length < 8) { showError(errEl, 'رقم الهاتف غير صحيح.'); return; }
       const client = await getClient();
       if (client && phone) {
         const { data: sessionData } = await client.auth.getSession();
         if (sessionData.session) {
-          await client.from('profiles').update({ phone: phone }).eq('id', sessionData.session.user.id);
+          await client.from('profiles').update({ phone: phone, country_code: phoneDial }).eq('id', sessionData.session.user.id);
         }
       }
       closeCompleteProfileModal();
@@ -444,16 +462,17 @@
       e.preventDefault();
       const errEl = phoneGateForm.querySelector('[data-phone-gate-error]');
       clearError(errEl);
-      const fd = new FormData(phoneGateForm);
-      const phone = (fd.get('phone') || '').trim();
-      if (!/^01[0-9]{9}$/.test(phone)) { showError(errEl, 'رقم الهاتف غير صحيح (11 رقم يبدأ بـ 01).'); return; }
+      const phoneInput = phoneGateForm.querySelector('[data-phone-local]');
+      const phone = phoneInput ? window.totaGetFullPhone(phoneInput) : '';
+      const phoneDial = phoneInput ? window.totaGetPhoneDial(phoneInput) : '+20';
+      if (!phoneInput || !phoneInput.value.trim() || phone.length < 8) { showError(errEl, 'رقم الهاتف غير صحيح.'); return; }
       const client = await getClient();
       if (!client) { showError(errEl, 'الخدمة غير متاحة الآن، حاول لاحقًا.'); return; }
       const { data: sessionData } = await client.auth.getSession();
       if (!sessionData.session) { showError(errEl, 'محتاج تسجّل دخولك الأول.'); return; }
       const btn = phoneGateForm.querySelector('.tota-auth-submit');
       btn.disabled = true;
-      const { error } = await client.from('profiles').update({ phone: phone }).eq('id', sessionData.session.user.id);
+      const { error } = await client.from('profiles').update({ phone: phone, country_code: phoneDial }).eq('id', sessionData.session.user.id);
       btn.disabled = false;
       if (error) { showError(errEl, 'تعذر حفظ الرقم، حاول تاني.'); return; }
       const cb = pendingPhoneCallback;
