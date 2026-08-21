@@ -15,6 +15,91 @@
     const user = session.user;
     document.getElementById('cartBody').hidden = false;
 
+    // ---------------- تابات "السلة" / "أوردراتي" ----------------
+    const tabsEl = document.getElementById('cartTabs');
+    const ordersPanelEl = document.getElementById('cartOrders');
+    const cartBodyEl = document.getElementById('cartBody');
+    tabsEl.hidden = false;
+    let ordersLoaded = false;
+    function switchCartTab(tab) {
+      tabsEl.querySelectorAll('[data-cart-tab]').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-cart-tab') === tab);
+      });
+      if (tab === 'orders') {
+        cartBodyEl.hidden = true;
+        ordersPanelEl.hidden = false;
+        if (!ordersLoaded) { ordersLoaded = true; loadMyOrders(); }
+      } else {
+        cartBodyEl.hidden = false;
+        ordersPanelEl.hidden = true;
+      }
+    }
+    tabsEl.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-cart-tab]');
+      if (btn) switchCartTab(btn.getAttribute('data-cart-tab'));
+    });
+
+    const ORDER_STATUS_LABELS = {
+      placed: 'اتبعت',
+      pending_payment: 'لسه ما اتدفعش',
+      paid: 'تم الدفع',
+      shipped: 'تم الشحن',
+      delivered: 'تم التوصيل',
+      cancelled: 'ملغي',
+      issue: 'فيه مشكلة'
+    };
+    function orderStatusClass(status) {
+      if (status === 'delivered') return 'is-done';
+      if (status === 'cancelled' || status === 'issue') return 'is-cancelled';
+      return 'is-progress';
+    }
+    async function loadMyOrders() {
+      const pendingEl = document.getElementById('cartOrdersPending');
+      const doneEl = document.getElementById('cartOrdersDone');
+      const { data: orders, error } = await client.from('orders')
+        .select('id, status, delivery_status, total, created_at, order_items(id, product_name_snapshot, unit_price, quantity)')
+        .eq('user_id', user.id)
+        .neq('status', 'pending_payment')
+        .order('created_at', { ascending: false });
+      if (error || !orders || !orders.length) {
+        pendingEl.innerHTML = '<p style="color:var(--muted);">مفيش أوردرات لسه.</p>';
+        doneEl.innerHTML = '';
+        return;
+      }
+      function renderOrder(o) {
+        const itemsHtml = (o.order_items || []).map(function (it) {
+          return '<li>' + it.product_name_snapshot + ' × ' + it.quantity + ' — ' + it.unit_price + ' ج.م</li>';
+        }).join('');
+        const statusKey = o.delivery_status === 'delivered' ? 'delivered' : o.status;
+        const label = ORDER_STATUS_LABELS[statusKey] || statusKey;
+        return '<div class="orders-list-item">' +
+          '<div class="orders-list-head">' +
+          '<strong>أوردر #' + o.id.slice(0, 8) + '</strong>' +
+          '<span class="orders-status-badge ' + orderStatusClass(statusKey) + '">' + label + '</span></div>' +
+          '<ul class="orders-list-items">' + itemsHtml + '</ul>' +
+          '<div class="orders-list-total">الإجمالي: ' + o.total + ' ج.م</div>' +
+          '</div>';
+      }
+      const isDone = function (o) { return o.status === 'delivered' || o.delivery_status === 'delivered' || o.status === 'cancelled'; };
+      const pending = orders.filter(function (o) { return !isDone(o); });
+      const done = orders.filter(isDone);
+      pendingEl.innerHTML = pending.length ? pending.map(renderOrder).join('') : '<p style="color:var(--muted);">مفيش أوردرات لسه ما وصلتش.</p>';
+      doneEl.innerHTML = done.length ? done.map(renderOrder).join('') : '<p style="color:var(--muted);">مفيش أوردرات مكتملة لسه.</p>';
+    }
+
+    // ---------------- رسالة تأكيد الطلب ----------------
+    const confirmOverlay = document.getElementById('orderConfirmOverlay');
+    document.getElementById('orderConfirmCloseBtn').addEventListener('click', function () {
+      confirmOverlay.classList.remove('open');
+    });
+    document.getElementById('orderConfirmViewOrdersBtn').addEventListener('click', function () {
+      confirmOverlay.classList.remove('open');
+      switchCartTab('orders');
+      ordersLoaded = false;
+      loadMyOrders();
+      ordersLoaded = true;
+    });
+
     // بيانات المنتجات الثابتة (اسم/صورة/سعر) عشان نعرضها جنب كل سطر في
     // السلة — المصدر الحقيقي للسعر وقت الطلب هو دايمًا جدول products في
     // Supabase (بيتقرا هنا مباشرة)، والملف ده بس للصورة والعرض.
@@ -239,10 +324,13 @@
         await client.from('cart_items').delete().eq('user_id', user.id);
 
         submitStatusEl.style.color = '#2e7d32';
-        submitStatusEl.textContent = 'تم إرسال طلبك بنجاح ✓ هنتواصل معاك قريب.';
+        submitStatusEl.textContent = 'تم إرسال طلبك بنجاح ✓';
         cartRows = [];
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
+        // رسالة تأكيد واضحة تفتح للمستخدم بعد الطلب مباشرة
+        confirmOverlay.classList.add('open');
+        ordersLoaded = false;
       } catch (e) {
         submitStatusEl.style.color = '#d64545';
         submitStatusEl.textContent = 'حصل خطأ وإحنا بنبعت الطلب، حاول تاني.';

@@ -45,6 +45,34 @@
   .cart-add-addr-form{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
   .cart-add-addr-form input, .cart-add-addr-form textarea{padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:inherit;}
   .cart-link-btn{background:none; border:none; color:var(--accent-dark); font-weight:700; cursor:pointer; font-size:13.5px; padding:0;}
+  .cart-tabs{display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--line);}
+  .cart-tab{background:none; border:none; padding:10px 4px; margin-inline-end:22px; font-weight:700; font-size:15px; color:var(--muted); cursor:pointer; position:relative; top:1px;}
+  .cart-tab.is-active{color:var(--ink); border-bottom:2px solid var(--accent);}
+  .orders-list-item{padding:14px 0; border-bottom:1px solid var(--line);}
+  .orders-list-item:last-child{border-bottom:none;}
+  .orders-list-head{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .orders-status-badge{padding:3px 12px; border-radius:20px; font-size:12px; font-weight:700; white-space:nowrap; background:var(--paper); border:1px solid var(--line);}
+  .orders-status-badge.is-done{background:#e6f4ea; color:#2e7d32; border-color:#c5e6cd;}
+  .orders-status-badge.is-progress{background:#fff3cd; color:#8a6300; border-color:#f0e0a6;}
+  .orders-status-badge.is-cancelled{background:#fbe4e4; color:#b23b3b; border-color:#f2c6c6;}
+  .orders-list-items{margin:8px 0 4px; padding-inline-start:18px; color:var(--muted); font-size:13.5px;}
+  .orders-list-total{font-size:13px; color:var(--muted);}
+  /* ===== رسالة تأكيد الطلب ===== */
+  .order-confirm-overlay{
+    position:fixed; inset:0; z-index:1200; background:var(--scrim); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    opacity:0; pointer-events:none; transition:opacity .3s var(--ease);
+  }
+  .order-confirm-overlay.open{opacity:1; pointer-events:auto;}
+  .order-confirm-card{
+    width:min(380px,100%); background:var(--paper); border-radius:22px; padding:32px 26px; text-align:center;
+    transform:scale(.94); transition:transform .35s var(--ease);
+  }
+  .order-confirm-overlay.open .order-confirm-card{transform:scale(1);}
+  .order-confirm-icon{width:58px; height:58px; border-radius:50%; background:#e6f4ea; color:#2e7d32; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:28px;}
+  .order-confirm-card h3{font-family:'Baloo Bhaijaan 2'; margin:0 0 8px;}
+  .order-confirm-card p{color:var(--muted); font-size:14.5px; margin:0 0 22px; line-height:1.6;}
+  .order-confirm-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
 </style>
 </head>
 <body>
@@ -90,6 +118,11 @@
 <main class="cart-wrap">
   <h1 class="cart-title">السلة</h1>
 
+  <div class="cart-tabs" id="cartTabs" hidden>
+    <button type="button" class="cart-tab is-active" data-cart-tab="cart">السلة</button>
+    <button type="button" class="cart-tab" data-cart-tab="orders">أوردراتي</button>
+  </div>
+
   <div id="cartGuest" hidden>
     <p>سجّل دخولك أو اعمل حساب جديد عشان تقدر تشوف سلتك وتطلب.</p>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -133,7 +166,29 @@
       </section>
     </div>
   </div>
+
+  <!-- صفحة "أوردراتي": نفس البيانات اللي في حسابي > أوردراتي، بس
+       متاحة كمان هنا كتاب ثاني جنب السلة نفسها -->
+  <div id="cartOrders" hidden>
+    <h3 style="font-size:14px; color:var(--muted); margin-bottom:8px;">لسه ما وصلتش</h3>
+    <div id="cartOrdersPending">جاري التحميل...</div>
+    <h3 style="font-size:14px; color:var(--muted); margin:20px 0 8px;">مكتملة</h3>
+    <div id="cartOrdersDone"></div>
+  </div>
 </main>
+
+<!-- رسالة تأكيد بعد "اطلب الآن" -->
+<div class="order-confirm-overlay" id="orderConfirmOverlay">
+  <div class="order-confirm-card">
+    <div class="order-confirm-icon">✓</div>
+    <h3>تم استلام طلبك!</h3>
+    <p>هيتم التواصل معاك في أقرب وقت لتأكيد الطلب والتوصيل.</p>
+    <div class="order-confirm-actions">
+      <button type="button" class="btn-primary" id="orderConfirmCloseBtn">تمام</button>
+      <button type="button" class="btn-ghost" id="orderConfirmViewOrdersBtn">أوردراتي</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
