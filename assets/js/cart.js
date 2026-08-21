@@ -355,7 +355,7 @@
           delivery_status: 'not_shipped',
           note: note || null,
           country_code: countryCode
-        }).select('id').single();
+        }).select().single();
         if (orderErr || !order) throw orderErr || new Error('order insert failed');
 
         const itemsPayload = cartRows.map(function (r) {
@@ -371,6 +371,13 @@
         if (itemsErr) throw itemsErr;
 
         await client.from('cart_items').delete().eq('user_id', user.id);
+
+        // إشعار تليجرام فوري بالأوردر الجديد — مباشرة من هنا، مش
+        // منتظرين Database Webhook. فشل الإشعار (لو حصل) متعمّد إنه
+        // ميوقفش أو يفشّل عملية الطلب نفسها.
+        if (window.totaNotifyTelegram) {
+          window.totaNotifyTelegram(client, 'orders', 'INSERT', order);
+        }
 
         submitStatusEl.style.color = '#2e7d32';
         submitStatusEl.textContent = 'تم إرسال طلبك بنجاح ✓';

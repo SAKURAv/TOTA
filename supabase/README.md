@@ -20,7 +20,12 @@ Migrations → Run workflow**.
 
 ## تنبيهات تليجرام فورية للأدمن (خاص، مش جروب)
 عشان توصلك رسالة في الخاص على تليجرام لحظة ما يحصل أي حدث مهم
-(أوردر جديد، منتج اتضاف لعربة موجودة، طلب حذف حساب، حساب جديد اتسجل):
+(أوردر جديد، أوردر اتسلّم، طلب حذف حساب)، الموقع والبرنامج بيستدعوا
+الـ Edge Function `notify-telegram` **مباشرة** بعد كل عملية ناجحة —
+مش عن طريق Database Webhook (كان فيه مشكلة إعداد من ناحية Supabase
+منعت سكيما `supabase_functions` من الظهور في المشروع، فالـ Webhook
+كان بيفشل يتعمل خالص). الاستدعاء المباشر ده مش محتاج السكيما دي أو
+أي حاجة تانية غير إن الفنكشن منشورة وشغالة عادي.
 
 1. اعمل بوت جديد من [@BotFather](https://t.me/BotFather) بالأمر `/newbot`
    وهياديك **TELEGRAM_BOT_TOKEN**.
@@ -29,31 +34,27 @@ Migrations → Run workflow**.
    `<TOKEN>`):
    `https://api.telegram.org/bot<TOKEN>/getUpdates`
    هتلاقي رقم جوه `"chat":{"id": ...}` — ده هو **TELEGRAM_ADMIN_CHAT_ID**.
-3. سجّل الاثنين كـ secrets للـ Edge Function (من الطرفية، بعد
-   `supabase login` و `supabase link`):
+   كرر الخطوة دي لكل أدمن تاني عايز يستقبل الإشعارات.
+3. سجّل القيم دي كـ Secrets للـ Edge Function — إما من لوحة التحكم
+   (Edge Functions → Secrets)، أو من الطرفية بعد `supabase login` و
+   `supabase link`:
    ```bash
-   supabase secrets set TELEGRAM_BOT_TOKEN=xxxxx TELEGRAM_ADMIN_CHAT_ID=xxxxx
+   supabase secrets set TELEGRAM_BOT_TOKEN=xxxxx TELEGRAM_ADMIN_CHAT_IDS=id1,id2
    supabase functions deploy notify-telegram
    ```
-4. من لوحة تحكم المشروع: **Database → Webhooks → Create a new hook**،
-   واعمل webhook منفصل لكل جدول، ووجّه كل واحد لـ Edge Function اللي
-   اسمها `notify-telegram`:
-   - `orders` → **⚠️ لازم تفعّل Insert و Update مع بعض** (مش Insert
-     بس): الـ Insert هو رسالة "أوردر جديد"، والـ Update هو اللي بيبعت
-     رسالة "تم تسليم الأوردر" لما الأدمن يعلّم الأوردر إنه اتوصّل —
-     لو الـ webhook متظبط على Insert بس، رسالة "تم التوصيل" مستحيل
-     توصل تليجرام أبدًا مهما كان الكود صح، لأن الفنكشن أصلاً مش
-     هيتنادى وقت الـ Update.
-   - `order_items` → Insert بس
-   - `account_delete_requests` → Insert بس
-   - `profiles` → Insert بس
+   لو أدمن واحد بس، ممكن تستخدم `TELEGRAM_ADMIN_CHAT_ID` (من غير S)
+   بدلاً من `TELEGRAM_ADMIN_CHAT_IDS`.
 
-   ملحوظة: لو الرسايل لسه مش وصلة بعد التأكد من الخطوة دي، تأكد كمان
-   إن الـ webhook حالته Enabled مش Disabled، وإن الـ secrets في خطوة
-   3 اتظبطت صح (`supabase secrets list` يوريك أسماءها بس مش قيمها)،
-   وشوف Function Logs (Dashboard → Edge Functions → notify-telegram
-   → Logs) لتفاصيل أي خطأ فعلي وقت الإرسال.
+مفيش أي خطوة تانية مطلوبة في Database → Webhooks — الاستدعاء بيحصل
+من كود الموقع (`assets/js/telegram-notify.js`) وكود البرنامج
+(`SupabaseService.notifyTelegramEvent`) نفسهم مباشرة.
 
-بعد كده أي حدث من دول هيوصلك في الخاص على تليجرام فورًا، من غير ما
-تحتاج تفتح برنامج الأدمن أو الموقع خالص. الرسائل بتتبعت من قاعدة
-البيانات مباشرة، فهتوصل حتى لو الزائر قفل المتصفح فورًا بعد الإجراء.
+لو الرسايل لسه مش وصلة بعد التأكد من الـ Secrets:
+- تأكد إنك (وأي أدمن تاني في القايمة) بدأت محادثة مع البوت شخصيًا
+  أولاً — تليجرام مش بيسمح لبوت يبعت لشخص لسه ما بدأش معاه محادثة.
+- شوف Function Logs (Dashboard → Edge Functions → notify-telegram
+  → Logs) لتفاصيل أي خطأ فعلي وقت الإرسال.
+- تأكد إن الفنكشن نفسها منشورة وشغالة (Edge Functions → notify-telegram
+  لازم تكون ظاهرة في القايمة، زي أي فنكشن تانية).
+
+بعد كده أي حدث من دول هيوصلك في الخاص على تليجرام فورًا.

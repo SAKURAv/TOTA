@@ -166,6 +166,7 @@
 <script src="assets/js/env.js?v=20260820-1" defer></script>
 <script src="assets/js/supabase-client.js?v=20260820-1" defer></script>
 <script src="assets/js/country-code.js?v=20260821-1" defer></script>
+<script src="assets/js/telegram-notify.js?v=20260821-1" defer></script>
 <script src="assets/js/config.js?v=20260817-2" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', async function(){
@@ -299,12 +300,18 @@ document.addEventListener('DOMContentLoaded', async function(){
     var fd = new FormData(deleteForm);
     var btn = deleteForm.querySelector('button[type="submit"]');
     btn.disabled = true;
-    var { error } = await client.from('account_delete_requests').insert({
+    var { data: data, error: error } = await client.from('account_delete_requests').insert({
       user_id: user.id,
       reason: (fd.get('reason') || '').trim() || null
-    });
+    }).select().single();
     btn.disabled = false;
     if (error) { alert('تعذر إرسال الطلب، حاول تاني.'); return; }
+    // إشعار تليجرام فوري بطلب حذف الحساب — مباشرة من هنا، مش منتظرين
+    // Database Webhook. فشل الإشعار (لو حصل) مبيمنعش الطلب من إنه
+    // يتسجل ويتفتح للمراجعة.
+    if (window.totaNotifyTelegram) {
+      window.totaNotifyTelegram(client, 'account_delete_requests', 'INSERT', data);
+    }
     deleteForm.reset();
     await loadDeleteRequest();
   });
