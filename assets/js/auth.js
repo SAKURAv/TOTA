@@ -311,7 +311,13 @@
       if (!client) { showError(errEl, 'الخدمة غير متاحة الآن، حاول لاحقًا.'); return; }
       const fd = new FormData(signupForm);
       const phoneInput = signupForm.querySelector('[data-phone-local]');
+      // ملحوظة: بنستخدم الرقم الكامل (كود الدولة + محلي) للتحقق من الطول
+      // بس، أما اللي بيتخزن في profiles.phone فلازم يكون محلي فقط (زي
+      // ما بيحصل في الجست/guest checkout)، عشان country_code بيتخزن
+      // لوحده أصلاً — تخزين الاتنين مع بعض كان بيسبب تكرار كود الدولة
+      // مرتين وقت إرسال إشعار الأوردر (تليجرام/واتساب).
       const phone = phoneInput && phoneInput.value.trim() ? window.totaGetFullPhone(phoneInput) : '';
+      const phoneLocal = phoneInput ? phoneInput.value.trim().replace(/\D/g, '').replace(/^0+/, '') : '';
       const phoneDial = phoneInput ? window.totaGetPhoneDial(phoneInput) : '+20';
       if (phoneInput && phoneInput.value.trim() && phone.length < 8) { showError(errEl, 'رقم الهاتف غير صحيح.'); return; }
 
@@ -356,7 +362,7 @@
         email: fd.get('email'),
         password: fd.get('password'),
         options: {
-          data: { full_name: fd.get('full_name'), phone: phone, country_code: phoneDial },
+          data: { full_name: fd.get('full_name'), phone: phoneLocal, country_code: phoneDial },
           // بيرجّع المستخدم لنفس صفحة الموقع بعد ما يدوس على لينك التأكيد
           // في إيميله — وبما إن detectSessionInUrl مفعّل في supabase-client.js،
           // هيتسجّل دخوله تلقائيًا فور الرجوع من غير ما يحتاج يفتح شاشة
@@ -425,13 +431,14 @@
       clearError(errEl);
       const phoneInput = completeProfileForm.querySelector('[data-phone-local]');
       const phone = phoneInput && phoneInput.value.trim() ? window.totaGetFullPhone(phoneInput) : '';
+      const phoneLocal = phoneInput ? phoneInput.value.trim().replace(/\D/g, '').replace(/^0+/, '') : '';
       const phoneDial = phoneInput ? window.totaGetPhoneDial(phoneInput) : '+20';
       if (phoneInput && phoneInput.value.trim() && phone.length < 8) { showError(errEl, 'رقم الهاتف غير صحيح.'); return; }
       const client = await getClient();
       if (client && phone) {
         const { data: sessionData } = await client.auth.getSession();
         if (sessionData.session) {
-          await client.from('profiles').update({ phone: phone, country_code: phoneDial }).eq('id', sessionData.session.user.id);
+          await client.from('profiles').update({ phone: phoneLocal, country_code: phoneDial }).eq('id', sessionData.session.user.id);
         }
       }
       closeCompleteProfileModal();
@@ -464,6 +471,7 @@
       clearError(errEl);
       const phoneInput = phoneGateForm.querySelector('[data-phone-local]');
       const phone = phoneInput ? window.totaGetFullPhone(phoneInput) : '';
+      const phoneLocal = phoneInput ? phoneInput.value.trim().replace(/\D/g, '').replace(/^0+/, '') : '';
       const phoneDial = phoneInput ? window.totaGetPhoneDial(phoneInput) : '+20';
       if (!phoneInput || !phoneInput.value.trim() || phone.length < 8) { showError(errEl, 'رقم الهاتف غير صحيح.'); return; }
       const client = await getClient();
@@ -472,7 +480,7 @@
       if (!sessionData.session) { showError(errEl, 'محتاج تسجّل دخولك الأول.'); return; }
       const btn = phoneGateForm.querySelector('.tota-auth-submit');
       btn.disabled = true;
-      const { error } = await client.from('profiles').update({ phone: phone, country_code: phoneDial }).eq('id', sessionData.session.user.id);
+      const { error } = await client.from('profiles').update({ phone: phoneLocal, country_code: phoneDial }).eq('id', sessionData.session.user.id);
       btn.disabled = false;
       if (error) { showError(errEl, 'تعذر حفظ الرقم، حاول تاني.'); return; }
       const cb = pendingPhoneCallback;

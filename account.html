@@ -215,11 +215,14 @@ document.addEventListener('DOMContentLoaded', async function(){
   // ---------------- الملف الشخصي (الاسم + الهاتف) ----------------
   var profileRow = null;
   async function loadProfile() {
-    var { data: profile } = await client.from('profiles').select('full_name, phone, avatar_path').eq('id', user.id).single();
+    var { data: profile } = await client.from('profiles').select('full_name, phone, country_code, avatar_path').eq('id', user.id).single();
     profileRow = profile;
     if (profile) {
       document.getElementById('accFullNameInput').value = profile.full_name || '';
-      document.getElementById('accPhone').textContent = profile.phone || '—';
+      // ملحوظة: profile.phone بيتخزن دلوقتي محلي بس (من غير كود الدولة)،
+      // فلازم نضيف country_code هنا عشان العرض يفضل صحيح ومتوافق مع
+      // إصلاح مشكلة تكرار كود الدولة في إشعارات الأوردر.
+      document.getElementById('accPhone').textContent = profile.phone ? ((profile.country_code || '+20') + profile.phone) : '—';
       document.getElementById('accPhoneMissing').hidden = !!profile.phone;
       var img = document.getElementById('accAvatarImg');
       if (profile.avatar_path) {
