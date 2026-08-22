@@ -21,6 +21,8 @@
     if (session) {
       const { data: items } = await client.from('cart_items').select('quantity').eq('user_id', session.user.id);
       count = (items || []).reduce(function (sum, it) { return sum + (it.quantity || 0); }, 0);
+    } else if (window.TotaGuest) {
+      count = window.TotaGuest.cartCount();
     }
     badges.forEach(function (b) {
       if (count > 0) { b.textContent = count > 99 ? '99+' : String(count); b.hidden = false; }

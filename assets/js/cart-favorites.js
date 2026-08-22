@@ -51,8 +51,18 @@
     if (!client) { toast('تعذر الاتصال بالخدمة الآن، حاول لاحقًا.', 'error'); return; }
     const session = await requireSession(client);
     if (!session) {
-      toast('سجّل دخولك الأول عشان تضيف للمفضلة');
-      window.dispatchEvent(new CustomEvent('tota:auth-required'));
+      // زائر بدون حساب: تخزين محلي بالكامل في المتصفح (localStorage)،
+      // من غير ما نطلب تسجيل دخول خالص.
+      if (!window.TotaGuest) return;
+      const added = window.TotaGuest.toggleFavorite(slug);
+      if (btn) {
+        btn.classList.toggle('is-favorited', added);
+        btn.textContent = added
+          ? btn.textContent.replace('♡', '♥').replace('أضف للمفضلة', 'في المفضلة')
+          : btn.textContent.replace('♥', '♡').replace('في المفضلة', 'أضف للمفضلة');
+      }
+      toast(added ? 'اتضاف للمفضلة ✓' : 'اتشال من المفضلة', added ? 'success' : undefined);
+      window.dispatchEvent(new CustomEvent('tota:favorite-updated'));
       return;
     }
     const productId = await resolveProductId(client, slug);
@@ -82,7 +92,7 @@
     const client = await getClient();
     if (!client) return false;
     const session = await requireSession(client);
-    if (!session) return false;
+    if (!session) return window.TotaGuest ? window.TotaGuest.isFavorite(slug) : false;
     const productId = await resolveProductId(client, slug);
     if (!productId) return false;
     const { data } = await client.from('favorites')
@@ -97,7 +107,7 @@
     const client = await getClient();
     if (!client) return new Set();
     const session = await requireSession(client);
-    if (!session) return new Set();
+    if (!session) return window.TotaGuest ? new Set(window.TotaGuest.getFavorites()) : new Set();
     const { data, error } = await client.from('favorites')
       .select('products(slug)').eq('user_id', session.user.id);
     if (error || !data) return new Set();
@@ -116,8 +126,17 @@
     if (!client) { toast('تعذر الاتصال بالخدمة الآن، حاول لاحقًا.', 'error'); return; }
     const session = await requireSession(client);
     if (!session) {
-      toast('سجّل دخولك الأول عشان تضيف للسلة');
-      window.dispatchEvent(new CustomEvent('tota:auth-required'));
+      // زائر بدون حساب: تخزين محلي في المتصفح، وبيتحول لأوردر حقيقي
+      // بس وقت "اطلب الآن" من صفحة السلة (وقتها هيتطلب رقم تليفون).
+      if (!window.TotaGuest) return;
+      window.TotaGuest.addToCart(slug, qty);
+      if (btn) {
+        const original = btn.textContent;
+        btn.textContent = 'تمت الإضافة ✓';
+        setTimeout(function () { btn.textContent = original; }, 1500);
+      }
+      window.dispatchEvent(new CustomEvent('tota:cart-updated'));
+      toast('اتضاف للسلة ✓', 'success');
       return;
     }
     const product = await resolveProduct(client, slug);

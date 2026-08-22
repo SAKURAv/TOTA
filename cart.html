@@ -134,14 +134,6 @@
     <button type="button" class="cart-tab" data-cart-tab="orders">أوردراتي</button>
   </div>
 
-  <div id="cartGuest" hidden>
-    <p>سجّل دخولك أو اعمل حساب جديد عشان تقدر تشوف سلتك وتطلب.</p>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <a href="#" data-account-link data-open-tab="login" class="btn-primary">تسجيل الدخول</a>
-      <a href="#" data-account-link data-open-tab="signup" class="btn-ghost">إنشاء حساب</a>
-    </div>
-  </div>
-
   <div id="cartBody" hidden>
     <div id="cartItemsList"></div>
     <div id="cartEmpty" class="cart-empty" hidden>
@@ -150,7 +142,7 @@
     </div>
 
     <div id="cartCheckoutArea" hidden>
-      <section class="cart-section">
+      <section class="cart-section" id="cartAddressSection">
         <h2>عنوان التوصيل</h2>
         <div id="cartAddressList"></div>
         <button type="button" class="cart-link-btn" id="cartShowAddAddress" style="margin-top:10px;">+ إضافة عنوان جديد</button>
@@ -160,6 +152,22 @@
           <input type="text" name="city" placeholder="المدينة">
           <button type="submit" class="btn-primary" style="align-self:flex-start; font-size:13px; padding:9px 16px;">حفظ العنوان</button>
         </form>
+      </section>
+
+      <!-- بيانات الطلب لزائر من غير حساب: اسم (اختياري) + رقم هاتف
+           (إجباري قبل تأكيد الطلب) + عنوان التوصيل نصيًا. مفيش أي حفظ
+           لحساب — البيانات دي بتتبعت مع الأوردر بس، وبتتخزن محليًا في
+           المتصفح (localStorage) عشان تتعبى تلقائي في المرة الجاية. -->
+      <section class="cart-section" id="cartGuestFieldsSection" hidden>
+        <h2>بياناتك للتوصيل</h2>
+        <div class="cart-add-addr-form">
+          <input type="text" id="cartGuestName" placeholder="الاسم (اختياري)">
+          <span data-phone-country-wrap>
+            <input type="tel" id="cartGuestPhone" data-phone-local placeholder="رقم الهاتف *" required>
+          </span>
+          <textarea id="cartGuestAddress" placeholder="العنوان بالتفصيل *" required rows="2"></textarea>
+        </div>
+        <p style="font-size:12.5px; color:var(--muted); margin:8px 0 0;">لازم تكتب رقم هاتفك عشان نقدر نأكّد الطلب معاك.</p>
       </section>
 
       <section class="cart-section cart-note">
@@ -215,10 +223,11 @@
 <script src="assets/js/country-code.js?v=20260821-1" defer></script>
 <script src="assets/js/auth.js?v=20260820-1" defer></script>
 <script src="assets/js/telegram-notify.js?v=20260821-1" defer></script>
-<script src="assets/js/cart-favorites.js?v=20260821-1" defer></script>
-<script src="assets/js/cart-badge.js?v=20260821-1" defer></script>
+<script src="assets/js/guest-store.js?v=20260822-1" defer></script>
+<script src="assets/js/cart-favorites.js?v=20260822-1" defer></script>
+<script src="assets/js/cart-badge.js?v=20260822-1" defer></script>
 <script src="assets/js/config.js?v=20260817-2" defer></script>
 <script src="assets/js/shared.js?v=20260817-2" defer></script>
-<script src="assets/js/cart.js?v=20260821-3" defer></script>
+<script src="assets/js/cart.js?v=20260822-1" defer></script>
 </body>
 </html>
