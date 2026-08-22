@@ -36,6 +36,12 @@ jobs:
       # (الموقع بيبعتها مباشرة من المتصفح، من غير أي سيرفر وسيط). لازم
       # تضيف الأسرار دي في Settings → Secrets and variables → Actions
       # (تفاصيلها في ENV_SETUP.md)
+      #
+      # ⚠️ TELEGRAM_SITE_BOT_TOKEN مقصود إنه سر منفصل عن TELEGRAM_BOT_TOKEN
+      # المستخدم في telegram-notify.yaml (إعلان منتج جديد في الجروب) —
+      # عشان التوكن ده هيكون ظاهر في كود الموقع لأي زائر (شوف الشرح في
+      # ENV_SETUP.md)، فلو احتجت تعمل /revoke له يوم ما، ده مش هيأثر
+      # على بوت إعلانات المنتجات خالص لأنهم بوتان مختلفان تمامًا.
       - name: Generate env.json
         run: |
           mkdir -p data
@@ -44,7 +50,7 @@ jobs:
             "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
             "SUPABASE_ANON_KEY": "${{ secrets.SUPABASE_ANON_KEY }}",
             "TURNSTILE_SITE_KEY": "${{ secrets.TURNSTILE_SITE_KEY }}",
-            "TELEGRAM_BOT_TOKEN": "${{ secrets.TELEGRAM_BOT_TOKEN }}",
+            "TELEGRAM_SITE_BOT_TOKEN": "${{ secrets.TELEGRAM_SITE_BOT_TOKEN }}",
             "TELEGRAM_ADMIN_CHAT_IDS": "${{ secrets.TELEGRAM_ADMIN_CHAT_IDS }}"
           }
           EOF

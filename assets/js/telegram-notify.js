@@ -3,14 +3,17 @@
 //  Telegram Bot API (بدون أي وسيط سيرفر/Edge Function/Webhook).
 //
 //  التوكن وأرقام شات الأدمن بييجوا من data/env.json، اللي بيتولّد
-//  وقت النشر من GitHub Secrets (TELEGRAM_BOT_TOKEN,
+//  وقت النشر من GitHub Secrets (TELEGRAM_SITE_BOT_TOKEN,
 //  TELEGRAM_ADMIN_CHAT_IDS) بنفس آلية SUPABASE_URL/ANON_KEY الحالية
 //  (شوف assets/js/env.js). ده معناه إن التوكن هيكون موجود في كود
 //  الموقع المنشور (عادي وظاهر لأي حد يفتح devtools) — ده الثمن
-//  الحتمي إن الموقع يبعت لتليجرام من غير أي سيرفر وسيط. لتقليل
-//  المخاطرة: اعمل بوت مخصص للموقع بس (منفصل عن أي استخدام تاني)،
-//  ولو حسيت إن حد بيسيء استخدامه اعمل /revoke من BotFather وحط
-//  توكن جديد في GitHub Secrets وانشر تاني.
+//  الحتمي إن الموقع يبعت لتليجرام من غير أي سيرفر وسيط.
+//
+//  TELEGRAM_SITE_BOT_TOKEN ده لازم يكون بوت منفصل تمامًا عن
+//  TELEGRAM_BOT_TOKEN المستخدم في .github/workflows/telegram-notify.yaml
+//  (إعلان منتج جديد في جروب تليجرام) — عشان لو احتجت تعمل /revoke
+//  لتوكن الموقع (المتوقع حصوله يوم ما بسبب ظهوره في المتصفح)، بوت
+//  إعلانات المنتجات يفضل شغال عادي من غير أي تأثير. راجع ENV_SETUP.md.
 // ============================================================
 (function () {
   'use strict';
@@ -48,7 +51,7 @@
   window.totaNotifyTextTelegram = async function (text) {
     try {
       const env = await getEnv();
-      const token = env.TELEGRAM_BOT_TOKEN;
+      const token = env.TELEGRAM_SITE_BOT_TOKEN;
       const adminIds = env.TELEGRAM_ADMIN_CHAT_IDS;
       if (!token || !adminIds) return;
       await sendToAdmins(token, adminIds, text);
@@ -64,10 +67,10 @@
   window.totaNotifyOrderTelegram = async function (order) {
     try {
       const env = await getEnv();
-      const token = env.TELEGRAM_BOT_TOKEN;
+      const token = env.TELEGRAM_SITE_BOT_TOKEN;
       const adminIds = env.TELEGRAM_ADMIN_CHAT_IDS;
       if (!token || !adminIds) {
-        console.warn('TELEGRAM_BOT_TOKEN / TELEGRAM_ADMIN_CHAT_IDS مش متظبطين في data/env.json — لن يتم إرسال إشعار الأوردر.');
+        console.warn('TELEGRAM_SITE_BOT_TOKEN / TELEGRAM_ADMIN_CHAT_IDS مش متظبطين في data/env.json — لن يتم إرسال إشعار الأوردر.');
         return;
       }
 
