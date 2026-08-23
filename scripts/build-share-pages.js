@@ -16,6 +16,7 @@
 const fs = require("fs");
 const path = require("path");
 const { getImageSize } = require("./lib/image-size");
+const { buildKeywords } = require("./lib/seo-keywords");
 
 const ROOT = path.join(__dirname, "..");
 const PRODUCTS_JSON = path.join(ROOT, "data", "products.json");
@@ -26,6 +27,9 @@ const OUT_DIR = path.join(ROOT, "p");
 // فلو صورة المنتج مش من الصيغ المضمونة دي، بنستخدم لوجو الموقع بدالها.
 const SAFE_OG_IMAGE_EXT = [".jpg", ".jpeg", ".png"];
 const FALLBACK_OG_IMAGE = "assets/img/og-image.jpg";
+// أيقونة تبويب المتصفح ليها ملف احتياطي منفصل عن صورة معاينة اللينكات
+// (og-image.jpg) — نفس الفصل المستخدم في build-meta.js.
+const FALLBACK_SITE_LOGO = "assets/img/site-logo.jpg";
 const MAX_DESC_LENGTH = 200;
 
 function escapeHtml(str) {
@@ -71,8 +75,9 @@ function build() {
   }
   const absBase = siteUrl ? `${siteUrl}/` : "";
 
-  // لوجو الموقع الاحتياطي: لو config.logo متظبط (سلوت مستقبلي لبرنامج الأدمن)
-  // بنستخدمه، وإلا بنرجع لمسار assets/img/og-image.jpg الثابت زي ما هو من الأول.
+  // لوجو الموقع الاحتياطي لصورة المعاينة (og:image): لو config.logo متظبط
+  // (سلوت مستقبلي لبرنامج الأدمن) بنستخدمه، وإلا بنرجع لمسار
+  // assets/img/og-image.jpg الثابت زي ما هو من الأول.
   const configLogo = (config.logo || "").trim();
   const isRemoteLogo = /^https?:\/\//i.test(configLogo);
   const logoRelPath = configLogo && !isRemoteLogo ? configLogo : FALLBACK_OG_IMAGE;
@@ -81,6 +86,13 @@ function build() {
   const hasLogo = isRemoteLogo || fs.existsSync(logoLocalPath);
   // بنحسب أبعاد اللوجو مرة واحدة بس (بيتكرر استخدامه في كل منتج مالوش صورة مضمونة)
   const logoDims = !isRemoteLogo && hasLogo ? getImageSize(logoLocalPath) : null;
+
+  // أيقونة تبويب المتصفح على صفحات المنتج: منفصلة تمامًا عن og:image،
+  // وليها احتياطي ثابت خاص بيها (site-logo.jpg)، مش og-image.jpg.
+  const faviconRelPath = configLogo && !isRemoteLogo ? configLogo : FALLBACK_SITE_LOGO;
+  const faviconAbsUrl = configLogo && isRemoteLogo ? configLogo : `${absBase}${faviconRelPath}`;
+  const faviconLocalPath = path.join(ROOT, faviconRelPath);
+  const hasFavicon = isRemoteLogo || fs.existsSync(faviconLocalPath);
 
   // نضف القديم عشان منتج اتمسح ميفضلش ليه صفحة ميتة
   fs.rmSync(OUT_DIR, { recursive: true, force: true });
@@ -114,6 +126,14 @@ function build() {
     const priceText =
       p.price != null ? ` — ${p.price.toLocaleString("ar-EG")} ${p.currency || ""}`.trim() : "";
     const description = truncate((p.description || `تفاصيل ${title}`) + priceText, MAX_DESC_LENGTH);
+    // كلمات مفتاحية خاصة بالمنتج ده: اسمه + تصنيفه (عربي/إنجليزي لو متاح)
+    // + اسم الموقع بكل أشكاله + الكلمات العامة عن متجر/تسوق أونلاين.
+    const productKeywords = buildKeywords(siteName, [
+      title,
+      `${title} ${siteName}`,
+      p.categoryName || p.category,
+      p.category,
+    ]);
 
     const dir = path.join(OUT_DIR, p.id);
     fs.mkdirSync(dir, { recursive: true });
@@ -190,10 +210,14 @@ function build() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(title)} | ${escapeHtml(siteName)}</title>
 <meta name="description" content="${escapeHtml(description)}">
+<meta name="keywords" content="${escapeHtml(productKeywords)}">
+<meta name="author" content="${escapeHtml(siteName)}">
 <meta name="robots" content="index, follow">
-${hasLogo ? `<link rel="icon" href="${escapeHtml(logoAbsUrl)}">\n<link rel="apple-touch-icon" href="${escapeHtml(logoAbsUrl)}">\n` : ""}
+${hasFavicon ? `<link rel="icon" href="${escapeHtml(faviconAbsUrl)}">\n<link rel="apple-touch-icon" href="${escapeHtml(faviconAbsUrl)}">\n` : ""}
 
 <meta property="og:type" content="product">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:locale:alternate" content="en_US">
 <meta property="og:site_name" content="${escapeHtml(siteName)}">
 <meta property="og:title" content="${escapeHtml(title)}">
 <meta property="og:description" content="${escapeHtml(description)}">

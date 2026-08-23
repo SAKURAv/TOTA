@@ -20,6 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 const { getImageSize } = require("./lib/image-size");
+const { buildKeywords, BRAND_SPELLING_VARIANTS } = require("./lib/seo-keywords");
 
 const ROOT = path.join(__dirname, "..");
 const CONFIG_JSON = path.join(ROOT, "data", "config.json");
@@ -29,6 +30,10 @@ const TARGET_FILES = ["index.html", "products.html"];
 // <link rel="icon"> بس من غير باقي meta tags.
 const FAVICON_ONLY_FILES = ["account.html", "cart.html"];
 const FALLBACK_OG_IMAGE = "assets/img/og-image.jpg";
+// أيقونة تبويب المتصفح / جوجل ليها ملف احتياطي منفصل تمامًا عن صورة
+// معاينة اللينكات (og-image.jpg)، عشان رفع لوجو من برنامج الأدمن يأثر
+// بس على الفافيكون، ومايبوظش صورة المعاينة ولا العكس.
+const FALLBACK_SITE_LOGO = "assets/img/site-logo.jpg";
 
 function mimeFromExt(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -42,8 +47,8 @@ function mimeFromExt(filePath) {
 
 // بتحدّث كل <link rel="icon"|"shortcut icon"|"apple-touch-icon"> في ملف
 // HTML واحد عشان يبقوا مشيرين للوجو اللي البرنامج (الأدمن) رفعه، بدل
-// الصورة الافتراضية og-image.jpg. لو مفيش لوجو مرفوع، بتسيبهم زي ما هم
-// (يعني على og-image.jpg الافتراضي).
+// الصورة الافتراضية site-logo.jpg. لو مفيش لوجو مرفوع، بترجع لـ
+// site-logo.jpg الثابت — الفافيكون منفصل تمامًا عن og-image.jpg.
 function applyFavicon(html, faviconRelPath) {
   const mime = mimeFromExt(faviconRelPath);
   html = html.replace(
@@ -91,10 +96,18 @@ function build() {
   const absBase = siteUrl ? `${siteUrl}/` : "";
   const configLogo = (config.logo || "").trim();
   const isRemoteLogo = /^https?:\/\//i.test(configLogo);
-  const logoRelPath = configLogo && !isRemoteLogo ? configLogo : FALLBACK_OG_IMAGE;
-  const logoAbsUrl = configLogo && isRemoteLogo ? configLogo : `${absBase}${logoRelPath}`;
-  const logoLocalPath = path.join(ROOT, logoRelPath);
-  const logoDims = !isRemoteLogo && fs.existsSync(logoLocalPath) ? getImageSize(logoLocalPath) : null;
+
+  // فافيكون (تبويب المتصفح + جوجل): لو البرنامج رفع لوجو (config.logo)
+  // بنستخدمه، وإلا بنرجع لـ site-logo.jpg الثابت — مش og-image.jpg.
+  const faviconRelPath = configLogo && !isRemoteLogo ? configLogo : FALLBACK_SITE_LOGO;
+  const faviconAbsUrl = configLogo && isRemoteLogo ? configLogo : `${absBase}${faviconRelPath}`;
+
+  // og:image / twitter:image (معاينة اللينكات): دايمًا og-image.jpg الثابت،
+  // ومش بيتأثر بلوجو البرنامج خالص — ده منفصل عن الفافيكون.
+  const ogImageRelPath = FALLBACK_OG_IMAGE;
+  const ogImageAbsUrl = `${absBase}${ogImageRelPath}`;
+  const ogImageLocalPath = path.join(ROOT, ogImageRelPath);
+  const ogImageDims = fs.existsSync(ogImageLocalPath) ? getImageSize(ogImageLocalPath) : null;
 
   for (const file of TARGET_FILES) {
     const filePath = path.join(ROOT, file);
@@ -102,9 +115,25 @@ function build() {
     let html = fs.readFileSync(filePath, "utf8");
 
     // أيقونة تبويب المتصفح (favicon): بتاخد نفس لوجو الموقع اللي بيتظبط من
-    // برنامج الأدمن (config.logo)، وبترجع لـ og-image.jpg الافتراضي لو
-    // مفيش لوجو مرفوع لسه.
-    html = applyFavicon(html, logoAbsUrl);
+    // برنامج الأدمن (config.logo)، وبترجع لـ site-logo.jpg الافتراضي لو
+    // مفيش لوجو مرفوع لسه. منفصل تمامًا عن og:image.
+    html = applyFavicon(html, faviconAbsUrl);
+
+    // <meta name="keywords">: خليط من اسم الموقع بكل أشكال كتابته المحتملة
+    // (عربي/إنجليزي) + كلمات عامة عن "متجر/ستور/تسوق أونلاين" — عشان يغطي
+    // أكبر عدد من عمليات البحث المرتبطة بالموقع.
+    const pageKeywords =
+      file === "products.html"
+        ? buildKeywords(rawSiteName, ["منتجات " + rawSiteName, "products " + rawSiteName])
+        : buildKeywords(rawSiteName);
+    html = html.replace(
+      /(<meta name="keywords" content=")[^"]*(">)/,
+      `$1${escapeHtml(pageKeywords)}$2`
+    );
+    html = html.replace(
+      /(<meta name="author" content=")[^"]*(">)/,
+      `$1${siteName}$2`
+    );
 
     // <meta property="og:site_name" content="...">
     html = html.replace(
@@ -112,16 +141,16 @@ function build() {
       `$1${siteName}$2`
     );
 
-    // og:image / twitter:image: بيتظبط على اللوجو (سلوت config.logo لو متظبط،
-    // وإلا assets/img/og-image.jpg الافتراضي) — عشان أي لينك غير لينكات
-    // المنتجات (الصفحة الرئيسية، صفحة المنتجات) يظهر بمعاينة لوجو الموقع.
+    // og:image / twitter:image: دايمًا assets/img/og-image.jpg الثابت،
+    // بغض النظر عن لوجو البرنامج — عشان معاينة اللينكات (واتساب/فيسبوك)
+    // تفضل ثابتة على صورة og-image المخصصة للمشاركة.
     html = html.replace(
       /(<meta property="og:image" content=")[^"]*(">)/,
-      `$1${escapeHtml(logoAbsUrl)}$2`
+      `$1${escapeHtml(ogImageAbsUrl)}$2`
     );
     html = html.replace(
       /(<meta name="twitter:image" content=")[^"]*(">)/,
-      `$1${escapeHtml(logoAbsUrl)}$2`
+      `$1${escapeHtml(ogImageAbsUrl)}$2`
     );
 
     // بنشيل أي og:image:width/height/type قديمة مكتوبة إيدويًا، وبعدين
@@ -131,10 +160,53 @@ function build() {
       /\n<meta property="og:image:(?:width|height|type)" content="[^"]*">/g,
       ""
     );
-    if (logoDims) {
+    if (ogImageDims) {
       html = html.replace(
         /(<meta property="og:image" content="[^"]*">)/,
-        `$1\n<meta property="og:image:width" content="${logoDims.width}">\n<meta property="og:image:height" content="${logoDims.height}">\n<meta property="og:image:type" content="${logoDims.type}">`
+        `$1\n<meta property="og:image:width" content="${ogImageDims.width}">\n<meta property="og:image:height" content="${ogImageDims.height}">\n<meta property="og:image:type" content="${ogImageDims.type}">`
+      );
+    }
+
+    if (file === "index.html") {
+      // بيانات منظّمة (JSON-LD) — بنعيد بناء الـ OnlineStore والـ WebSite
+      // بالكامل في كل مرة (idempotent) عشان تفضل متزامنة مع siteName/logo/
+      // socials من config.json، وتشمل alternateName بكل أشكال كتابة اسم
+      // الموقع المحتملة عشان تساعد جوجل يربطها كلها بنفس الكيان.
+      const alternateNames = BRAND_SPELLING_VARIANTS.filter(
+        (v) => v.toLowerCase() !== rawSiteName.toLowerCase()
+      );
+      const sameAs = Object.values(config.socials || {}).filter(
+        (v) => typeof v === "string" && /^https?:\/\//i.test(v)
+      );
+      const orgLd = {
+        "@context": "https://schema.org",
+        "@type": "OnlineStore",
+        name: rawSiteName,
+        alternateName: alternateNames,
+        url: absBase || siteUrl,
+        image: ogImageAbsUrl,
+        description: config.description || "وجهتك المختارة لأفضل المنتجات، بجودة وثقة، وتواصل مباشر.",
+        sameAs,
+      };
+      const websiteLd = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: rawSiteName,
+        alternateName: alternateNames,
+        url: absBase || siteUrl,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${absBase}products.html?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      };
+      html = html.replace(
+        /<script type="application\/ld\+json">\{"@context":"https:\/\/schema\.org","@type":"OnlineStore".*?<\/script>/,
+        `<script type="application/ld+json">${JSON.stringify(orgLd)}</script>`
+      );
+      html = html.replace(
+        /<script type="application\/ld\+json">\{"@context":"https:\/\/schema\.org","@type":"WebSite".*?<\/script>/,
+        `<script type="application/ld+json">${JSON.stringify(websiteLd)}</script>`
       );
     }
 
@@ -192,7 +264,7 @@ function build() {
     const filePath = path.join(ROOT, file);
     if (!fs.existsSync(filePath)) continue;
     let html = fs.readFileSync(filePath, "utf8");
-    html = applyFavicon(html, logoAbsUrl);
+    html = applyFavicon(html, faviconAbsUrl);
     fs.writeFileSync(filePath, html, "utf8");
   }
 
