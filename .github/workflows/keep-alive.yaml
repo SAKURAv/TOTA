@@ -1,0 +1,31 @@
+name: Supabase Keep-Alive
+
+# بيمنع Supabase Free Plan من إيقاف المشروع تلقائيًا (Pause) بعد 7 أيام
+# من غير أي نشاط حقيقي على قاعدة البيانات. بيشتغل كل 3 أيام (هامش أمان
+# كافي قبل الـ 7 أيام) وبيعمل استعلام UPDATE حقيقي على جدول صغير
+# مخصص لكده (public.keep_alive) — ده بيصفّر عداد الـ inactivity بتاع
+# Supabase فورًا.
+#
+# منفصل تمامًا عن نشر الموقع (deploy.yaml) — لو فشل لأي سبب، الموقع
+# نفسه مش بيتأثر خالص.
+on:
+  schedule:
+    - cron: '0 3 */3 * *' # كل 3 أيام الساعة 3 صباحًا UTC
+  workflow_dispatch: {} # يسمح بتشغيله يدوي من تبويب Actions لتجربته فورًا
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Ping Supabase database
+        run: |
+          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ]; then
+            echo "❌ السر SUPABASE_DB_URL مش مضاف في GitHub Secrets — راجع ENV_SETUP.md"
+            exit 1
+          fi
+          psql "${{ secrets.SUPABASE_DB_URL }}" -v ON_ERROR_STOP=1 -c \
+            "insert into public.keep_alive (id, pinged_at) values (1, now()) on conflict (id) do update set pinged_at = excluded.pinged_at;"
+          echo "✅ اتبعت نبضة حقيقية لقاعدة البيانات — عداد الـ inactivity اتصفّر"
