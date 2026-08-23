@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-index.js && node scripts/convert-webp.js && node scripts/build-share-pages.js && node scripts/build-meta.js",
+    "build": "node scripts/generate-env.js && node scripts/build-index.js && node scripts/convert-webp.js && node scripts/build-share-pages.js && node scripts/build-meta.js",
     "convert-webp": "node scripts/convert-webp.js",
     "reorganize-images": "node scripts/reorganize-images.js",
     "watch": "node scripts/watch.js",
