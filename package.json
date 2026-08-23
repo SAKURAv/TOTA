@@ -1,0 +1,14 @@
+{
+  "name": "tota-store",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/generate-env.js && node scripts/build-index.js && node scripts/build-share-pages.js && node scripts/build-meta.js && node scripts/build-sitemap.js",
+    "reorganize-images": "node scripts/reorganize-images.js",
+    "watch": "node scripts/watch.js",
+    "serve": "python3 -m http.server 5500",
+    "dev": "node scripts/watch.js"
+  },
+  "dependencies": {}
+}
+
