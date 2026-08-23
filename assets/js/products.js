@@ -401,10 +401,9 @@
     const url = productPageUrl(p.id);
     if (pushHistory) history.pushState({ modalId: p.id }, '', url);
     else history.replaceState({ modalId: p.id }, '', url);
-    // بنسجّل "زيارة افتراضية" في GoatCounter لكل فتح منتج حصل جوه الـ SPA
-    // من غير ريفريش حقيقي للصفحة (كارت أو رجوع/تقدّم بالمتصفح). أول تحميل
-    // فعلي للصفحة (isBootstrap) مش محتاج ده لأن GoatCounter بيسجّله لوحده
-    // تلقائي أول ما الصفحة تفتح.
+    // ملحوظة: Cloudflare Web Analytics بيتابع تغييرات history.pushState دي
+    // تلقائيًا لوحده (مفيش نداء يدوي مطلوب هنا)، فالسطر تحت سايبينه بس
+    // من غير تأثير فعلي عشان التوافق مع أي كود قديم (شوف analytics.js).
     if (!isBootstrap && window.TotaAnalytics) TotaAnalytics.trackProduct(p.id, p.name);
   }
   // fromPopstate: true when triggered by the browser's back/forward button —

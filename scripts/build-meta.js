@@ -127,6 +127,16 @@ function build() {
       `$1${siteName}$2`
     );
 
+    // og:url: كان بيفضل مكتوب بالدومين القديم لو siteUrl اتغيّر (المشكلة
+    // اللي ظهرت لما انتقلنا من GitHub Pages لـ Cloudflare) — بنبنيه دلوقتي
+    // من siteUrl + اسم الملف نفسه، بنفس المنطق المستخدم في build-share-pages.js
+    if (absBase) {
+      html = html.replace(
+        /(<meta property="og:url" content=")[^"]*(">)/,
+        `$1${escapeHtml(absBase + file)}$2`
+      );
+    }
+
     fs.writeFileSync(filePath, html, "utf8");
   }
 

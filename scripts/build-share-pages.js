@@ -60,7 +60,7 @@ function build() {
     : {};
 
   const siteName = config.siteName || "المتجر";
-  const goatcounterSite = ((config.analytics && config.analytics.goatcounterSite) || "").trim();
+  const cloudflareToken = ((config.analytics && config.analytics.cloudflareToken) || "").trim();
   let siteUrl = (config.siteUrl || "").trim().replace(/\/+$/, "");
 
   if (!siteUrl) {
@@ -118,18 +118,19 @@ function build() {
     const dir = path.join(OUT_DIR, p.id);
     fs.mkdirSync(dir, { recursive: true });
 
-    // بيسجّل "فتحة من رابط مشاركة" كـ Event منفصل في GoatCounter (مش كزيارة
-    // صفحة عادية) قبل ما يحوّل فورًا لصفحة المنتج الحقيقية. بنسجّلها كـ Event
-    // مش Pageview عشان منعملش عد مزدوج: صفحة المنتج نفسها (products.html)
-    // هتتعد لوحدها زيارة عادية أول ما تفتح بعد التحويل. الفايدة إنك تقدر
-    // تشوف بالظبط عدد اللي داسوا على لينك اتبعت على واتساب تحديدًا، منفصل
-    // عن عدد اللي بيتصفحوا الموقع عادي ووصلوا لنفس المنتج.
-    const trackingScript = goatcounterSite
-      ? `<script>(function(){try{var i=new Image();i.referrerPolicy="unsafe-url";i.src=${JSON.stringify(
-          `https://${goatcounterSite}.goatcounter.com/count`
-        )}+"?p="+encodeURIComponent(${JSON.stringify(`/share-click/p/${encodePath(p.id)}/`)})+"&t="+encodeURIComponent(${JSON.stringify(
-          title
-        )})+"&e=true&r="+encodeURIComponent(document.referrer||"")+"&rnd="+Math.random().toString(36).slice(2);}catch(e){}})();</script>\n`
+    // بنحمّل بيكون Cloudflare Web Analytics على صفحة التحويل نفسها (اللي
+    // عنوانها /p/<تصنيف>/<منتج>/) قبل ما نحوّل المستخدم فورًا لصفحة المنتج
+    // الحقيقية. الفايدة إن Cloudflare هيسجّل زيارة حقيقية على نفس المسار
+    // النضيف ده، فتقدر تشوف عدد فتحات كل منتج (من رابط مشاركة أو من جوه
+    // الموقع نفسه) مجمّعة صح تحت نفس المسار في تبويب "Top Paths".
+    // (على عكس GoatCounter، Cloudflare مبيديش إمكانية تسجيل Event منفصل
+    // بمسار وهمي زي /share-click/...، فمفيش تمييز دقيق هنا بين زيارة
+    // جايه من واتساب تحديدًا وزيارة عادية لنفس الصفحة — لو عايز تعرف
+    // مصدر الزيارة استخدم تبويب "Top Referrers" في Cloudflare بدل كده.)
+    const trackingScript = cloudflareToken
+      ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon=${JSON.stringify(
+          JSON.stringify({ token: cloudflareToken })
+        )}></script>\n`
       : "";
 
     // تليجرام (على عكس واتساب) بيميل يتجاهل og:image من غير أبعاد صريحة،
