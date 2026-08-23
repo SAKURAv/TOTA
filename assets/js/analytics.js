@@ -33,6 +33,7 @@
     if (!token) return; // مفيش توكن متظبط — من غير أي تتبع، من غير أخطاء
     if (document.querySelector('script[data-cf-beacon]')) return; // اتحمّل قبل كده
     var s = document.createElement('script');
+    s.type = 'module'; // بيمنع أي خطأ غير ظاهر للمستخدم على متصفحات قديمة (زي Internet Explorer) لا بتدعم صيغة الجافاسكريبت الحديثة اللي البيكون مبني بيها — نفس اللي Cloudflare بتحطه تلقائي في السنيبت الرسمي
     s.defer = true;
     s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
     s.setAttribute('data-cf-beacon', JSON.stringify({ token: token }));

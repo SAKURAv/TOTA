@@ -128,7 +128,7 @@ function build() {
     // جايه من واتساب تحديدًا وزيارة عادية لنفس الصفحة — لو عايز تعرف
     // مصدر الزيارة استخدم تبويب "Top Referrers" في Cloudflare بدل كده.)
     const trackingScript = cloudflareToken
-      ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon=${JSON.stringify(
+      ? `<script type="module" defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon=${JSON.stringify(
           JSON.stringify({ token: cloudflareToken })
         )}></script>\n`
       : "";
