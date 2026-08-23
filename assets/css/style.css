@@ -112,8 +112,9 @@ h1,h2,h3{font-family:'Baloo Bhaijaan 2', sans-serif;}
   border-bottom:1px solid var(--line);
 }
 [data-theme="dark"] .topbar{background:rgba(20,19,16,.82);}
-.brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:21px; letter-spacing:-.5px; justify-self:start;}
+.brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:21px; letter-spacing:-.5px; justify-self:start; display:flex; align-items:center; gap:8px;}
 .brand span{color:var(--accent);}
+.tota-logo-mini{width:24px; height:24px; border-radius:7px; object-fit:cover; flex-shrink:0;}
 .nav-links{display:flex; gap:30px; font-weight:600; font-size:14.5px; justify-self:center;}
 .nav-links a{position:relative; padding:4px 0; color:var(--ink-soft); transition:color .3s;}
 .nav-links a:hover, .nav-links a.active{color:var(--ink);}
@@ -370,8 +371,9 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
    ألوانه متتلخبطش لما نبدّل الوضع */
 .footer{margin-top:60px; background:#28221D; color:#F5F3EE; padding:70px min(6vw,60px) 30px;}
 .footer-top{display:flex; justify-content:space-between; flex-wrap:wrap; gap:40px; padding-bottom:44px; border-bottom:1px solid rgba(245,243,238,.14);}
-.footer-brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:26px;}
+.footer-brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:26px; display:flex; align-items:center; gap:8px;}
 .footer-brand span{color:var(--accent);}
+.footer-brand .tota-logo-mini{width:28px; height:28px; border-radius:8px; object-fit:cover; flex-shrink:0;}
 .footer-desc{color:rgba(245,243,238,.6); margin-top:14px; max-width:34ch; font-size:14px;}
 .footer-links{display:flex; gap:56px; flex-wrap:wrap;}
 .footer-col h4{font-size:12.5px; color:rgba(245,243,238,.5); margin-bottom:14px; font-weight:600;}
