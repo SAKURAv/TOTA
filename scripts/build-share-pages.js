@@ -191,6 +191,7 @@ function build() {
 <title>${escapeHtml(title)} | ${escapeHtml(siteName)}</title>
 <meta name="description" content="${escapeHtml(description)}">
 <meta name="robots" content="index, follow">
+${hasLogo ? `<link rel="icon" href="${escapeHtml(logoAbsUrl)}">\n<link rel="apple-touch-icon" href="${escapeHtml(logoAbsUrl)}">\n` : ""}
 
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="${escapeHtml(siteName)}">

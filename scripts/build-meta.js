@@ -24,7 +24,50 @@ const { getImageSize } = require("./lib/image-size");
 const ROOT = path.join(__dirname, "..");
 const CONFIG_JSON = path.join(ROOT, "data", "config.json");
 const TARGET_FILES = ["index.html", "products.html"];
+// الصفحات دي مالهاش meta tags للمشاركة (og:title..إلخ) لكن لازم تاخد نفس
+// أيقونة تبويب المتصفح (favicon) بتاعة باقي الموقع، فبنعدّل عليها الـ
+// <link rel="icon"> بس من غير باقي meta tags.
+const FAVICON_ONLY_FILES = ["account.html", "cart.html"];
 const FALLBACK_OG_IMAGE = "assets/img/og-image.jpg";
+
+function mimeFromExt(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === ".png") return "image/png";
+  if (ext === ".svg") return "image/svg+xml";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".ico") return "image/x-icon";
+  return "image/jpeg";
+}
+
+// بتحدّث كل <link rel="icon"|"shortcut icon"|"apple-touch-icon"> في ملف
+// HTML واحد عشان يبقوا مشيرين للوجو اللي البرنامج (الأدمن) رفعه، بدل
+// الصورة الافتراضية og-image.jpg. لو مفيش لوجو مرفوع، بتسيبهم زي ما هم
+// (يعني على og-image.jpg الافتراضي).
+function applyFavicon(html, faviconRelPath) {
+  const mime = mimeFromExt(faviconRelPath);
+  html = html.replace(
+    /(<link rel="icon" href=")[^"]*("[^>]*>)/,
+    `$1${faviconRelPath}$2`
+  );
+  html = html.replace(
+    /(<link rel="icon" href="[^"]*" type=")[^"]*(">)/,
+    `$1${mime}$2`
+  );
+  html = html.replace(
+    /(<link rel="shortcut icon" href=")[^"]*("[^>]*>)/,
+    `$1${faviconRelPath}$2`
+  );
+  html = html.replace(
+    /(<link rel="shortcut icon" href="[^"]*" type=")[^"]*(">)/,
+    `$1${mime}$2`
+  );
+  html = html.replace(
+    /(<link rel="apple-touch-icon" href=")[^"]*(">)/,
+    `$1${faviconRelPath}$2`
+  );
+  return html;
+}
 
 function escapeHtml(str) {
   return String(str ?? "")
@@ -57,6 +100,11 @@ function build() {
     const filePath = path.join(ROOT, file);
     if (!fs.existsSync(filePath)) continue;
     let html = fs.readFileSync(filePath, "utf8");
+
+    // أيقونة تبويب المتصفح (favicon): بتاخد نفس لوجو الموقع اللي بيتظبط من
+    // برنامج الأدمن (config.logo)، وبترجع لـ og-image.jpg الافتراضي لو
+    // مفيش لوجو مرفوع لسه.
+    html = applyFavicon(html, logoAbsUrl);
 
     // <meta property="og:site_name" content="...">
     html = html.replace(
@@ -140,7 +188,15 @@ function build() {
     fs.writeFileSync(filePath, html, "utf8");
   }
 
-  console.log(`✔ اسم الموقع "${rawSiteName}" اتربط بالـ meta tags في index.html و products.html`);
+  for (const file of FAVICON_ONLY_FILES) {
+    const filePath = path.join(ROOT, file);
+    if (!fs.existsSync(filePath)) continue;
+    let html = fs.readFileSync(filePath, "utf8");
+    html = applyFavicon(html, logoAbsUrl);
+    fs.writeFileSync(filePath, html, "utf8");
+  }
+
+  console.log(`✔ اسم الموقع "${rawSiteName}" اتربط بالـ meta tags، والفافيكون اتربط بلوجو الموقع`);
 }
 
 build();
