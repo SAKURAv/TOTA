@@ -141,12 +141,56 @@ function build() {
 <meta property="og:image:type" content="${imageDims.type}">`
       : "";
 
+    // بيانات منظّمة (JSON-LD) بصيغة Product عشان جوجل يقدر يعرض السعر والتوفر
+    // جنب رابط المنتج في نتائج البحث (Rich Results). بنكتبها هنا (مش في
+    // products.html اللي هو SPA) لأن الصفحة دي ثابتة وجوجل بيقدر يقراها
+    // فورًا من غير ما يشغّل جافاسكريبت.
+    const availability =
+      p.available === false
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock";
+    const productJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: title,
+      description: p.description || title,
+      image: imageUrl,
+      url: pageUrl,
+      ...(p.category ? { category: p.categoryName || p.category } : {}),
+      offers: {
+        "@type": "Offer",
+        url: pageUrl,
+        priceCurrency: p.currency || "EGP",
+        price: p.price != null ? String(p.price) : undefined,
+        availability,
+        itemCondition: "https://schema.org/NewCondition",
+      },
+    };
+    if (productJsonLd.offers.price === undefined) delete productJsonLd.offers.price;
+
+    const breadcrumbJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: siteName, item: absBase || siteUrl },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: p.categoryName || p.category,
+          item: `${absBase}products.html?cat=${encodeURIComponent(p.category)}`,
+        },
+        { "@type": "ListItem", position: 3, name: title, item: pageUrl },
+      ],
+    };
+
     const html = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(title)} | ${escapeHtml(siteName)}</title>
 <meta name="description" content="${escapeHtml(description)}">
+<meta name="robots" content="index, follow">
 
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="${escapeHtml(siteName)}">
@@ -156,16 +200,20 @@ function build() {
 <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
 ${imageMetaLines}
 <meta property="og:url" content="${escapeHtml(pageUrl)}">
-
+${p.price != null ? `<meta property="product:price:amount" content="${escapeHtml(String(p.price))}">\n<meta property="product:price:currency" content="${escapeHtml(p.currency || "EGP")}">\n` : ""}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
 <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
 
 <link rel="canonical" href="${escapeHtml(pageUrl)}">
+<script type="application/ld+json">${JSON.stringify(productJsonLd)}</script>
+<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}</script>
 ${trackingScript}<script>location.replace(${JSON.stringify(targetUrl)});</script>
 </head>
 <body>
+<h1>${escapeHtml(title)}</h1>
+<p>${escapeHtml(description)}</p>
 <p>تحويل لصفحة <a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>...</p>
 </body>
 </html>
