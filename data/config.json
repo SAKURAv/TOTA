@@ -12,7 +12,7 @@
     "email": "info@example.com"
   },
   "featuredProducts": [],
-  "logo": "",
+  "logo": "assets/img/site-logo.jpg",
   "analytics": {
     "_ملاحظة": "توكن Cloudflare Web Analytics بتاع موقعك (يتاخد من Cloudflare Dashboard → Analytics & Logs → Web Analytics → Manage site → JS Snippet، وتاخد قيمة \"token\" من جوه data-cf-beacon من غير أي حاجة تانية). سيبه فاضي عشان توقف التتبع بالكامل من غير ما تلمس أي كود.",
     "cloudflareToken": "b6854443bf7e4ff2942de028dfaba0f9"
