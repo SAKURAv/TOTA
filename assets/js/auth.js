@@ -14,7 +14,7 @@
     const wrap = document.createElement('div');
     wrap.innerHTML = `
     <div class="tota-modal-overlay" id="totaAuthModal" hidden>
-      <div class="tota-modal" role="dialog" aria-modal="true" aria-labelledby="totaAuthTitle">
+      <div class="tota-modal" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="totaAuthTitle">
         <button type="button" class="tota-modal-close" id="totaAuthClose" aria-label="إغلاق">&times;</button>
         <h2 id="totaAuthTitle" class="tota-modal-title">تسجيل الدخول</h2>
 
@@ -60,7 +60,7 @@
     </div>
 
     <div class="tota-modal-overlay" id="totaForgotPasswordModal" hidden>
-      <div class="tota-modal" role="dialog" aria-modal="true" aria-labelledby="totaForgotTitle">
+      <div class="tota-modal" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="totaForgotTitle">
         <button type="button" class="tota-modal-close" id="totaForgotClose" aria-label="إغلاق">&times;</button>
         <h2 id="totaForgotTitle" class="tota-modal-title">استعادة كلمة المرور</h2>
         <p style="color:var(--muted); font-size:14px; margin-top:-6px;">هنبعتلك رابط على إيميلك لتعيين كلمة مرور جديدة.</p>
@@ -74,7 +74,7 @@
     </div>
 
     <div class="tota-modal-overlay" id="totaSetNewPasswordModal" hidden>
-      <div class="tota-modal" role="dialog" aria-modal="true" aria-labelledby="totaSetNewPasswordTitle">
+      <div class="tota-modal" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="totaSetNewPasswordTitle">
         <h2 id="totaSetNewPasswordTitle" class="tota-modal-title">تعيين كلمة مرور جديدة</h2>
         <form id="totaSetNewPasswordForm" class="tota-auth-form">
           <label>كلمة المرور الجديدة
@@ -90,7 +90,7 @@
     </div>
 
     <div class="tota-modal-overlay" id="totaCompleteProfileModal" hidden>
-      <div class="tota-modal" role="dialog" aria-modal="true" aria-labelledby="totaCompleteProfileTitle">
+      <div class="tota-modal" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="totaCompleteProfileTitle">
         <h2 id="totaCompleteProfileTitle" class="tota-modal-title">كمّل بياناتك</h2>
         <p style="color:var(--muted); font-size:14px; margin-top:-6px;">تقدر تضيف رقم هاتفك دلوقتي أو بعدين من صفحة حسابك.</p>
         <form id="totaCompleteProfileForm" class="tota-auth-form">
@@ -109,7 +109,7 @@
     </div>
 
     <div class="tota-modal-overlay" id="totaPhoneGateModal" hidden>
-      <div class="tota-modal" role="dialog" aria-modal="true" aria-labelledby="totaPhoneGateTitle">
+      <div class="tota-modal" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="totaPhoneGateTitle">
         <button type="button" class="tota-modal-close" id="totaPhoneGateClose" aria-label="إغلاق">&times;</button>
         <h2 id="totaPhoneGateTitle" class="tota-modal-title">محتاجين رقم هاتفك</h2>
         <p style="color:var(--muted); font-size:14px; margin-top:-6px;">
@@ -444,7 +444,7 @@
       wrap.className = 'tota-modal-overlay';
       wrap.hidden = false;
       wrap.innerHTML = `
-        <div class="tota-modal" role="dialog" aria-modal="true">
+        <div class="tota-modal" data-lenis-prevent role="dialog" aria-modal="true">
           <button type="button" class="tota-modal-close" aria-label="إغلاق">&times;</button>
           <h2 class="tota-modal-title">اتبعتلك رسالة تأكيد ✉️</h2>
           <p style="color:var(--muted); font-size:14.5px;">
