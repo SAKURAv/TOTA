@@ -398,6 +398,11 @@
     };
     overlay.classList.add('open');
     document.body.classList.add('modal-locked');
+    // نفس مشكلة Lenis في مودال تسجيل الدخول/حساب جديد (شوف auth.js):
+    // Lenis بيمسك عجلة الماوس على مستوى الصفحة كلها، فلازم نوقّفه
+    // مؤقتًا عشان السكرول جوه مودال المنتج (لو محتواه أطول من الشاشة)
+    // يشتغل طبيعي بدل ما يحرّك الصفحة اللي وراه.
+    if (window.lenis && typeof window.lenis.stop === 'function') window.lenis.stop();
     const url = productPageUrl(p.id);
     if (pushHistory) history.pushState({ modalId: p.id }, '', url);
     else history.replaceState({ modalId: p.id }, '', url);
@@ -411,6 +416,7 @@
   function closeModal(fromPopstate){
     overlay.classList.remove('open');
     document.body.classList.remove('modal-locked');
+    if (window.lenis && typeof window.lenis.start === 'function') window.lenis.start();
     if (!fromPopstate){
       if (history.state && history.state.modalId) history.back();
       else history.replaceState(null,'', productsPageUrl());

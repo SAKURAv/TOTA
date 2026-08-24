@@ -151,6 +151,13 @@
       // لخاصية overflow من body للـ viewport، فالمتصفح بيفضل يسكرول
       // الـ <html> نفسه حتى لو body مقفول.
       document.documentElement.classList.add('tota-modal-open');
+      // Lenis (سكرول السايت الناعم في shared.js) بيمسك أحداث عجلة
+      // الماوس على مستوى الصفحة كلها ويحرّك بيها سكرول الـ document
+      // بنفسه (بدل السكرول الطبيعي)، فحتى لو قفلنا الصفحة اللي وراء
+      // المودال، عجلة الماوس كانت بتفضل ماسكها Lenis ومش وصلة لسكرول
+      // المودال نفسه (overflow-y:auto). لازم نوقّف Lenis مؤقتًا طول ما
+      // في مودال مفتوح عشان السكرول الطبيعي جوه المودال يشتغل.
+      if (window.lenis && typeof window.lenis.stop === 'function') window.lenis.stop();
     }
     totaScrollLockCount++;
   }
@@ -160,6 +167,7 @@
     if (totaScrollLockCount === 0) {
       document.body.classList.remove('tota-modal-open');
       document.documentElement.classList.remove('tota-modal-open');
+      if (window.lenis && typeof window.lenis.start === 'function') window.lenis.start();
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';
