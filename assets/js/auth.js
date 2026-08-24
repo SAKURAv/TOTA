@@ -145,6 +145,12 @@
       document.body.style.right = '0';
       document.body.style.width = '100%';
       document.body.classList.add('tota-modal-open');
+      // <html> نفسه لازم ياخد overflow:hidden كمان. الـ body لوحده مش
+      // كافي في كروم على الكمبيوتر: html هنا عنده overflow-x:hidden
+      // متعرّف صراحةً، وده بيوقف عملية الـ "propagation" التلقائية
+      // لخاصية overflow من body للـ viewport، فالمتصفح بيفضل يسكرول
+      // الـ <html> نفسه حتى لو body مقفول.
+      document.documentElement.classList.add('tota-modal-open');
     }
     totaScrollLockCount++;
   }
@@ -153,6 +159,7 @@
     totaScrollLockCount--;
     if (totaScrollLockCount === 0) {
       document.body.classList.remove('tota-modal-open');
+      document.documentElement.classList.remove('tota-modal-open');
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';

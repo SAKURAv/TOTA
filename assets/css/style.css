@@ -719,8 +719,16 @@ body.modal-locked .whatsapp-float{opacity:0; pointer-events:none;}
 /* الـ position:fixed + top الفعليين بيتحطوا من الـ JS (auth.js) عشان
    نقفل سكرول الصفحة اللي وراء المودال فعليًا على الموبايل/iOS، مش بس
    overflow:hidden اللي مش كافي لوحده هناك. overflow:hidden هنا للمتصفحات
-   اللي بتحترمها عادي كمان. */
-body.tota-modal-open{ overflow:hidden; }
+   اللي بتحترمها عادي كمان.
+   لازم نقفل الـ html كمان مش بس الـ body: html في الملف ده عنده
+   overflow-x:hidden متعرّف صراحةً (اتحطت أول الملف)، وده بيوقف الـ
+   "propagation" التلقائي لخاصية overflow من body للـ viewport اللي
+   المفروض تحصل بشكل تلقائي. لما الـ propagation بيتوقف، اللي بيتحكم
+   في سكرول الصفحة فعليًا بقى هو الـ html نفسه مش الـ body — فلو قفلنا
+   الـ body بس، السكرول هيفضل شغال على الصفحة اللي وراء المودال
+   (زي ما بيحصل في كروم على الكمبيوتر). عشان كده لازم overflow:hidden
+   على الاتنين مع بعض. */
+html.tota-modal-open, body.tota-modal-open{ overflow:hidden; height:100%; }
 @keyframes totaModalFadeIn{
   from{ opacity:0; }
   to{ opacity:1; }
