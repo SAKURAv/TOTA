@@ -53,8 +53,11 @@
           <div class="cf-turnstile" data-sitekey="" id="totaTurnstileWidget"></div>
           <div class="tota-auth-error" data-signup-error hidden></div>
           <p class="tota-auth-privacy">بياناتك بتُستخدم بس للتواصل معاك بخصوص طلباتك.</p>
+          <label class="tota-terms-check">
+            <input type="checkbox" required id="totaSignupTermsCheck">
+            <span>موافق على <a href="terms.html" target="_blank" rel="noopener">الشروط والأحكام</a></span>
+          </label>
           <button type="submit" class="btn-primary tota-auth-submit">إنشاء الحساب</button>
-          <p class="tota-terms-note">عند إنشائك حساب أنت توافق على <a href="terms.html" target="_blank" rel="noopener">الشروط والأحكام</a></p>
         </form>
       </div>
     </div>

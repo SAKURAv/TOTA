@@ -407,6 +407,8 @@
     if (isGuest) {
       addressSectionEl.hidden = true;
       guestFieldsSectionEl.hidden = false;
+      const termsRow = document.getElementById('cartGuestTermsRow');
+      if (termsRow) termsRow.hidden = false;
       const info = window.TotaGuest ? window.TotaGuest.getInfo() : {};
       const nameInput = document.getElementById('cartGuestName');
       const phoneInput = document.getElementById('cartGuestPhone');
@@ -478,6 +480,13 @@
         const nameInput = document.getElementById('cartGuestName');
         const phoneInput = document.getElementById('cartGuestPhone');
         const addressInput = document.getElementById('cartGuestAddress');
+        const termsCheck = document.getElementById('cartGuestTermsCheck');
+        if (termsCheck && !termsCheck.checked) {
+          submitStatusEl.style.color = '#d64545';
+          submitStatusEl.textContent = 'لازم توافق على الشروط والأحكام الأول.';
+          termsCheck.focus();
+          return;
+        }
         const phone = window.totaGetFullPhone ? window.totaGetFullPhone(phoneInput) : phoneInput.value.trim();
         const countryCode = window.totaGetPhoneDial ? window.totaGetPhoneDial(phoneInput) : '+20';
         if (!phoneInput.value.trim() || phone.length < 8) {

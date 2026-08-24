@@ -779,9 +779,28 @@ html.tota-modal-open, body.tota-modal-open{ overflow:hidden; height:100%; }
 .tota-terms-note{ font-size:11.5px; color:#9a9a9a; margin:2px 0 0; text-align:center; }
 .tota-terms-note a{ color:#9a9a9a; text-decoration:underline; cursor:pointer; }
 .tota-terms-note a:hover{ color:#777; }
+.tota-terms-check{
+  display:flex; align-items:flex-start; gap:8px; cursor:pointer;
+  font-size:13px; color:var(--ink); margin:2px 0 0; line-height:1.4;
+}
+.tota-terms-check input[type="checkbox"]{
+  width:16px; height:16px; margin-top:2px; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
+}
+.tota-terms-check a{ color:inherit; text-decoration:underline; }
+.tota-terms-check a:hover{ color:var(--muted); }
 .cart-terms-note{ font-size:11.5px; color:#9a9a9a; margin:8px 0 0; text-align:center; }
 .cart-terms-note a{ color:#9a9a9a; text-decoration:underline; cursor:pointer; }
 .cart-terms-note a:hover{ color:#777; }
+.cart-terms-check{
+  display:flex; align-items:flex-start; gap:8px; cursor:pointer;
+  font-size:13px; color:var(--ink); margin:12px 0 0; line-height:1.4;
+}
+.cart-terms-check[hidden]{ display:none; }
+.cart-terms-check input[type="checkbox"]{
+  width:16px; height:16px; margin-top:2px; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
+}
+.cart-terms-check a{ color:inherit; text-decoration:underline; }
+.cart-terms-check a:hover{ color:var(--muted); }
 [data-account-link].is-logged-in{ color:var(--accent-dark); }
 
 /* زرار المفضلة على بطاقة المنتج */
