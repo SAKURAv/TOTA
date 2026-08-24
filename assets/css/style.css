@@ -780,11 +780,11 @@ html.tota-modal-open, body.tota-modal-open{ overflow:hidden; height:100%; }
 .tota-terms-note a{ color:#9a9a9a; text-decoration:underline; cursor:pointer; }
 .tota-terms-note a:hover{ color:#777; }
 .tota-terms-check{
-  display:flex; align-items:flex-start; gap:8px; cursor:pointer;
-  font-size:13px; color:var(--ink); margin:2px 0 0; line-height:1.4;
+  display:flex; align-items:center; gap:10px; cursor:pointer;
+  font-size:14px; font-weight:600; color:var(--ink); margin:6px 0 0; line-height:1.4;
 }
 .tota-terms-check input[type="checkbox"]{
-  width:16px; height:16px; margin-top:2px; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
+  width:22px; height:22px; margin-top:0; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
 }
 .tota-terms-check a{ color:inherit; text-decoration:underline; }
 .tota-terms-check a:hover{ color:var(--muted); }
@@ -792,12 +792,12 @@ html.tota-modal-open, body.tota-modal-open{ overflow:hidden; height:100%; }
 .cart-terms-note a{ color:#9a9a9a; text-decoration:underline; cursor:pointer; }
 .cart-terms-note a:hover{ color:#777; }
 .cart-terms-check{
-  display:flex; align-items:flex-start; gap:8px; cursor:pointer;
-  font-size:13px; color:var(--ink); margin:12px 0 0; line-height:1.4;
+  display:flex; align-items:center; gap:10px; cursor:pointer;
+  font-size:14px; font-weight:600; color:var(--ink); margin:12px 0 0; line-height:1.4;
 }
 .cart-terms-check[hidden]{ display:none; }
 .cart-terms-check input[type="checkbox"]{
-  width:16px; height:16px; margin-top:2px; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
+  width:22px; height:22px; margin-top:0; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
 }
 .cart-terms-check a{ color:inherit; text-decoration:underline; }
 .cart-terms-check a:hover{ color:var(--muted); }

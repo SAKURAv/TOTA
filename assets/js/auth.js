@@ -55,7 +55,7 @@
           <p class="tota-auth-privacy">بياناتك بتُستخدم بس للتواصل معاك بخصوص طلباتك.</p>
           <label class="tota-terms-check">
             <input type="checkbox" required id="totaSignupTermsCheck">
-            <span>موافق على <a href="terms.html" target="_blank" rel="noopener">الشروط والأحكام</a></span>
+            <span>إذا انت توافق علي <a href="terms.html" target="_blank" rel="noopener">الشروط والاحكام</a></span>
           </label>
           <button type="submit" class="btn-primary tota-auth-submit">إنشاء الحساب</button>
         </form>
