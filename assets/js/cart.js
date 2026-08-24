@@ -233,6 +233,7 @@
 
     // ---------------- رسالة تأكيد الطلب ----------------
     const confirmOverlay = document.getElementById('orderConfirmOverlay');
+    const confirmWhatsappBtn = document.getElementById('orderConfirmWhatsappBtn');
     document.getElementById('orderConfirmCloseBtn').addEventListener('click', function () {
       confirmOverlay.classList.remove('open');
     });
@@ -243,6 +244,25 @@
       loadMyOrders();
       ordersLoaded = true;
     });
+
+    // بيبني رابط واتساب برسالة جاهزة (رقم الأوردر + الاسم لو متوفر + رقم
+    // الهاتف)، ويحطه في زرار "الذهاب إلى الواتساب" جوه رسالة تأكيد الطلب.
+    // رقم الواتساب بييجي من data/config.json (نفس المصدر في كل الموقع).
+    async function openOrderConfirm(info) {
+      try {
+        const cfg = window.TOTA_CONFIG || (window.TOTA_CONFIG_READY ? await window.TOTA_CONFIG_READY : {});
+        const waNumber = ((cfg && cfg.whatsapp) || '').replace(/\D/g, '');
+        const lines = ['السلام عليكم، طلبت اوردر وعايز اعرف باقي خطوات الدفع.', ''];
+        if (info.orderId) lines.push('رقم الطلب: ' + info.orderId);
+        if (info.name) lines.push('الاسم: ' + info.name);
+        if (info.phone) lines.push('رقم الهاتف: ' + info.phone);
+        const text = encodeURIComponent(lines.join('\n'));
+        confirmWhatsappBtn.href = waNumber ? ('https://wa.me/' + waNumber + '?text=' + text) : '#';
+      } catch (e) {
+        confirmWhatsappBtn.href = '#';
+      }
+      confirmOverlay.classList.add('open');
+    }
 
     // ---------------- عرض عناصر السلة ----------------
     const itemsListEl = document.getElementById('cartItemsList');
@@ -554,7 +574,7 @@
         cartRows = [];
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
-        confirmOverlay.classList.add('open');
+        await openOrderConfirm({ orderId: orderId, name: info.name, phone: info.local || info.phone });
         ordersLoaded = false;
       } catch (e) {
         submitStatusEl.style.color = '#d64545';
@@ -624,7 +644,11 @@
         cartRows = [];
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
-        confirmOverlay.classList.add('open');
+        await openOrderConfirm({
+          orderId: order.id,
+          name: (profile && profile.full_name) || '',
+          phone: (profile && profile.phone) || ''
+        });
         ordersLoaded = false;
       } catch (e) {
         submitStatusEl.style.color = '#d64545';
