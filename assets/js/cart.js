@@ -245,15 +245,18 @@
       ordersLoaded = true;
     });
 
-    // بيبني رابط واتساب برسالة جاهزة (رقم الأوردر + الاسم لو متوفر + رقم
-    // الهاتف)، ويحطه في زرار "الذهاب إلى الواتساب" جوه رسالة تأكيد الطلب.
-    // رقم الواتساب بييجي من data/config.json (نفس المصدر في كل الموقع).
+    // بيبني رابط واتساب برسالة جاهزة (رقم الأوردر المختصر لـ 8 رموز — زي
+    // ما بيظهر بالظبط في برنامج الأدمن عشان يتقدر يتلاقي بيه — + الاسم لو
+    // متوفر + رقم الهاتف كامل بكود الدولة)، ويحطه في زرار "الذهاب إلى
+    // الواتساب" جوه رسالة تأكيد الطلب. رقم الواتساب بييجي من
+    // data/config.json (نفس المصدر في كل الموقع).
     async function openOrderConfirm(info) {
+      const shortOrderId = (info.orderId || '').replace(/-/g, '').slice(0, 8).toUpperCase();
       try {
         const cfg = window.TOTA_CONFIG || (window.TOTA_CONFIG_READY ? await window.TOTA_CONFIG_READY : {});
         const waNumber = ((cfg && cfg.whatsapp) || '').replace(/\D/g, '');
         const lines = ['السلام عليكم، طلبت اوردر وعايز اعرف باقي خطوات الدفع.', ''];
-        if (info.orderId) lines.push('رقم الطلب: ' + info.orderId);
+        if (shortOrderId) lines.push('رقم الطلب: ```' + shortOrderId + '```');
         if (info.name) lines.push('الاسم: ' + info.name);
         if (info.phone) lines.push('رقم الهاتف: ' + info.phone);
         const text = encodeURIComponent(lines.join('\n'));
@@ -574,7 +577,7 @@
         cartRows = [];
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
-        await openOrderConfirm({ orderId: orderId, name: info.name, phone: info.local || info.phone });
+        await openOrderConfirm({ orderId: orderId, name: info.name, phone: info.phone });
         ordersLoaded = false;
       } catch (e) {
         submitStatusEl.style.color = '#d64545';
@@ -644,10 +647,13 @@
         cartRows = [];
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
+        const fullPhone = (profile && profile.phone)
+          ? (countryCode + (window.totaStripLeadingZeros ? window.totaStripLeadingZeros(profile.phone) : profile.phone))
+          : '';
         await openOrderConfirm({
           orderId: order.id,
           name: (profile && profile.full_name) || '',
-          phone: (profile && profile.phone) || ''
+          phone: fullPhone
         });
         ordersLoaded = false;
       } catch (e) {
