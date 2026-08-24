@@ -129,6 +129,39 @@
     while (wrap.firstElementChild) document.body.appendChild(wrap.firstElementChild);
   }
 
+  // قفل سكرول الصفحة اللي وراء المودال بشكل فعلي على الموبايل.
+  // overflow:hidden على الـ body لوحده مش كافي على iOS Safari — الصفحة
+  // اللي وراه بتفضل تتسكرول بالّلمس حتى لو المودال فاتح فوقها. الحل إننا
+  // نثبّت الـ body بالكامل (position:fixed) في مكانه الحالي، وبعد ما
+  // نقفل المودال نرجّعه يتسكرول من نفس المكان اللي كان واقف فيه.
+  let totaScrollLockCount = 0;
+  let totaSavedScrollY = 0;
+  function lockBodyScroll() {
+    if (totaScrollLockCount === 0) {
+      totaSavedScrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.position = 'fixed';
+      document.body.style.top = (-totaSavedScrollY) + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      document.body.classList.add('tota-modal-open');
+    }
+    totaScrollLockCount++;
+  }
+  function unlockBodyScroll() {
+    if (totaScrollLockCount === 0) return;
+    totaScrollLockCount--;
+    if (totaScrollLockCount === 0) {
+      document.body.classList.remove('tota-modal-open');
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      window.scrollTo(0, totaSavedScrollY);
+    }
+  }
+
   function showError(el, msg) {
     if (!el) return;
     el.textContent = msg;
@@ -139,13 +172,13 @@
   function openModal(tab) {
     const modal = document.getElementById('totaAuthModal');
     modal.hidden = false;
-    document.body.classList.add('tota-modal-open');
+    lockBodyScroll();
     switchTab(tab || 'login');
   }
   function closeModal() {
     const modal = document.getElementById('totaAuthModal');
     modal.hidden = true;
-    document.body.classList.remove('tota-modal-open');
+    unlockBodyScroll();
   }
   let turnstileWidgetId = null;
   function renderTurnstile() {
@@ -230,12 +263,12 @@
     function openForgotPasswordModal() {
       const modal = document.getElementById('totaForgotPasswordModal');
       modal.hidden = false;
-      document.body.classList.add('tota-modal-open');
+      lockBodyScroll();
     }
     function closeForgotPasswordModal() {
       const modal = document.getElementById('totaForgotPasswordModal');
       modal.hidden = true;
-      document.body.classList.remove('tota-modal-open');
+      unlockBodyScroll();
     }
     const forgotForm = document.getElementById('totaForgotPasswordForm');
     forgotForm && forgotForm.addEventListener('submit', async function (e) {
@@ -264,7 +297,7 @@
     function openSetNewPasswordModal() {
       const modal = document.getElementById('totaSetNewPasswordModal');
       modal.hidden = false;
-      document.body.classList.add('tota-modal-open');
+      lockBodyScroll();
     }
     const setNewPasswordForm = document.getElementById('totaSetNewPasswordForm');
     setNewPasswordForm && setNewPasswordForm.addEventListener('submit', async function (e) {
@@ -280,7 +313,7 @@
       btn.disabled = false;
       if (error) { showError(errEl, 'تعذر حفظ كلمة المرور، جرب رابط استعادة جديد.'); return; }
       document.getElementById('totaSetNewPasswordModal').hidden = true;
-      document.body.classList.remove('tota-modal-open');
+      unlockBodyScroll();
       window.location.href = window.location.origin + window.location.pathname;
     });
 
@@ -406,8 +439,8 @@
           <p style="color:var(--muted); font-size:13px;">مش لاقي الرسالة؟ شوف الـ Spam أو Junk.</p>
         </div>`;
       document.body.appendChild(wrap);
-      document.body.classList.add('tota-modal-open');
-      function close() { wrap.remove(); document.body.classList.remove('tota-modal-open'); }
+      lockBodyScroll();
+      function close() { wrap.remove(); unlockBodyScroll(); }
       wrap.querySelector('.tota-modal-close').addEventListener('click', close);
       wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
     }
@@ -417,12 +450,12 @@
       closeModal();
       const modal = document.getElementById('totaCompleteProfileModal');
       modal.hidden = false;
-      document.body.classList.add('tota-modal-open');
+      lockBodyScroll();
     }
     function closeCompleteProfileModal() {
       const modal = document.getElementById('totaCompleteProfileModal');
       modal.hidden = true;
-      document.body.classList.remove('tota-modal-open');
+      unlockBodyScroll();
       window.location.reload();
     }
     const completeProfileForm = document.getElementById('totaCompleteProfileForm');
@@ -456,12 +489,12 @@
       pendingPhoneCallback = onReady;
       const modal = document.getElementById('totaPhoneGateModal');
       modal.hidden = false;
-      document.body.classList.add('tota-modal-open');
+      lockBodyScroll();
     }
     function closePhoneGateModal() {
       const modal = document.getElementById('totaPhoneGateModal');
       modal.hidden = true;
-      document.body.classList.remove('tota-modal-open');
+      unlockBodyScroll();
       pendingPhoneCallback = null;
     }
     document.getElementById('totaPhoneGateClose').addEventListener('click', closePhoneGateModal);
