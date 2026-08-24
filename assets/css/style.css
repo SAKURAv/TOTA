@@ -729,6 +729,10 @@ body.tota-modal-open{ overflow:hidden; }
   position:relative; background:var(--paper); border-radius:var(--radius);
   padding:32px 28px; width:100%; max-width:400px; box-shadow:var(--shadow);
   border:1px solid var(--line);
+  /* لازم المودال يقدر يسكرول جوه نفسه لو المحتوى (خصوصًا فورم حساب
+     جديد) أطول من ارتفاع الشاشة، خصوصًا على الموبايل، بدل ما يتقطع
+     أو يخرج برة حدود الشاشة من غير أي طريقة نقرأ بيها باقي الفورم. */
+  max-height:calc(100vh - 40px); overflow-y:auto; -webkit-overflow-scrolling:touch;
   /* أنيميشن إجباري لظهور المودال (تسجيل الدخول / إنشاء حساب / بوابة
      الهاتف) — بيتنفذ تلقائيًا في كل مرة يتشال منها [hidden] بغض النظر
      عن أي حاجة تانية، مش محتاج JS إضافي. */

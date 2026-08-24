@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 /**
- * بيبني sitemap.xml في جذر الموقع تلقائيًا من data/products.json + data/config.json.
- * بيحتوي على: الصفحة الرئيسية، صفحة المنتجات، صفحة كل منتج (رابط /p/<category>/<slug>/
- * الثابت اللي بيبنيه build-share-pages.js)، وصفحة كل تصنيف (products.html?cat=...).
+ * بيبني sitemap.xml في جذر الموقع تلقائيًا من data/products.json + data/config.json،
+ * بالإضافة لاكتشاف تلقائي لأي صفحة .html موجودة في جذر الموقع (زي cart.html،
+ * account.html، terms.html، أو أي صفحة جديدة تتضاف مستقبلاً) من غير الحاجة لإضافتها
+ * يدويًا في السكريبت في كل مرة.
+ *
+ * بيحتوي على: الصفحة الرئيسية، كل صفحة .html في جذر الموقع، صفحة كل منتج (رابط
+ * /p/<category>/<slug>/ الثابت اللي بيبنيه build-share-pages.js)، وصفحة كل
+ * تصنيف (products.html?cat=...).
  *
  * محرك البحث (جوجل) بيستخدم الملف ده عشان يعرف كل روابط الموقع من غير ما يستنى
  * يلاقيها بنفسه بالزحف العادي. لازم يتحدث تلقائي مع كل نشر زي باقي السكريبتات،
@@ -16,12 +21,40 @@ const PRODUCTS_JSON = path.join(ROOT, "data", "products.json");
 const CONFIG_JSON = path.join(ROOT, "data", "config.json");
 const OUT_FILE = path.join(ROOT, "sitemap.xml");
 
+// صفحات مستثناة من خريطة الموقع رغم وجودها كـ .html في الجذر: ملفات تحقق ملكية
+// (Google Search Console وغيرها) ومستندات داخلية مش مخصصة للزيارة العادية.
+const EXCLUDED_PAGES = new Set(["index.html"]);
+function isExcludedPage(filename) {
+  if (EXCLUDED_PAGES.has(filename)) return true;
+  // ملفات تحقق ملكية جوجل بالشكل googleXXXXXXXXXXXXXXXX.html
+  if (/^google[a-f0-9]+\.html$/i.test(filename)) return true;
+  return false;
+}
+
+// أولوية وتكرار تحديث مخصصين لصفحات معروفة، وأي صفحة تانية بتاخد قيمة افتراضية
+// معقولة تلقائيًا من غير ما تحتاج تعديل السكريبت.
+const PAGE_OVERRIDES = {
+  "products.html": { changefreq: "daily", priority: "0.9" },
+  "cart.html": { changefreq: "monthly", priority: "0.5" },
+  "account.html": { changefreq: "monthly", priority: "0.5" },
+  "terms.html": { changefreq: "monthly", priority: "0.4" },
+};
+const DEFAULT_PAGE = { changefreq: "monthly", priority: "0.5" };
+
 function encodePath(id) {
   return id.split("/").map(encodeURIComponent).join("/");
 }
 
 function isoDate(d) {
   return new Date(d).toISOString().slice(0, 10);
+}
+
+function discoverRootPages() {
+  return fs
+    .readdirSync(ROOT)
+    .filter((name) => name.toLowerCase().endsWith(".html"))
+    .filter((name) => !isExcludedPage(name))
+    .sort();
 }
 
 function build() {
@@ -48,12 +81,16 @@ function build() {
   const urls = [];
 
   urls.push({ loc: `${siteUrl}/`, changefreq: "daily", priority: "1.0", lastmod: today });
-  urls.push({
-    loc: `${siteUrl}/products.html`,
-    changefreq: "daily",
-    priority: "0.9",
-    lastmod: today,
-  });
+
+  for (const page of discoverRootPages()) {
+    const overrides = PAGE_OVERRIDES[page] || DEFAULT_PAGE;
+    urls.push({
+      loc: `${siteUrl}/${page}`,
+      changefreq: overrides.changefreq,
+      priority: overrides.priority,
+      lastmod: today,
+    });
+  }
 
   for (const cat of categories || []) {
     urls.push({
