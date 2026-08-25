@@ -364,6 +364,17 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
 .social-pill.disabled:hover{transform:none; border-color:var(--line); box-shadow:none; color:var(--ink-soft);}
 .social-pill.disabled em{font-style:normal; font-size:11px; background:var(--paper-dim); padding:3px 9px; border-radius:100px;}
 
+/* ===== زرار تواصل مع المصمم ===== */
+.designer-contact{padding:28px 0 6px; text-align:center;}
+.designer-contact-btn{
+  display:inline-flex; align-items:center; gap:9px; padding:13px 26px; border-radius:100px;
+  font-weight:700; font-size:14px; color:#0b0b0b;
+  background:linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow:0 8px 22px -8px rgba(0,0,0,.5); transition:.3s var(--ease);
+}
+.designer-contact-btn svg{width:16px; height:16px; flex-shrink:0;}
+.designer-contact-btn:hover{transform:translateY(-3px); box-shadow:0 12px 26px -8px rgba(0,0,0,.6); filter:brightness(1.05);}
+
 /* ===== footer ===== */
 /* الفوتر دايمًا غامق بخط فاتح بتصميمه الأصلي، فبنستخدم لون ثابت مش المتغيرات
    اللي بتتقلب مع الوضع الليلي (--ink/--paper بيتبدل معناهم في dark)، عشان
