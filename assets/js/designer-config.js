@@ -13,7 +13,7 @@
 window.DESIGNER_CONFIG = {
   // اللينك اللي هيتفتح لما حد يدوس على زرار "تواصل مع المصمم"
   // حط هنا أي لينك تواصل (واتساب / تليجرام / إيميل / لينكدإن... إلخ)
-  designerContactLink: "https://wa.me/201000000000",
+  designerContactLink: "https://wa.me/201270472958",
 
   // نص الزرار (تقدر تغيّره لو حابب)
   designerButtonLabel: "تواصل مع المصمم"
