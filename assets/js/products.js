@@ -45,6 +45,33 @@
     });
   }
 
+  // --- إظهار/إخفاء لوحة الفلاتر (سعر + ترتيب + شعارات)، وتفضل ظاهرة
+  // مربوطة (sticky) تحت شريط التصنيفات علشان لو نزلنا آخر الصفحة نقدر
+  // نغيّر التصنيف أو الفلاتر من غير ما نرجع لفوق ---
+  // ملحوظة: لازم البلوك ده ييجي قبل إعداد فلتر السعر تحت، لأن
+  // updatePriceUI() بتنادي updateFiltersToggleState() اللي بتستخدم
+  // filtersToggle، فلو فضل تحت هيرمي خطأ "Cannot access before
+  // initialization" (TDZ) ويوقف الصفحة كلها من غير أي رسالة واضحة.
+  const filtersBar = document.getElementById('filtersBar');
+  const filtersPanel = document.getElementById('filtersPanel');
+  const filtersToggle = document.getElementById('filtersToggle');
+  function setFiltersOpen(open){
+    filtersPanel.classList.toggle('open', open);
+    filtersToggle.setAttribute('aria-expanded', String(open));
+  }
+  if (filtersToggle){
+    filtersToggle.addEventListener('click', ()=> setFiltersOpen(!filtersPanel.classList.contains('open')));
+    // على الشاشات الكبيرة نسيبها مفتوحة افتراضيًا، وعلى الموبايل نسيبها
+    // مقفولة عشان ما تاخدش مساحة كبيرة من الشاشة
+    setFiltersOpen(window.innerWidth > 860);
+  }
+  function updateFiltersToggleState(){
+    if (!filtersToggle) return;
+    const priceActive = prices.length && dataMin !== dataMax && (priceMin !== dataMin || priceMax !== dataMax);
+    const hasActive = priceActive || activeSort !== 'default' || activeBadges.size > 0;
+    filtersToggle.classList.toggle('has-active', hasActive);
+  }
+
   // --- price range filter setup ---
   const priceFilter = document.getElementById('priceFilter');
   const priceMinInput = document.getElementById('priceMinInput');
@@ -142,29 +169,6 @@
         render();
       });
     });
-  }
-
-  // --- إظهار/إخفاء لوحة الفلاتر (سعر + ترتيب + شعارات)، وتفضل ظاهرة
-  // مربوطة (sticky) تحت شريط التصنيفات علشان لو نزلنا آخر الصفحة نقدر
-  // نغيّر التصنيف أو الفلاتر من غير ما نرجع لفوق ---
-  const filtersBar = document.getElementById('filtersBar');
-  const filtersPanel = document.getElementById('filtersPanel');
-  const filtersToggle = document.getElementById('filtersToggle');
-  function setFiltersOpen(open){
-    filtersPanel.classList.toggle('open', open);
-    filtersToggle.setAttribute('aria-expanded', String(open));
-  }
-  if (filtersToggle){
-    filtersToggle.addEventListener('click', ()=> setFiltersOpen(!filtersPanel.classList.contains('open')));
-    // على الشاشات الكبيرة نسيبها مفتوحة افتراضيًا، وعلى الموبايل نسيبها
-    // مقفولة عشان ما تاخدش مساحة كبيرة من الشاشة
-    setFiltersOpen(window.innerWidth > 860);
-  }
-  function updateFiltersToggleState(){
-    if (!filtersToggle) return;
-    const priceActive = prices.length && dataMin !== dataMax && (priceMin !== dataMin || priceMax !== dataMax);
-    const hasActive = priceActive || activeSort !== 'default' || activeBadges.size > 0;
-    filtersToggle.classList.toggle('has-active', hasActive);
   }
 
   // --- فلترة الشعارات (تريند / جديد / الأكتر طلبًا...) — بتتبني تلقائيًا
@@ -697,6 +701,7 @@
   }
 
   buildTags();
+  buildBadgeFilter();
   render();
 
   const initId = getIdFromLocation();
