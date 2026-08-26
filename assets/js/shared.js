@@ -298,4 +298,12 @@
     }
   });
 
+  // تسجيل الـ Service Worker — شرط أساسي عشان المتصفح يظهر
+  // للمستخدم زرار "تثبيت التطبيق" (على أندرويد/ويندوز عبر Chrome/Edge).
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+
 })();
