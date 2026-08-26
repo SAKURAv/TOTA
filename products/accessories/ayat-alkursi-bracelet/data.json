@@ -21,8 +21,7 @@
   ],
   "order": 1,
   "priceMode": [
-    "whatsapp",
-    "text"
+    "price"
   ],
   "priceText": "منتج"
 }
