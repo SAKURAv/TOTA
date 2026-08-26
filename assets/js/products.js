@@ -29,7 +29,10 @@
   const searchWrap = document.getElementById('searchWrap');
   const searchClear = document.getElementById('searchClear');
   const searchMeta = document.getElementById('searchMeta');
-  const tagScroll = document.getElementById('categoryTags');
+  const categoryDropdown = document.getElementById('categoryDropdown');
+  const categoryToggle = document.getElementById('categoryToggle');
+  const categoryToggleLabel = document.getElementById('categoryToggleLabel');
+  const categoryMenu = document.getElementById('categoryMenu');
   const suggestionChips = document.getElementById('suggestionChips');
 
   let activeCategory = 'all';
@@ -60,10 +63,14 @@
     filtersToggle.setAttribute('aria-expanded', String(open));
   }
   if (filtersToggle){
-    filtersToggle.addEventListener('click', ()=> setFiltersOpen(!filtersPanel.classList.contains('open')));
-    // على الشاشات الكبيرة نسيبها مفتوحة افتراضيًا، وعلى الموبايل نسيبها
-    // مقفولة عشان ما تاخدش مساحة كبيرة من الشاشة
-    setFiltersOpen(window.innerWidth > 860);
+    filtersToggle.addEventListener('click', ()=>{
+      setFiltersOpen(!filtersPanel.classList.contains('open'));
+      // فتح لوحة الفلاتر يقفل قائمة التصنيفات لو فاضلة فاتحة، عشان ميبقاش
+      // فيه قائمتين مفتوحين فوق بعض
+      setCategoryMenuOpen(false);
+    });
+    // تفضل مقفولة افتراضيًا دايمًا (موبايل وكمبيوتر) لحد ما المستخدم يفتحها بنفسه
+    setFiltersOpen(false);
   }
   function updateFiltersToggleState(){
     if (!filtersToggle) return;
@@ -218,14 +225,41 @@
   function categoryUrl(slug){
     return currentFiltersUrl({ cat: slug });
   }
+  // --- قائمة التصنيفات المنسدلة: زرار بيفتح قائمة تحته، وبمجرد ما تختار
+  // تصنيف القائمة تقفل لوحدها وتظهر منتجات التصنيف ده. القائمة تفضل
+  // مقفولة افتراضيًا، وليها سقف ارتفاع مع سكرول داخلي عشان لو التصنيفات
+  // كتروا ما تملاش الشاشة كلها (شوف overflow-y:auto في الـ CSS) ---
+  function setCategoryMenuOpen(open){
+    if (!categoryMenu || !categoryToggle) return;
+    categoryMenu.classList.toggle('open', open);
+    categoryToggle.setAttribute('aria-expanded', String(open));
+  }
+  if (categoryToggle){
+    categoryToggle.addEventListener('click', ()=>{
+      const willOpen = !categoryMenu.classList.contains('open');
+      setCategoryMenuOpen(willOpen);
+      // فتح قائمة التصنيفات يقفل لوحة الفلاتر لو فاضلة فاتحة
+      if (willOpen) setFiltersOpen(false);
+    });
+    // قفل القائمة لو المستخدم داس بره الزرار والقائمة نفسها
+    document.addEventListener('click', (e)=>{
+      if (!categoryDropdown.contains(e.target)) setCategoryMenuOpen(false);
+    });
+    document.addEventListener('keydown', (e)=>{
+      if (e.key === 'Escape') setCategoryMenuOpen(false);
+    });
+  }
   function buildTags(){
     const all = [{slug:'all', name:'الكل'}, ...categories.map(c=>({slug:c.slug, name:c.name}))];
+    const activeItem = all.find(c=>c.slug===activeCategory) || all[0];
+    if (categoryToggleLabel) categoryToggleLabel.textContent = activeItem.name;
+    if (categoryToggle) categoryToggle.classList.toggle('has-active', activeCategory !== 'all');
     // بقت <a> حقيقية بلينك فعلي لكل تصنيف (تفتح في تاب جديد بـ Ctrl+كليك، تتنسخ،
     // وتتحفظ في المفضّلة) بدل ما تكون أزرار فلترة بس من غير أي لينك.
-    tagScroll.innerHTML = all.map(c=>
-      `<a href="${categoryUrl(c.slug)}" class="tag-chip ${c.slug===activeCategory?'active':''}" data-slug="${c.slug}">${c.name}</a>`
+    categoryMenu.innerHTML = all.map(c=>
+      `<a href="${categoryUrl(c.slug)}" class="category-menu-item ${c.slug===activeCategory?'active':''}" data-slug="${c.slug}">${c.name}</a>`
     ).join('');
-    tagScroll.querySelectorAll('.tag-chip').forEach(link=>{
+    categoryMenu.querySelectorAll('.category-menu-item').forEach(link=>{
       link.addEventListener('click', (e)=>{
         // كليك عادي: نفلتر في نفس الصفحة من غير إعادة تحميل، بس نحدّث شريط
         // العنوان عشان اللينك يفضل صحيح ومتزامن مع التصنيف الظاهر.
@@ -233,6 +267,7 @@
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
         e.preventDefault();
         const slug = link.dataset.slug;
+        setCategoryMenuOpen(false);
         if (slug === activeCategory) return;
         activeCategory = slug;
         activeBadges = new Set();
