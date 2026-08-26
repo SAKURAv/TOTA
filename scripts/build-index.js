@@ -6,7 +6,7 @@
  *   <category-slug>/
  *     category.json        { "name": "اسم التصنيف", "order": 1 }
  *     <product-slug>/
- *       data.json           { name, price, oldPrice, currency, badge, description, specs:[{label,value}] }
+ *       data.json           { name, price, oldPrice, currency, badge, description, specs:[{label,value}], priceMode:['price'|'text'|'whatsapp',...], priceText }
  *       1.(svg|jpg|jpeg|png|webp|avif)   -> الصورة الأولى بالترتيب = الصورة الرئيسية تلقائيًا
  *       2.(svg|jpg|jpeg|png|webp|avif)   -> صور إضافية (اختياري، أي عدد)
  * لترتيب/ترقيم صور مضافة بأسماء عشوائية تلقائيًا: npm run reorganize-images
@@ -57,7 +57,7 @@ function build() {
   for (const catSlug of categorySlugs) {
     const catDir = path.join(PRODUCTS_DIR, catSlug);
     const catJsonPath = path.join(catDir, "category.json");
-    let catMeta = { name: catSlug, order: 999 };
+    let catMeta = { name: catSlug, order: 999, whatsapp: null };
     if (fs.existsSync(catJsonPath)) {
       try {
         catMeta = { ...catMeta, ...JSON.parse(fs.readFileSync(catJsonPath, "utf8")) };
@@ -99,6 +99,12 @@ function build() {
         badge: data.badge || null,
         description: data.description || "",
         specs: Array.isArray(data.specs) ? data.specs : [],
+        priceMode: Array.isArray(data.priceMode) && data.priceMode.length ? data.priceMode : ["price"],
+        priceText: data.priceText || null,
+        // رقم واتساب مخصّص للمنتج ده بس (لو موجود بياخد الأولوية)
+        whatsapp: data.whatsapp || null,
+        // رقم واتساب مخصّص للتصنيف اللي المنتج ده تابع له (لو موجود)
+        categoryWhatsapp: catMeta.whatsapp || null,
         image: img ? `products/${catSlug}/${prodSlug}/${img}` : "assets/img/placeholder.svg",
         images: images,
         _order: data.order ?? 999,
@@ -112,6 +118,7 @@ function build() {
       slug: catSlug,
       name: catMeta.name,
       order: catMeta.order ?? 999,
+      whatsapp: catMeta.whatsapp || null,
       products,
     });
   }

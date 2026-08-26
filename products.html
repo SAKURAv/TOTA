@@ -107,22 +107,50 @@
   <div class="search-meta" id="searchMeta"></div>
 </section>
 
-<nav class="category-bar">
-  <div class="tag-scroll" id="categoryTags"></div>
-</nav>
+<div class="filters-bar" id="filtersBar">
+  <nav class="category-bar">
+    <div class="tag-scroll" id="categoryTags"></div>
+    <button type="button" class="filters-toggle" id="filtersToggle" aria-expanded="false" aria-controls="filtersPanel">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      <span>فلاتر وترتيب</span>
+      <svg class="filters-toggle-chev" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+  </nav>
 
-<section class="price-filter container" id="priceFilter">
-  <div class="price-filter-head">
-    <span class="price-filter-label">فلترة حسب السعر</span>
-    <span class="price-filter-values"><span id="priceMinLabel"></span> — <span id="priceMaxLabel"></span> <span id="priceCurrencyLabel"></span></span>
+  <div class="filters-panel container" id="filtersPanel">
+    <section class="price-filter" id="priceFilter">
+      <div class="price-filter-head">
+        <span class="price-filter-label">فلترة حسب السعر</span>
+        <span class="price-filter-values"><span id="priceMinLabel"></span> — <span id="priceMaxLabel"></span> <span id="priceCurrencyLabel"></span></span>
+      </div>
+      <div class="price-inputs-row">
+        <input type="number" id="priceMinNumber" class="price-number-input" inputmode="numeric" placeholder="من">
+        <span class="price-inputs-sep">—</span>
+        <input type="number" id="priceMaxNumber" class="price-number-input" inputmode="numeric" placeholder="إلى">
+      </div>
+      <div class="price-slider" id="priceSlider">
+        <div class="price-slider-track"></div>
+        <div class="price-slider-range" id="priceSliderRange"></div>
+        <input type="range" id="priceMinInput" class="price-range-input">
+        <input type="range" id="priceMaxInput" class="price-range-input">
+      </div>
+    </section>
+
+    <section class="sort-filter" id="sortFilter">
+      <span class="price-filter-label">الترتيب</span>
+      <div class="sort-row" id="sortRow">
+        <button type="button" class="sort-btn active" data-sort="default">الافتراضي</button>
+        <button type="button" class="sort-btn" data-sort="asc">الأقل سعرًا</button>
+        <button type="button" class="sort-btn" data-sort="desc">الأعلى سعرًا</button>
+      </div>
+    </section>
+
+    <section class="badge-filter" id="badgeFilter" hidden>
+      <span class="price-filter-label">تصفية حسب الشعار</span>
+      <div class="badge-chip-row" id="badgeChipRow"></div>
+    </section>
   </div>
-  <div class="price-slider" id="priceSlider">
-    <div class="price-slider-track"></div>
-    <div class="price-slider-range" id="priceSliderRange"></div>
-    <input type="range" id="priceMinInput" class="price-range-input">
-    <input type="range" id="priceMaxInput" class="price-range-input">
-  </div>
-</section>
+</div>
 
 <main class="catalog container" id="catalog">
   <div class="section-head reveal">
@@ -130,6 +158,8 @@
     <span class="section-count" id="sectionCount"></span>
   </div>
   <div class="grid" id="productGrid"></div>
+
+  <div class="pagination" id="pagination"></div>
 
   <div class="no-results" id="noResults">
     <div class="no-results-icon">⌕</div>
@@ -176,11 +206,8 @@
     <div class="modal-body">
       <div class="modal-cat" id="modalCat"></div>
       <div class="modal-title" id="modalTitle"></div>
-      <p class="modal-desc" id="modalDesc"></p>
-      <div class="modal-price-row">
-        <span class="modal-price" id="modalPrice"></span>
-        <span class="modal-old-price" id="modalOldPrice"></span>
-      </div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-price-row" id="modalPriceRow"></div>
       <div class="modal-specs" id="modalSpecs"></div>
       <div class="modal-actions">
         <a class="btn-whatsapp" id="modalWhatsapp" target="_blank">✆ اطلب على واتساب</a>

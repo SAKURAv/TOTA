@@ -34,11 +34,23 @@
 
   let activeCategory = 'all';
   let activeQuery = '';
+  let activeSort = 'default'; // 'default' | 'asc' | 'desc'
+  let activeBadges = new Set(); // بيتفلتر بيهم على حسب الشعار (تريند/جديد/الأكتر طلبًا...)
+  let currentPage = 1;
+  const PAGE_SIZE = 30;
+
+  function escapeHtml(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
 
   // --- price range filter setup ---
   const priceFilter = document.getElementById('priceFilter');
   const priceMinInput = document.getElementById('priceMinInput');
   const priceMaxInput = document.getElementById('priceMaxInput');
+  const priceMinNumber = document.getElementById('priceMinNumber');
+  const priceMaxNumber = document.getElementById('priceMaxNumber');
   const priceSliderRange = document.getElementById('priceSliderRange');
   const priceMinLabel = document.getElementById('priceMinLabel');
   const priceMaxLabel = document.getElementById('priceMaxLabel');
@@ -56,6 +68,10 @@
     priceMinInput.max = priceMaxInput.max = dataMax;
     priceMinInput.value = dataMin;
     priceMaxInput.value = dataMax;
+    priceMinNumber.min = priceMaxNumber.min = dataMin;
+    priceMinNumber.max = priceMaxNumber.max = dataMax;
+    priceMinNumber.value = dataMin;
+    priceMaxNumber.value = dataMax;
     priceCurrencyLabel.textContent = (allProducts.find(p=>p.currency)||{}).currency || '';
 
     function updatePriceUI(){
@@ -64,21 +80,119 @@
       priceSliderRange.style.left = (100 - pct(priceMax)) + '%';
       priceMinLabel.textContent = priceMin.toLocaleString('ar-EG');
       priceMaxLabel.textContent = priceMax.toLocaleString('ar-EG');
+      priceMinInput.value = priceMin;
+      priceMaxInput.value = priceMax;
+      priceMinNumber.value = priceMin;
+      priceMaxNumber.value = priceMax;
+      updateFiltersToggleState();
     }
 
+    // شريط السحب (رينج) — بيفضل شغال زي ما هو
     priceMinInput.addEventListener('input', ()=>{
       priceMin = Math.min(+priceMinInput.value, priceMax);
-      priceMinInput.value = priceMin;
       updatePriceUI();
+      currentPage = 1;
       render();
     });
     priceMaxInput.addEventListener('input', ()=>{
       priceMax = Math.max(+priceMaxInput.value, priceMin);
-      priceMaxInput.value = priceMax;
       updatePriceUI();
+      currentPage = 1;
       render();
     });
+
+    // خانات الكتابة اليدوية — تسمح بكتابة رقم السعر مباشرة من غير ما تشد الشريط
+    function applyMinNumber(){
+      let v = priceMinNumber.value === '' ? dataMin : +priceMinNumber.value;
+      if (isNaN(v)) v = dataMin;
+      v = Math.max(dataMin, Math.min(v, priceMax));
+      priceMin = v;
+      updatePriceUI();
+      currentPage = 1;
+      render();
+    }
+    function applyMaxNumber(){
+      let v = priceMaxNumber.value === '' ? dataMax : +priceMaxNumber.value;
+      if (isNaN(v)) v = dataMax;
+      v = Math.min(dataMax, Math.max(v, priceMin));
+      priceMax = v;
+      updatePriceUI();
+      currentPage = 1;
+      render();
+    }
+    priceMinNumber.addEventListener('change', applyMinNumber);
+    priceMaxNumber.addEventListener('change', applyMaxNumber);
+    priceMinNumber.addEventListener('keydown', e=>{ if (e.key === 'Enter'){ e.preventDefault(); priceMinNumber.blur(); } });
+    priceMaxNumber.addEventListener('keydown', e=>{ if (e.key === 'Enter'){ e.preventDefault(); priceMaxNumber.blur(); } });
+
     updatePriceUI();
+  }
+
+  // --- الترتيب حسب السعر ---
+  const sortRow = document.getElementById('sortRow');
+  if (sortRow){
+    sortRow.querySelectorAll('.sort-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const val = btn.dataset.sort;
+        if (val === activeSort) return;
+        activeSort = val;
+        sortRow.querySelectorAll('.sort-btn').forEach(b=> b.classList.toggle('active', b.dataset.sort === activeSort));
+        updateFiltersToggleState();
+        currentPage = 1;
+        render();
+      });
+    });
+  }
+
+  // --- إظهار/إخفاء لوحة الفلاتر (سعر + ترتيب + شعارات)، وتفضل ظاهرة
+  // مربوطة (sticky) تحت شريط التصنيفات علشان لو نزلنا آخر الصفحة نقدر
+  // نغيّر التصنيف أو الفلاتر من غير ما نرجع لفوق ---
+  const filtersBar = document.getElementById('filtersBar');
+  const filtersPanel = document.getElementById('filtersPanel');
+  const filtersToggle = document.getElementById('filtersToggle');
+  function setFiltersOpen(open){
+    filtersPanel.classList.toggle('open', open);
+    filtersToggle.setAttribute('aria-expanded', String(open));
+  }
+  if (filtersToggle){
+    filtersToggle.addEventListener('click', ()=> setFiltersOpen(!filtersPanel.classList.contains('open')));
+    // على الشاشات الكبيرة نسيبها مفتوحة افتراضيًا، وعلى الموبايل نسيبها
+    // مقفولة عشان ما تاخدش مساحة كبيرة من الشاشة
+    setFiltersOpen(window.innerWidth > 860);
+  }
+  function updateFiltersToggleState(){
+    if (!filtersToggle) return;
+    const priceActive = prices.length && dataMin !== dataMax && (priceMin !== dataMin || priceMax !== dataMax);
+    const hasActive = priceActive || activeSort !== 'default' || activeBadges.size > 0;
+    filtersToggle.classList.toggle('has-active', hasActive);
+  }
+
+  // --- فلترة الشعارات (تريند / جديد / الأكتر طلبًا...) — بتتبني تلقائيًا
+  // من الشعارات الموجودة فعليًا في التصنيف اللي المستخدم واقف فيه دلوقتي ---
+  const badgeFilterSection = document.getElementById('badgeFilter');
+  const badgeChipRow = document.getElementById('badgeChipRow');
+  function buildBadgeFilter(){
+    const pool = activeCategory === 'all' ? allProducts : allProducts.filter(p=>p.category === activeCategory);
+    const badges = [...new Set(pool.map(p=>p.badge).filter(Boolean))];
+    if (!badges.length){
+      badgeFilterSection.hidden = true;
+      badgeChipRow.innerHTML = '';
+      return;
+    }
+    badgeFilterSection.hidden = false;
+    badgeChipRow.innerHTML = badges.map(b=>
+      `<button type="button" class="badge-chip ${activeBadges.has(b)?'active':''}" data-badge="${escapeHtml(b)}">${escapeHtml(b)}</button>`
+    ).join('');
+    badgeChipRow.querySelectorAll('.badge-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        const b = chip.dataset.badge;
+        if (activeBadges.has(b)) activeBadges.delete(b); else activeBadges.add(b);
+        chip.classList.toggle('active');
+        updateFiltersToggleState();
+        currentPage = 1;
+        render();
+      });
+    });
   }
 
   // --- بناء لينكات الصفحة بحيث يحافظ على الفلاتر الحالية (تصنيف + بحث)،
@@ -117,8 +231,11 @@
         const slug = link.dataset.slug;
         if (slug === activeCategory) return;
         activeCategory = slug;
+        activeBadges = new Set();
+        currentPage = 1;
         history.pushState({ category: activeCategory }, '', categoryUrl(activeCategory));
         buildTags();
+        buildBadgeFilter();
         render();
       });
     });
@@ -126,9 +243,14 @@
 
   // --- render grid ---
   function render(){
+    // بنطبق كل فلتر لوحده وبالترتيب، وكل واحد بياخد نتيجة اللي قبله —
+    // كده أي عدد من الفلاتر (تصنيف + شعار + سعر + بحث) بيشتغلوا مع بعض
+    // من غير ما يتعارضوا أو يمسحوا بعض
     let list = allProducts;
 
     if (activeCategory !== 'all') list = list.filter(p=>p.category === activeCategory);
+
+    if (activeBadges.size) list = list.filter(p => p.badge && activeBadges.has(p.badge));
 
     if (prices.length && dataMin !== dataMax){
       list = list.filter(p => p.price == null || (p.price >= priceMin && p.price <= priceMax));
@@ -140,6 +262,14 @@
       list = scored.map(r=>r.item);
     }
 
+    if (activeSort === 'asc' || activeSort === 'desc'){
+      list = list.slice().sort((a, b)=>{
+        const pa = a.price == null ? Infinity : a.price;
+        const pb = b.price == null ? Infinity : b.price;
+        return activeSort === 'asc' ? pa - pb : (pb === Infinity && pa === Infinity ? 0 : (pa === Infinity ? 1 : (pb === Infinity ? -1 : pb - pa)));
+      });
+    }
+
     sectionTitle.textContent = activeQuery.trim()
       ? `نتائج البحث عن "${activeQuery}"`
       : (activeCategory === 'all' ? 'كل المنتجات' : (categories.find(c=>c.slug===activeCategory)||{}).name);
@@ -147,13 +277,19 @@
 
     if (!list.length){
       grid.innerHTML = '';
+      pagination.innerHTML = '';
       noResults.classList.add('show');
       buildSuggestions();
       return;
     }
     noResults.classList.remove('show');
 
-    grid.innerHTML = list.map(p => cardHTML(p, activeQuery)).join('');
+    const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    const pageList = list.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    grid.innerHTML = pageList.map(p => cardHTML(p, activeQuery)).join('');
     grid.classList.add('reveal-stagger');
     window.observeReveals && observeReveals();
     window.attachImageLoaders && attachImageLoaders(grid);
@@ -163,11 +299,60 @@
         openModal(c.dataset.id);
       });
     });
+    grid.querySelectorAll('[data-wa-card-slug]').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        const p = allProducts.find(x=>x.id === btn.dataset.waCardSlug);
+        if (p) openWhatsapp(p);
+      });
+    });
     syncFavoriteHearts();
+    renderPagination(totalPages);
 
     searchMeta.innerHTML = activeQuery.trim()
       ? `لقينا <b>${list.length}</b> نتيجة قريبة من بحثك`
       : '';
+  }
+
+  const pagination = document.getElementById('pagination');
+  function renderPagination(totalPages){
+    if (totalPages <= 1){ pagination.innerHTML = ''; return; }
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++){
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) pages.push(i);
+      else if (pages[pages.length - 1] !== '…') pages.push('…');
+    }
+    const btn = (label, page, opts) => {
+      opts = opts || {};
+      return `<button type="button" class="page-btn ${opts.active?'active':''}" ${opts.disabled?'disabled':''} data-page="${page||''}">${label}</button>`;
+    };
+    pagination.innerHTML =
+      btn('السابق', currentPage - 1, { disabled: currentPage === 1 }) +
+      pages.map(p => p === '…' ? `<span class="page-dots">…</span>` : btn(p, p, { active: p === currentPage })).join('') +
+      btn('التالي', currentPage + 1, { disabled: currentPage === totalPages });
+
+    pagination.querySelectorAll('.page-btn[data-page]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const p = +b.dataset.page;
+        if (!p || p === currentPage) return;
+        currentPage = p;
+        render();
+        filtersBar && filtersBar.scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+    });
+  }
+
+  // بيحدد رقم الواتساب المستخدَم للمنتج: رقم المنتج نفسه لو موجود،
+  // وإلا رقم التصنيف اللي المنتج تابع له لو موجود، وإلا الرقم العام للموقع
+  function resolveWhatsappNumber(p){
+    const raw = (p && p.whatsapp) || (p && p.categoryWhatsapp) || cfg.whatsapp || '201000000000';
+    return String(raw).replace(/\D/g, '') || WHATSAPP_NUMBER;
+  }
+
+  function openWhatsapp(p){
+    const waText = encodeURIComponent(`مرحبا اريد الاستفسار عن (${p.name})\n${productPageUrl(p.id)}`);
+    window.open(`https://wa.me/${resolveWhatsappNumber(p)}?text=${waText}`, '_blank');
   }
 
   // بيظبط شكل قلوب المفضلة على كل كروت المنتجات المعروضة دلوقتي بطلب
@@ -197,16 +382,48 @@
         activeQuery = '';
         const cat = categories.find(c=>c.name===btn.dataset.name);
         activeCategory = cat ? cat.slug : 'all';
+        activeBadges = new Set();
+        currentPage = 1;
         history.pushState({ category: activeCategory }, '', currentFiltersUrl());
         buildTags();
+        buildBadgeFilter();
         render();
       });
     });
   }
 
+  // بيبني محتوى خانة السعر حسب priceMode (ممكن أكتر من وضع مفعّل مع بعض):
+  // 'price' -> السعر الرقمي، 'text' -> كتابة مخصّصة، 'whatsapp' -> زر واتس مباشر
+  const WA_ICON_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.29-1.38a9.9 9.9 0 0 0 4.7 1.2h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2Zm0 18.06h-.01a8.13 8.13 0 0 1-4.15-1.14l-.3-.18-3.13.82.84-3.06-.2-.31a8.15 8.15 0 0 1-1.25-4.28c0-4.49 3.66-8.15 8.16-8.15 2.18 0 4.22.85 5.76 2.4a8.1 8.1 0 0 1 2.39 5.76c0 4.5-3.66 8.15-8.16 8.15Zm4.47-6.11c-.25-.12-1.45-.72-1.67-.8-.22-.08-.39-.12-.55.12-.16.24-.63.8-.78.96-.14.16-.29.18-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.24-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.31-.22.24-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.45-.59 1.65-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.47-.28Z"/></svg>`;
+
+  // بيبني محتوى خانة السعر حسب priceMode (ممكن أكتر من وضع مفعّل مع بعض):
+  // 'price' -> السعر الرقمي، 'text' -> كتابة مخصّصة، 'whatsapp' -> زر واتس مباشر
+  // isCard=true لكارت المنتج داخل الشبكة، false للمودال (نفس المنطق بكلاسات مختلفة للتنسيق)
+  function priceCellHTML(p, isCard){
+    const priceCls = isCard ? 'card-price' : 'modal-price';
+    const oldCls = isCard ? 'card-old-price' : 'modal-old-price';
+    const textCls = isCard ? 'card-price-text' : 'modal-price-text';
+    const waCls = isCard ? 'card-price-whatsapp' : 'modal-price-whatsapp';
+    const waAttr = isCard ? `data-wa-card-slug="${p.id}"` : `data-wa-modal-slug="${p.id}"`;
+    const modes = (p.priceMode && p.priceMode.length) ? p.priceMode : ['price'];
+    const parts = [];
+    if (modes.includes('price') && p.price != null){
+      const old = p.oldPrice ? `<span class="${oldCls}">${p.oldPrice.toLocaleString('ar-EG')} ${p.currency||''}</span>` : '';
+      parts.push(`<span class="${priceCls}">${p.price.toLocaleString('ar-EG')} ${p.currency||''}</span>${old}`);
+    }
+    if (modes.includes('text') && p.priceText){
+      parts.push(`<span class="${textCls}">${escapeHtml(p.priceText)}</span>`);
+    }
+    if (modes.includes('whatsapp')){
+      parts.push(`<button type="button" class="${waCls}" ${waAttr} aria-label="تواصل عبر واتساب">${WA_ICON_SVG}<span>واتساب</span></button>`);
+    }
+    if (!parts.length && p.price != null){
+      parts.push(`<span class="${priceCls}">${p.price.toLocaleString('ar-EG')} ${p.currency||''}</span>`);
+    }
+    return parts.join('');
+  }
+
   function cardHTML(p, query){
-    const price = p.price != null ? `${p.price.toLocaleString('ar-EG')} ${p.currency||''}` : '';
-    const old = p.oldPrice ? `<span class="card-old-price">${p.oldPrice.toLocaleString('ar-EG')} ${p.currency||''}</span>` : '';
     const badge = p.badge ? `<span class="card-badge">${p.badge}</span>` : '';
     const name = query ? FuzzySearch.highlight(p.name, query) : p.name;
     return `
@@ -218,9 +435,18 @@
       <div class="card-media"><img src="${p.image}" alt="${p.name}" loading="lazy"></div>
       <div class="card-body">
         <div class="card-name">${name}</div>
-        <div class="card-price-row"><span class="card-price">${price}</span>${old}</div>
+        <div class="card-price-row">${priceCellHTML(p, true)}</div>
       </div>
     </a>`;
+  }
+
+  // بيحول صيغة [نص](رابط) جوه الوصف لرابط حقيقي قابل للضغط بيفتح في تاب جديد،
+  // مع الهروب (escape) من أي HTML تاني في النص علشان الأمان
+  function renderDescriptionHTML(desc){
+    const escaped = escapeHtml(desc || '');
+    return escaped.replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, (m, text, url) => {
+      return `<a class="desc-link" href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    });
   }
 
   // --- search: بيتنفذ بس لما تدوس زرار "بحث" أو تدوس Enter، مش أول ما تكتب،
@@ -340,14 +566,24 @@
     window.dispatchEvent(new CustomEvent('tota:product-viewed', { detail: p }));
     document.getElementById('modalCat').textContent = p.categoryName;
     document.getElementById('modalTitle').textContent = p.name;
-    document.getElementById('modalDesc').textContent = p.description || '';
-    document.getElementById('modalPrice').textContent = p.price != null ? `${p.price.toLocaleString('ar-EG')} ${p.currency||''}` : '';
-    document.getElementById('modalOldPrice').textContent = p.oldPrice ? `${p.oldPrice.toLocaleString('ar-EG')} ${p.currency||''}` : '';
+    document.getElementById('modalDesc').innerHTML = renderDescriptionHTML(p.description);
+    const modalPriceRow = document.getElementById('modalPriceRow');
+    if (modalPriceRow){
+      modalPriceRow.innerHTML = priceCellHTML(p, false);
+      const waBtn = modalPriceRow.querySelector('[data-wa-modal-slug]');
+      if (waBtn) waBtn.addEventListener('click', (e)=>{ e.preventDefault(); openWhatsapp(p); });
+    } else {
+      // توافق مع أي نسخة قديمة من الـ HTML لسه معندهاش modalPriceRow
+      const mp = document.getElementById('modalPrice');
+      const mop = document.getElementById('modalOldPrice');
+      if (mp) mp.textContent = p.price != null ? `${p.price.toLocaleString('ar-EG')} ${p.currency||''}` : '';
+      if (mop) mop.textContent = p.oldPrice ? `${p.oldPrice.toLocaleString('ar-EG')} ${p.currency||''}` : '';
+    }
     document.getElementById('modalSpecs').innerHTML = (p.specs||[]).map(s=>
       `<div class="modal-spec"><span>${s.label}</span><span>${s.value}</span></div>`
     ).join('');
     const waText = encodeURIComponent(`مرحبا اريد الاستفسار عن (${p.name})\n${productPageUrl(p.id)}`);
-    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
+    const waUrl = `https://wa.me/${resolveWhatsappNumber(p)}?text=${waText}`;
     const waBtn = document.getElementById('modalWhatsapp');
     // لو المستخدم مسجّل دخول ومحفوظش رقم هاتفه، بنطلبه منه الأول (عشان
     // الأدمن يقدر يتابع معاه من داخل النظام). لكن الزائر اللي مسجّلش
