@@ -4,7 +4,7 @@
   "oldPrice": 130,
   "currency": "EGP",
   "badge": "الأكثر مبيعًا",
-  "description": "اسورة آية الكرسي بكل ألوانها 🙈 أعلى جودة وأقل سعر في السوق\n[لينك الموقع](https://tota.sakurau.workers.dev/)",
+  "description": "اسورة آية الكرسي بكل ألوانها 🙈 أعلى جودة وأقل سعر في السوق",
   "specs": [
     {
       "label": "الخامة",
@@ -21,7 +21,8 @@
   ],
   "order": 1,
   "priceMode": [
-    "price",
-    "whatsapp"
-  ]
+    "whatsapp",
+    "text"
+  ],
+  "priceText": "منتج"
 }
