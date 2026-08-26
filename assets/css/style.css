@@ -42,7 +42,13 @@ body{
   color:var(--ink);
   font-family:'IBM Plex Sans Arabic', sans-serif;
   direction:rtl;
-  overflow-x:hidden;
+  /* ملحوظة: overflow-x:hidden اتشالت من هنا (وخلّيناها بس على html فوق) لأن
+     ضبطها على الاتنين (html و body) مع عدم ضبط overflow-y بيخلي المتصفح
+     يحوّل overflow-y الافتراضي (visible) لـ auto تلقائيًا حسب سبك CSS، وده
+     بيخلي الـ body نفسه "container" له scroll خاص بيه. الأثر العملي: أي
+     عنصر position:sticky جوه الصفحة (زي شريط الكاتيجوري وشريط الفلاتر) بيبطل
+     يلزّق وهو بينزل، خصوصًا على موبايل سفاري. شيل overflow-x من الـ body
+     بيمنع المشكلة دي وبيخلي الـ sticky يشتغل صح على الموبايل والكمبيوتر. */
   line-height:1.65;
   transition:background .4s var(--ease), color .4s var(--ease);
 }
