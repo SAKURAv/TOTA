@@ -982,6 +982,16 @@ html.tota-modal-open, body.tota-modal-open{ overflow:hidden; height:100%; }
 @media (prefers-reduced-motion: reduce){
   .tota-modal-overlay, .tota-modal{ animation: none; }
 }
+/* الأنيميشن الزخرفي (فقاعات، الدايرة الدوارة، نبضة واتساب) فاضل شغال
+   لكل الزوار زي ما هو (قرار صاحب الموقع) — بس أخف: بيتوقف تلقائيًا لما
+   العنصر يبقى برّه الشاشة (مش ظاهر للمستخدم أصلاً) أو لما التاب يبقى
+   مخفي، بدل ما يفضل شغال 24 ساعة على الفاضي. الكلاسات دي بتتحط/بتتشال
+   بـ JS في shared.js (IntersectionObserver + visibilitychange). */
+.tota-anim-offscreen, body.tota-tab-hidden .bg-bubble,
+body.tota-tab-hidden .scc-orbit, body.tota-tab-hidden .whatsapp-float-pulse,
+body.tota-tab-hidden .scroll-hint .line{
+  animation-play-state: paused !important;
+}
 .tota-modal-close{
   position:absolute; top:14px; left:14px; background:none; border:none;
   font-size:26px; line-height:1; cursor:pointer; color:var(--muted);

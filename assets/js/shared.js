@@ -2,21 +2,52 @@
 (function(){
 
   // --- smooth scroll (Lenis) — makes the whole site feel soft instead of jumpy ---
-  // forced on for everyone, even with prefers-reduced-motion, per site owner's choice
+  // شغالة إجباري لكل الزوار زي ما كانت (قرار صاحب الموقع)، بس دلوقتي
+  // أخف بمرتين: (1) حلقة الـ requestAnimationFrame بتوقف تمامًا لما
+  // السكرول يبقى "ساكن" (المستخدم مش بيسكرول فعليًا) بدل ما تفضل شغالة
+  // 60 مرة/ثانية طول الوقت من غير داعي، وترجع تشتغل تاني أول ما يبدأ
+  // يسكرول. (2) بتوقف كمان لما التاب يبقى مخفي بالكامل.
+  const lenisIdleMs = 160; // بعد قد إيه من آخر حركة سكرول نعتبره "ساكن" ونوقف الحلقة
   if (window.Lenis){
     const lenis = new Lenis({ duration: 1.05, smoothWheel: true, smoothTouch: false });
-    function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
-    requestAnimationFrame(raf);
+    let rafId = null, idleTimer = null;
+    function raf(time){ lenis.raf(time); rafId = requestAnimationFrame(raf); }
+    function startLoop(){ if (rafId == null) rafId = requestAnimationFrame(raf); }
+    function stopLoop(){ if (rafId != null){ cancelAnimationFrame(rafId); rafId = null; } }
+    function kickAlive(){
+      startLoop();
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(stopLoop, lenisIdleMs);
+    }
+    // أول تشغيل: نسيبها شغالة لحد ما تستقر (فيه أنيميشن دخول بيعتمد
+    // على السكرول ساعات)، وبعدين بندخل في وضع "توقف عند السكون"
+    startLoop();
+    idleTimer = setTimeout(stopLoop, 1200);
+    ['wheel', 'touchmove', 'keydown'].forEach(evt=>{
+      window.addEventListener(evt, kickAlive, { passive: true });
+    });
+    lenis.on('scroll', kickAlive);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden){ stopLoop(); clearTimeout(idleTimer); }
+      else kickAlive();
+    });
     window.lenis = lenis;
     // keep in-page anchor links (e.g. #catalog) buttery smooth too
     document.querySelectorAll('a[href^="#"]').forEach(a=>{
       a.addEventListener('click', e=>{
         const id = a.getAttribute('href');
         const target = id.length > 1 ? document.querySelector(id) : null;
-        if (target){ e.preventDefault(); lenis.scrollTo(target, { duration: 1.1 }); }
+        if (target){ e.preventDefault(); kickAlive(); lenis.scrollTo(target, { duration: 1.1 }); }
       });
     });
   }
+
+  // --- pause decorative CSS animations (bubbles, orbit, whatsapp pulse) لما
+  // التاب يبقى مخفي — بيوفر بطارية ومعالج على أي جهاز، خصوصًا الموبايل
+  // لما المستخدم يقفل الشاشة أو يفتح تطبيق تاني والموقع فاضل شغال بالخلفية ---
+  document.addEventListener('visibilitychange', () => {
+    document.body.classList.toggle('tota-tab-hidden', document.hidden);
+  });
 
   // --- theme: always light by default, remembers the user's own choice ---
   const root = document.documentElement;
@@ -92,16 +123,26 @@
     dot.className = 'cursor-dot';
     ring.className = 'cursor-ring';
     document.body.append(dot, ring);
-    let mx = 0, my = 0, rx = 0, ry = 0;
+    let mx = 0, my = 0, rx = 0, ry = 0, cursorRafId = null;
     window.addEventListener('mousemove', e => {
       mx = e.clientX; my = e.clientY;
       dot.style.left = mx + 'px'; dot.style.top = my + 'px';
     });
-    (function loop(){
+    function loop(){
       rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
       ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-      requestAnimationFrame(loop);
-    })();
+      cursorRafId = requestAnimationFrame(loop);
+    }
+    cursorRafId = requestAnimationFrame(loop);
+    // نفس فكرة Lenis فوق: نوقف الحلقة لما التاب يختفي عشان مانستهلكش
+    // معالج وبطارية من غير داعي وهي مش ظاهرة أصلاً للمستخدم
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden){
+        if (cursorRafId != null){ cancelAnimationFrame(cursorRafId); cursorRafId = null; }
+      } else if (cursorRafId == null){
+        cursorRafId = requestAnimationFrame(loop);
+      }
+    });
     document.querySelectorAll('a, button, .card, .magnetic').forEach(el=>{
       el.addEventListener('mouseenter', ()=>ring.classList.add('hover'));
       el.addEventListener('mouseleave', ()=>ring.classList.remove('hover'));
@@ -126,6 +167,18 @@
       topbar.classList.toggle('scrolled', window.scrollY > 10);
     }, { passive:true });
   }
+
+  // --- lighten decorative infinite animations: بتوقف (animation-play-state)
+  // لما العنصر يخرج برّه الشاشة، وترجع تشتغل تاني أول ما يظهر — العنصر
+  // فاضل شغال زي ما هو لكل الزوار، بس مش بيستهلك معالج وهو مش ظاهر ---
+  const animatedEls = document.querySelectorAll('.bg-bubble, .scc-orbit, .whatsapp-float-pulse');
+  const animIo = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      en.target.classList.toggle('tota-anim-offscreen', !en.isIntersecting);
+    });
+  }, { threshold: 0 });
+  if (animatedEls.length) animatedEls.forEach(el=> animIo.observe(el));
+  window.totaObserveAnim = (el)=> el && animIo.observe(el);
 
   // --- scroll reveal ---
   const io = new IntersectionObserver((entries)=>{
@@ -238,6 +291,7 @@
         btn.setAttribute('aria-label', 'تواصل معنا على واتساب');
         btn.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.5.05-1.13.07-1.83-.11-.42-.11-.96-.3-1.65-.6-2.9-1.25-4.79-4.17-4.94-4.36-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.27-.29.58-.36.78-.36.2 0 .39 0 .56.01.18.01.42-.07.65.5.24.58.82 2 .89 2.14.07.15.12.32.02.51-.1.2-.15.32-.3.5-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.75 1.24 1.62 2 1.11.99 2.05 1.3 2.34 1.44.29.15.46.13.63-.08.17-.2.72-.84.92-1.13.19-.29.39-.24.65-.14.27.1 1.7.8 1.99.95.29.15.48.22.55.34.07.13.07.75-.17 1.43z"/></svg><span class="whatsapp-float-pulse"></span>';
         document.body.appendChild(btn);
+        window.totaObserveAnim && window.totaObserveAnim(btn.querySelector('.whatsapp-float-pulse'));
         // small entrance delay so it doesn't fight with the intro curtain
         setTimeout(()=> btn.classList.add('show'), 900);
       }

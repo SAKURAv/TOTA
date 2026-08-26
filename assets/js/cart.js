@@ -70,7 +70,7 @@
         if (!slugs.length) { listEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>'; return; }
         listEl.innerHTML = slugs.map(function (slug) {
           const catalog = productsCatalog[slug] || {};
-          const img = catalog.image ? ('<img src="' + catalog.image + '" alt="">') : '';
+          const img = catalog.image ? ('<img src="' + catalog.image + '" alt="" loading="lazy">') : '';
           return (
             '<div class="fav-item" data-fav-slug="' + slug + '">' +
             '<div class="fav-item-media">' + img + '</div>' +
@@ -100,7 +100,7 @@
         const p = f.products;
         if (!p) return '';
         const catalog = productsCatalog[p.slug] || {};
-        const img = catalog.image ? ('<img src="' + catalog.image + '" alt="">') : '';
+        const img = catalog.image ? ('<img src="' + catalog.image + '" alt="" loading="lazy">') : '';
         return (
           '<div class="fav-item" data-fav="' + p.id + '" data-slug="' + p.slug + '">' +
           '<div class="fav-item-media">' + img + '</div>' +
@@ -304,7 +304,7 @@
       emptyEl.hidden = true;
       checkoutAreaEl.hidden = false;
       itemsListEl.innerHTML = cartRows.map(function (r) {
-        const img = r.image ? ('<img src="' + r.image + '" alt="">') : '';
+        const img = r.image ? ('<img src="' + r.image + '" alt="" loading="lazy">') : '';
         const link = r.slug ? ('p/' + r.slug + '/') : '#';
         return (
           '<div class="cart-item" data-row="' + r.id + '">' +
