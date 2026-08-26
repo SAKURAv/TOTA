@@ -28,7 +28,7 @@ const TARGET_FILES = ["index.html", "products.html"];
 // الصفحات دي مالهاش meta tags للمشاركة (og:title..إلخ) لكن لازم تاخد نفس
 // أيقونة تبويب المتصفح (favicon) بتاعة باقي الموقع، فبنعدّل عليها الـ
 // <link rel="icon"> بس من غير باقي meta tags.
-const FAVICON_ONLY_FILES = ["account.html", "cart.html"];
+const FAVICON_ONLY_FILES = ["account.html", "cart.html", "terms.html"];
 const FALLBACK_OG_IMAGE = "assets/img/og-image.jpg";
 // أيقونة تبويب المتصفح / جوجل ليها ملف احتياطي منفصل تمامًا عن صورة
 // معاينة اللينكات (og-image.jpg)، عشان رفع لوجو من برنامج الأدمن يأثر
@@ -45,10 +45,17 @@ function mimeFromExt(filePath) {
   return "image/jpeg";
 }
 
-// بتحدّث كل <link rel="icon"|"shortcut icon"|"apple-touch-icon"> في ملف
-// HTML واحد عشان يبقوا مشيرين للوجو اللي البرنامج (الأدمن) رفعه، بدل
-// الصورة الافتراضية site-logo.jpg. لو مفيش لوجو مرفوع، بترجع لـ
-// site-logo.jpg الثابت — الفافيكون منفصل تمامًا عن og-image.jpg.
+// بتحدّث <link rel="icon"> و "shortcut icon"> (أيقونة تبويب المتصفح) بس،
+// عشان يبقوا مشيرين للوجو اللي البرنامج (الأدمن) رفعه، بدل الصورة
+// الافتراضية site-logo.jpg. لو مفيش لوجو مرفوع، بترجع لـ site-logo.jpg
+// الثابت — الفافيكون منفصل تمامًا عن og-image.jpg.
+//
+// ⚠️ apple-touch-icon اتشال عمدًا من هنا (كان ده سبب مشاكل الأيقونة وقت
+// التثبيت/Add to Home Screen): كان بيتكتب فوق بنفس اللوجو الخام
+// (faviconRelPath) في كل نشر، فبيمسح قيمة icons/icon-apple-touch.png
+// اللي generate-icons.py بيولّدها خصيصًا بمقاس 180×180 وهامش أمان مناسب
+// لآيفون. apple-touch-icon المفروض يفضل ثابت على الملف المولّد ده دايمًا
+// (مكتوب أصلاً صح في كل صفحة)، ومايتلمسش هنا خالص.
 function applyFavicon(html, faviconRelPath) {
   const mime = mimeFromExt(faviconRelPath);
   html = html.replace(
@@ -66,10 +73,6 @@ function applyFavicon(html, faviconRelPath) {
   html = html.replace(
     /(<link rel="shortcut icon" href="[^"]*" type=")[^"]*(">)/,
     `$1${mime}$2`
-  );
-  html = html.replace(
-    /(<link rel="apple-touch-icon" href=")[^"]*(">)/,
-    `$1${faviconRelPath}$2`
   );
   return html;
 }

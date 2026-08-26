@@ -5,6 +5,7 @@
   "scripts": {
     "build": "node scripts/generate-env.js && node scripts/build-index.js && node scripts/build-share-pages.js && node scripts/build-meta.js && node scripts/build-sitemap.js",
     "reorganize-images": "node scripts/reorganize-images.js",
+    "icons": "python3 scripts/generate-icons.py",
     "watch": "node scripts/watch.js",
     "serve": "python3 -m http.server 5500",
     "dev": "node scripts/watch.js"

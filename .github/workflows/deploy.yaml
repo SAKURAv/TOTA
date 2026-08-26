@@ -26,6 +26,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # بيولّد أيقونات الـ PWA (assets/img/icons/) من اللوجو الحالي
+      # (assets/img/site-logo.*) في كل نشر — حتى لو اللوجو اتغيّر من
+      # برنامج الأدمن، الأيقونات بتتحدث تلقائيًا هنا من غير أي تدخل يدوي.
+      - name: Set up Python for icon generation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate PWA icons from logo
+        run: |
+          pip install Pillow
+          python3 scripts/generate-icons.py
+
       - name: Build products index
         run: npm run build
 
