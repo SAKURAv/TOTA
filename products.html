@@ -43,7 +43,7 @@
 <meta name="twitter:description" content="تصفح كل المنتجات، ابحث بسهولة حتى لو مش فاكر الاسم بالظبط، وتواصل مباشرة.">
 <meta name="twitter:image" content="https://tota.sakurau.workers.dev/assets/img/og-image.jpg">
 
-<link rel="stylesheet" href="assets/css/style.css?v=20260819-2">
+<link rel="stylesheet" href="assets/css/style.css?v=20260826-4">
 <script>
   (function(){if(localStorage.getItem('theme')==='dark') document.documentElement.setAttribute('data-theme','dark');})();
 </script>
@@ -97,6 +97,7 @@
     <div>
       <h1>اختار براحتك،<br>واطلب في ثواني</h1>
     </div>
+    <span id="searchWrapAnchor" class="search-wrap-anchor"></span>
     <form class="search-wrap" id="searchWrap">
       <span class="search-icon">⌕</span>
       <input type="text" class="search-input" id="searchInput" placeholder="ابحث بالاسم... حتى لو مش فاكره بالظبط" autocomplete="off">
@@ -108,7 +109,7 @@
 </section>
 
 <div class="filters-bar" id="filtersBar">
-  <nav class="category-bar">
+  <nav class="category-bar" id="categoryBar">
     <div class="category-dropdown" id="categoryDropdown">
       <button type="button" class="category-toggle" id="categoryToggle" aria-expanded="false" aria-controls="categoryMenu">
         <span id="categoryToggleLabel">الكل</span>
@@ -116,6 +117,21 @@
       </button>
       <div class="category-menu" id="categoryMenu"></div>
     </div>
+    <nav class="category-bar-nav" id="categoryBarNav" aria-label="التنقل بين الصفحات">
+      <a class="category-bar-nav-item" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        <span>الرئيسية</span>
+      </a>
+      <a class="category-bar-nav-item active" href="products.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 4 5v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5l-2-3"/><path d="M4 5h16"/><path d="M9 9a3 3 0 0 0 6 0"/></svg>
+        <span>المنتجات</span>
+      </a>
+      <a class="category-bar-nav-item" href="cart.html" style="position:relative;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.2l2.2 12.2a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 7.5H6"/></svg>
+        <span>السلة</span>
+        <span class="bn-badge" data-cart-badge hidden></span>
+      </a>
+    </nav>
     <button type="button" class="filters-toggle" id="filtersToggle" aria-expanded="false" aria-controls="filtersPanel">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
       <span>فلاتر وترتيب</span>
@@ -155,6 +171,11 @@
       <span class="price-filter-label">تصفية حسب الشعار</span>
       <div class="badge-chip-row" id="badgeChipRow"></div>
     </section>
+
+    <div class="filters-actions">
+      <button type="button" class="filters-reset" id="filtersReset">إعادة تعيين</button>
+      <button type="button" class="filters-apply" id="filtersApply">تطبيق الفلاتر</button>
+    </div>
   </div>
 </div>
 
@@ -246,7 +267,7 @@
 <script src="assets/js/shared.js?v=20260817-2" defer></script>
 <script>document.addEventListener('DOMContentLoaded', function(){ if(window.buildSocials){buildSocials('footerSocials');} });</script>
 <script src="assets/js/fuzzy-search.js?v=20260817-2" defer></script>
-<script src="assets/js/products.js?v=20260817-2" defer></script>
+<script src="assets/js/products.js?v=20260826-5" defer></script>
 <script src="assets/js/recently-viewed.js?v=20260820-1" defer></script>
 </body>
 </html>

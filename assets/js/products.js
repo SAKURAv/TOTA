@@ -34,11 +34,18 @@
   const categoryToggleLabel = document.getElementById('categoryToggleLabel');
   const categoryMenu = document.getElementById('categoryMenu');
   const suggestionChips = document.getElementById('suggestionChips');
+  const categoryBar = document.getElementById('categoryBar');
+  const searchWrapAnchor = document.getElementById('searchWrapAnchor');
 
   let activeCategory = 'all';
   let activeQuery = '';
-  let activeSort = 'default'; // 'default' | 'asc' | 'desc'
-  let activeBadges = new Set(); // بيتفلتر بيهم على حسب الشعار (تريند/جديد/الأكتر طلبًا...)
+  let activeSort = 'default'; // 'default' | 'asc' | 'desc' — دي القيمة "المعروضة/تحت التعديل" جوه لوحة الفلاتر بس
+  let activeBadges = new Set(); // نفس الفكرة: تحت التعديل جوه اللوحة، لحد ما يتم "تطبيق الفلاتر"
+  // ---- القيم "المطبّقة فعليًا" على المنتجات وعلى لينك الصفحة — بتتغيّر بس
+  // لما المستخدم يدوس "تطبيق الفلاتر" (أو "إعادة تعيين")، مش أول ما يحرك
+  // أي حاجة جوه اللوحة — بالظبط زي شريط البحث اللي محتاج تدوس "بحث" ----
+  let appliedSort = 'default';
+  let appliedBadges = new Set();
   let currentPage = 1;
   const PAGE_SIZE = 30;
 
@@ -58,13 +65,252 @@
   const filtersBar = document.getElementById('filtersBar');
   const filtersPanel = document.getElementById('filtersPanel');
   const filtersToggle = document.getElementById('filtersToggle');
+
+  // --- شريط البحث بيتحرك بانيميشن سلس ومتصل مع السكرول نفسه: بيفضل زي
+  // ما هو في مكانه لحد ما "يلمس سقف الشاشة" (top=0)، ومن هناك بس بيبدأ
+  // يتحرك تدريجيًا لحد ما يستقر بالظبط بين زرار "الكل" وزرار "فلاتر
+  // وترتيب" في اللحظة اللي شريط التصنيفات نفسه بيلزق فوق (Sticky).
+  // بدل ما نغيّر width/height بتاعته مباشرة (اللي كان بيعمل "ضيق" في
+  // المحتوى من جوه لأن الحشو/الخط الداخلي مكنش بيتغير مع الحجم)، بنسيبه
+  // بحجمه الطبيعي دايمًا وبنستخدم transform: scale + translate عشان
+  // يتكبر ويتصغر ككتلة واحدة (زي زوم) من غير ما أي حاجة تتقص أو تضيق ---
+  (function initFloatingSearchWrap(){
+    if (!searchWrap || !categoryBar || !filtersToggle || !searchWrapAnchor || !filtersBar) return;
+
+    // عنصر شبح مكان شريط البحث الأصلي (بيحجز نفس المساحة جنب العنوان)
+    const heroGhost = searchWrap.cloneNode(true);
+    heroGhost.removeAttribute('id');
+    heroGhost.classList.add('search-wrap-ghost');
+    heroGhost.setAttribute('aria-hidden', 'true');
+    heroGhost.querySelectorAll('input,button').forEach(el => el.tabIndex = -1);
+    searchWrapAnchor.replaceWith(heroGhost);
+
+    // عنصر شبح مكان شريط البحث لما يستقر جوه شريط التصنيفات (بيتمدد
+    // لوحده بالـ flex عشان يملى الفراغ اللي بين الزرارين تلقائيًا)
+    const dockGhost = document.createElement('div');
+    dockGhost.id = 'searchWrapDockGhost';
+    dockGhost.className = 'search-wrap search-wrap-ghost';
+    dockGhost.setAttribute('aria-hidden', 'true');
+    categoryBar.insertBefore(dockGhost, filtersToggle);
+
+    // شريط البحث الحقيقي بيطلع من مكانه في الصفحة ويتحط مباشرة جوه
+    // body عشان يبقى position:fixed بالنسبة للشاشة كلها من غير ما أي
+    // عنصر أب (زي .reveal اللي بيستخدم transform) يأثر على مكانه
+    document.body.appendChild(searchWrap);
+    searchWrap.classList.add('search-wrap--floating');
+
+    // بيرجع أعلى نقطة للعنصر بالنسبة للصفحة كلها، من غير ما يتأثر
+    // بمكان السكرول الحالي أو بكونه position:sticky ملزوق فوق أصلًا
+    // (offsetTop بيديّنا مكانه الطبيعي في الـ layout دايمًا)
+    function getDocumentTop(el){
+      let top = 0;
+      while (el){ top += el.offsetTop || 0; el = el.offsetParent; }
+      return top;
+    }
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+    let rafId = null;
+
+    function updateFloatingSearch(){
+      rafId = null;
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+
+      // بنقيس مكان "العلامتين" (docHeroTop / docBarTop) في كل فريم، مش
+      // بنكاشهم مرة واحدة بس — عشان لو ارتفاع أي حاجة فوق شريط البحث
+      // اتغيّر (تحميل بيانات، فتح لوحة فلاتر، تغيير حجم الشاشة...)
+      // الحساب يفضل مظبوط دايمًا ومايتأخرش أو يبقى غلط
+      const docHeroTop = getDocumentTop(heroGhost);
+      const docBarTop = getDocumentTop(filtersBar);
+
+      // مرحلة 1: لسه في مكانه الطبيعي جنب العنوان، ولسه ملموسش سقف
+      // الشاشة (top=0) — يفضل بيتحرك عادي مع السكرول من غير أي تحويل
+      // مرحلة 2: من لحظة ما يلمس السقف، وبالظبط لحد ما شريط التصنيفات
+      // نفسه يلزق فوق، بيتحرك تدريجيًا لمكانه الجديد
+      const range = Math.max(docBarTop - docHeroTop, 1);
+      const progress = Math.min(Math.max((scrollY - docHeroTop) / range, 0), 1);
+
+      const heroRect = heroGhost.getBoundingClientRect();
+      const dockRect = dockGhost.getBoundingClientRect();
+
+      // الارتفاع بيفضل ثابت زي حجمه الأصلي طول الوقت (من غير أي تكبير
+      // أو تصغير ليه) عشان محتواه (الأيقونة/الإنبوت/الزرار) ميتمططش؛
+      // اللي بيتغيّر فعليًا هو العرض بس (عرض حقيقي بالبكسل، مش scale)
+      // عشان الفليكس بره جوه يوزع المساحة الزيادة على خانة الكتابة
+      // لوحدها من غير ما يشوّه أي حاجة تانية جنبها
+      const naturalW = heroRect.width;
+      const naturalH = heroRect.height;
+      const width = lerp(naturalW, dockRect.width, progress);
+      const translateX = lerp(heroRect.left, dockRect.left, progress);
+      // بنوسّط الشريط رأسيًا جوه مكانه الجديد (اللي ارتفاعه ممكن يكون
+      // مختلف شوية عن ارتفاعه الأصلي) عشان يفضل متزن مع الزرارين جنبه
+      const dockTargetY = dockRect.top + (dockRect.height - naturalH) / 2;
+      const translateY = lerp(heroRect.top, dockTargetY, progress);
+
+      searchWrap.style.width = width + 'px';
+      searchWrap.style.height = naturalH + 'px';
+      searchWrap.style.transform = `translate(${translateX}px, ${translateY}px)`;
+      // هيستيريسيس بسيط (عتبتين مختلفين للقفل ولفك القفل) بدل عتبة واحدة
+      // عشان لو الـ progress بيهتز بجزء من الألف حوالين 1 (طبيعي مع أي
+      // تقريب أرقام أو حركة سكرول ناعمة)، الكلاس is-docked ميفضلش
+      // يتشال ويترجّع كل فريم — وده كان بيظهر كـ"رعشة" في الأيقونات
+      // جنب شريط البحث (category-bar-nav) لأنها بتتحرك بأنيميشن لما
+      // الكلاس ده يتغيّر
+      const wasDocked = searchWrap.classList.contains('is-docked');
+      const isDocked = wasDocked ? (progress >= 0.985) : (progress >= 0.999);
+      searchWrap.classList.toggle('is-docked', isDocked);
+      searchWrap.classList.add('search-wrap--ready');
+      // بنعلّم شريط التصنيفات نفسه إنه "استقر فوق" عشان أي عنصر تاني
+      // جواه (زي أزرار التنقل بين الصفحات على شاشات الكمبيوتر) يقدر
+      // يظهر بانيميشن لما اللحظة دي تحصل بالظبط
+      categoryBar.classList.toggle('is-docked', isDocked);
+    }
+
+    function requestUpdate(){
+      if (rafId == null) rafId = requestAnimationFrame(updateFloatingSearch);
+    }
+
+    updateFloatingSearch();
+
+    // مهم جدًا: شريط البحث بيتحرك بالحساب (top/left/width بالبكسل) على حسب
+    // window.scrollY، لكن لينيس (Lenis) بيعمل السكرول الفعلي بحركة "smooth"
+    // بطيئة عن طريق rAF بتاعه هو، منفصلة عن الـ rAF بتاع الحساب هنا. النتيجة:
+    // فريم بيتأخر عن التاني وبيبان "رعشة/اهتزاز" في شريط البحث والأيقونات
+    // جنبه أثناء السكرول. الحل: لو لينيس شغال، نربط الحساب مباشرة بحدث
+    // 'scroll' بتاعه هو (اللي بيتطلق جوه نفس الـ rAF loop بتاعه)، بدل حدث
+    // السكرول العادي بتاع المتصفح، عشان الاتنين يتزامنوا فريم بفريم بالظبط.
+    if (window.lenis && typeof window.lenis.on === 'function'){
+      window.lenis.on('scroll', updateFloatingSearch);
+    } else {
+      // fallback عادي لو لينيس لسه ما اتحملش أو مش موجود أصلًا
+      window.addEventListener('scroll', requestUpdate, { passive: true });
+    }
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('load', requestUpdate);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(requestUpdate);
+
+    // أي تغيير في حجم شريط التصنيفات أو شريط البحث نفسه (زي فتح لوحة
+    // الفلاتر، أو تحميل البيانات وتغيير عرض العناصر) لازم يحدّث حساب
+    // المكان فورًا برضه، مش بس لما المستخدم يعمل سكرول أو يغيّر حجم
+    // الشاشة
+    if (window.ResizeObserver){
+      const ro = new ResizeObserver(requestUpdate);
+      ro.observe(filtersBar);
+      ro.observe(heroGhost);
+    }
+  })();
+
+  // شريط أزرار التنقل (الرئيسية / المنتجات / السلة) جوه شريط التصنيفات،
+  // على شاشات الكمبيوتر الضيقة نسبيًا ممكن نصهم (الأيقونة + النص) يبقى
+  // أعرض من المساحة الفاضية أصلًا بين زرار التصنيفات وشريط البحث، فبيحصل
+  // تداخل/تراكب بينهم وبين شريط البحث. الحل: بدل ما نستنى التراكب يحصل
+  // فعلاً (زي ما كان قبل كده)، بنحسب مقدمًا هل المساحة الفاضية لشريط
+  // البحث (لو الأزرار فضلت بنصها الكامل) هتبقى أصغر من حد أدنى مريح
+  // (MIN_SEARCH_SPACE) — لو أه، نصغّر الأزرار التلاتة لأيقونات بس من
+  // غير نص *قبل* ما شريط البحث يوصل يضيّق عليهم أصلاً
+  (function initNavCompactOnOverflow(){
+    if (!categoryBar) return;
+    const navEl = categoryBar.querySelector('.category-bar-nav');
+    const categoryToggleEl = categoryBar.querySelector('.category-toggle');
+    if (!navEl) return;
+
+    const MIN_SEARCH_SPACE = 320; // أقل عرض مريح لشريط البحث جوه الشريط
+
+    function checkOverflow(){
+      // بنشيل وضع "الأيقونات بس" مؤقتًا عشان نقيس المساحة الطبيعية اللي
+      // كل حاجة محتاجاها لو كانت بنصها الكامل
+      const wasCompact = categoryBar.classList.contains('nav-compact');
+      if (wasCompact) categoryBar.classList.remove('nav-compact');
+
+      const barStyle = getComputedStyle(categoryBar);
+      const barPadding = parseFloat(barStyle.paddingRight || 0) + parseFloat(barStyle.paddingLeft || 0);
+      const usableWidth = categoryBar.clientWidth - barPadding;
+      const fixedWidth = (categoryToggleEl ? categoryToggleEl.offsetWidth : 0)
+        + navEl.offsetWidth
+        + (filtersToggle ? filtersToggle.offsetWidth : 0);
+      // هامش بسيط لمساحات الفراغ (margin/gap) بين العناصر
+      const GAPS_MARGIN = 70;
+      const remainingForSearch = usableWidth - fixedWidth - GAPS_MARGIN;
+      const shouldCompact = remainingForSearch < MIN_SEARCH_SPACE;
+
+      categoryBar.classList.toggle('nav-compact', shouldCompact);
+      const changed = shouldCompact !== wasCompact;
+      // لما الكلاس ده يتغيّر، عرض المساحة الفاضية لشريط البحث (dockGhost)
+      // بيتغيّر معاه فورًا — لازم نعيد حساب مكان/عرض شريط البحث الحقيقي
+      // (الملزّق fixed) عشان ميفضلش شايل عرض قديم غلط وبيغطي على الأزرار
+      if (changed) requestAnimationFrame(()=> window.dispatchEvent(new Event('resize')));
+    }
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    window.addEventListener('load', checkOverflow);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(checkOverflow);
+    if (window.ResizeObserver){
+      const ro = new ResizeObserver(checkOverflow);
+      ro.observe(categoryBar);
+    }
+    // لما اسم التصنيف المختار يتغيّر (زرار "الكل" بيطول/يقصر) لازم نعيد الفحص
+    const labelEl = document.getElementById('categoryToggleLabel');
+    if (labelEl && window.MutationObserver){
+      new MutationObserver(checkOverflow).observe(labelEl, { childList:true, characterData:true, subtree:true });
+    }
+  })();
+
   function setFiltersOpen(open){
     filtersPanel.classList.toggle('open', open);
     filtersToggle.setAttribute('aria-expanded', String(open));
   }
+  const filtersApplyBtn = document.getElementById('filtersApply');
+  const filtersResetBtn = document.getElementById('filtersReset');
+
+  // بيرجّع القيم "تحت التعديل" جوه اللوحة لآخر قيم متطبّقة فعليًا — بتتنفذ
+  // كل مرة اللوحة تتفتح، عشان أي تعديل ما اتضغطش عليه "تطبيق" يتلغي
+  function syncPendingFromApplied(){
+    activeSort = appliedSort;
+    activeBadges = new Set(appliedBadges);
+    priceMin = appliedPriceMin;
+    priceMax = appliedPriceMax;
+    if (sortRow) sortRow.querySelectorAll('.sort-btn').forEach(b=> b.classList.toggle('active', b.dataset.sort === activeSort));
+    if (badgeChipRow) badgeChipRow.querySelectorAll('.badge-chip').forEach(chip=> chip.classList.toggle('active', activeBadges.has(chip.dataset.badge)));
+    if (window.__totaUpdatePriceUI) window.__totaUpdatePriceUI();
+  }
+
+  // بيبان على زرار "تطبيق الفلاتر" إن فيه تعديلات لسه ما اتطبقتش
+  function markFiltersPending(){
+    if (filtersApplyBtn) filtersApplyBtn.classList.add('has-pending');
+  }
+
+  // بيثبّت القيم تحت التعديل كقيم فعلية، بيفلتر المنتجات، وبيحدّث لينك
+  // الصفحة — بالظبط زي لما تدوس "بحث" في شريط البحث
+  function applyFilters(){
+    appliedSort = activeSort;
+    appliedBadges = new Set(activeBadges);
+    appliedPriceMin = priceMin;
+    appliedPriceMax = priceMax;
+    if (filtersApplyBtn) filtersApplyBtn.classList.remove('has-pending');
+    updateFiltersToggleState();
+    currentPage = 1;
+    history.pushState({ filters:true }, '', currentFiltersUrl());
+    render();
+  }
+  if (filtersApplyBtn){
+    filtersApplyBtn.addEventListener('click', applyFilters);
+  }
+  if (filtersResetBtn){
+    filtersResetBtn.addEventListener('click', ()=>{
+      activeSort = 'default';
+      activeBadges = new Set();
+      priceMin = dataMin; priceMax = dataMax;
+      if (sortRow) sortRow.querySelectorAll('.sort-btn').forEach(b=> b.classList.toggle('active', b.dataset.sort === 'default'));
+      if (badgeChipRow) badgeChipRow.querySelectorAll('.badge-chip').forEach(chip=> chip.classList.remove('active'));
+      if (window.__totaUpdatePriceUI) window.__totaUpdatePriceUI();
+      applyFilters();
+    });
+  }
   if (filtersToggle){
     filtersToggle.addEventListener('click', ()=>{
-      setFiltersOpen(!filtersPanel.classList.contains('open'));
+      const willOpen = !filtersPanel.classList.contains('open');
+      if (willOpen) syncPendingFromApplied();
+      setFiltersOpen(willOpen);
       // فتح لوحة الفلاتر يقفل قائمة التصنيفات لو فاضلة فاتحة، عشان ميبقاش
       // فيه قائمتين مفتوحين فوق بعض
       setCategoryMenuOpen(false);
@@ -74,8 +320,8 @@
   }
   function updateFiltersToggleState(){
     if (!filtersToggle) return;
-    const priceActive = prices.length && dataMin !== dataMax && (priceMin !== dataMin || priceMax !== dataMax);
-    const hasActive = priceActive || activeSort !== 'default' || activeBadges.size > 0;
+    const priceActive = prices.length && dataMin !== dataMax && (appliedPriceMin !== dataMin || appliedPriceMax !== dataMax);
+    const hasActive = priceActive || appliedSort !== 'default' || appliedBadges.size > 0;
     filtersToggle.classList.toggle('has-active', hasActive);
   }
 
@@ -94,6 +340,8 @@
   const dataMin = prices.length ? Math.min(...prices) : 0;
   const dataMax = prices.length ? Math.max(...prices) : 0;
   let priceMin = dataMin, priceMax = dataMax;
+  // القيم المطبّقة فعليًا على الفلترة (شوف الملاحظة فوق عند appliedSort)
+  let appliedPriceMin = dataMin, appliedPriceMax = dataMax;
 
   if (!prices.length || dataMin === dataMax){
     if (priceFilter) priceFilter.style.display = 'none';
@@ -120,19 +368,19 @@
       priceMaxNumber.value = priceMax;
       updateFiltersToggleState();
     }
+    window.__totaUpdatePriceUI = updatePriceUI;
 
-    // شريط السحب (رينج) — بيفضل شغال زي ما هو
+    // شريط السحب (رينج) — بيحدّث الشكل بس (معاينة)، من غير ما يفلتر
+    // المنتجات فعليًا إلا لما تدوس "تطبيق الفلاتر"
     priceMinInput.addEventListener('input', ()=>{
       priceMin = Math.min(+priceMinInput.value, priceMax);
       updatePriceUI();
-      currentPage = 1;
-      render();
+      markFiltersPending();
     });
     priceMaxInput.addEventListener('input', ()=>{
       priceMax = Math.max(+priceMaxInput.value, priceMin);
       updatePriceUI();
-      currentPage = 1;
-      render();
+      markFiltersPending();
     });
 
     // خانات الكتابة اليدوية — تسمح بكتابة رقم السعر مباشرة من غير ما تشد الشريط
@@ -142,8 +390,7 @@
       v = Math.max(dataMin, Math.min(v, priceMax));
       priceMin = v;
       updatePriceUI();
-      currentPage = 1;
-      render();
+      markFiltersPending();
     }
     function applyMaxNumber(){
       let v = priceMaxNumber.value === '' ? dataMax : +priceMaxNumber.value;
@@ -151,8 +398,7 @@
       v = Math.min(dataMax, Math.max(v, priceMin));
       priceMax = v;
       updatePriceUI();
-      currentPage = 1;
-      render();
+      markFiltersPending();
     }
     priceMinNumber.addEventListener('change', applyMinNumber);
     priceMaxNumber.addEventListener('change', applyMaxNumber);
@@ -171,9 +417,7 @@
         if (val === activeSort) return;
         activeSort = val;
         sortRow.querySelectorAll('.sort-btn').forEach(b=> b.classList.toggle('active', b.dataset.sort === activeSort));
-        updateFiltersToggleState();
-        currentPage = 1;
-        render();
+        markFiltersPending();
       });
     });
   }
@@ -199,9 +443,7 @@
         const b = chip.dataset.badge;
         if (activeBadges.has(b)) activeBadges.delete(b); else activeBadges.add(b);
         chip.classList.toggle('active');
-        updateFiltersToggleState();
-        currentPage = 1;
-        render();
+        markFiltersPending();
       });
     });
   }
@@ -212,9 +454,22 @@
     overrides = overrides || {};
     const cat = 'cat' in overrides ? overrides.cat : activeCategory;
     const q = 'q' in overrides ? overrides.q : activeQuery;
+    // القيم دي بتتاخد من appliedSort/appliedBadges/appliedPrice* (مش من
+    // القيم "تحت التعديل" جوه اللوحة) عشان اللينك ميتغيّرش إلا لما المستخدم
+    // فعلاً يدوس "تطبيق الفلاتر" — زي شريط البحث بالظبط
+    const sort = 'sort' in overrides ? overrides.sort : appliedSort;
+    const badges = 'badges' in overrides ? overrides.badges : appliedBadges;
     const params = new URLSearchParams();
     if (cat && cat !== 'all') params.set('cat', cat);
     if (q && q.trim()) params.set('q', q.trim());
+    if (sort && sort !== 'default') params.set('sort', sort);
+    if (badges && badges.size) params.set('badge', [...badges].join(','));
+    if (prices.length && dataMin !== dataMax){
+      const pMin = 'priceMin' in overrides ? overrides.priceMin : appliedPriceMin;
+      const pMax = 'priceMax' in overrides ? overrides.priceMax : appliedPriceMax;
+      if (pMin !== dataMin) params.set('min', pMin);
+      if (pMax !== dataMax) params.set('max', pMax);
+    }
     const qs = params.toString();
     return new URL('products.html' + (qs ? `?${qs}` : ''), document.baseURI).href;
   }
@@ -271,6 +526,7 @@
         if (slug === activeCategory) return;
         activeCategory = slug;
         activeBadges = new Set();
+        appliedBadges = new Set();
         currentPage = 1;
         history.pushState({ category: activeCategory }, '', categoryUrl(activeCategory));
         buildTags();
@@ -289,10 +545,10 @@
 
     if (activeCategory !== 'all') list = list.filter(p=>p.category === activeCategory);
 
-    if (activeBadges.size) list = list.filter(p => p.badge && activeBadges.has(p.badge));
+    if (appliedBadges.size) list = list.filter(p => p.badge && appliedBadges.has(p.badge));
 
     if (prices.length && dataMin !== dataMax){
-      list = list.filter(p => p.price == null || (p.price >= priceMin && p.price <= priceMax));
+      list = list.filter(p => p.price == null || (p.price >= appliedPriceMin && p.price <= appliedPriceMax));
     }
 
     let scored = null;
@@ -301,11 +557,11 @@
       list = scored.map(r=>r.item);
     }
 
-    if (activeSort === 'asc' || activeSort === 'desc'){
+    if (appliedSort === 'asc' || appliedSort === 'desc'){
       list = list.slice().sort((a, b)=>{
         const pa = a.price == null ? Infinity : a.price;
         const pb = b.price == null ? Infinity : b.price;
-        return activeSort === 'asc' ? pa - pb : (pb === Infinity && pa === Infinity ? 0 : (pa === Infinity ? 1 : (pb === Infinity ? -1 : pb - pa)));
+        return appliedSort === 'asc' ? pa - pb : (pb === Infinity && pa === Infinity ? 0 : (pa === Infinity ? 1 : (pb === Infinity ? -1 : pb - pa)));
       });
     }
 
@@ -422,6 +678,7 @@
         const cat = categories.find(c=>c.name===btn.dataset.name);
         activeCategory = cat ? cat.slug : 'all';
         activeBadges = new Set();
+        appliedBadges = new Set();
         currentPage = 1;
         history.pushState({ category: activeCategory }, '', currentFiltersUrl());
         buildTags();
@@ -734,6 +991,22 @@
     searchInput.value = initQuery;
     searchClear.classList.add('show');
   }
+  // فلاتر السعر/الترتيب/الشعار جاية من اللينك (لو حد بعت لينك فيه فلاتر
+  // متطبّقة قبل كده) — بتتحط كقيم "مطبّقة" فورًا من غير ما تحتاج ضغط
+  // "تطبيق الفلاتر" تاني، لأنها أصلًا كانت متطبّقة وقت ما اتعمل اللينك
+  const initSort = initParams.get('sort');
+  if (initSort === 'asc' || initSort === 'desc'){ activeSort = initSort; appliedSort = initSort; }
+  const initBadges = (initParams.get('badge') || '').split(',').map(s=>s.trim()).filter(Boolean);
+  if (initBadges.length){ activeBadges = new Set(initBadges); appliedBadges = new Set(initBadges); }
+  if (prices.length && dataMin !== dataMax){
+    const initMin = initParams.get('min');
+    const initMax = initParams.get('max');
+    if (initMin != null && !isNaN(+initMin)){ priceMin = Math.max(dataMin, +initMin); appliedPriceMin = priceMin; }
+    if (initMax != null && !isNaN(+initMax)){ priceMax = Math.min(dataMax, +initMax); appliedPriceMax = priceMax; }
+    if (window.__totaUpdatePriceUI) window.__totaUpdatePriceUI();
+  }
+  if (sortRow) sortRow.querySelectorAll('.sort-btn').forEach(b=> b.classList.toggle('active', b.dataset.sort === activeSort));
+  updateFiltersToggleState();
 
   buildTags();
   buildBadgeFilter();

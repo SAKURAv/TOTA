@@ -112,6 +112,10 @@ h1,h2,h3{font-family:'Baloo Bhaijaan 2', sans-serif;}
 /* ملحوظة: شريط العنوان ده مبقاش sticky عمدًا — المثبّت فوق دلوقتي هو
    شريط التصنيفات/الفلاتر (.filters-bar) بس، سواء على الموبايل أو الكمبيوتر،
    عشان يفضل باين وهو المستخدم بينزل في الصفحة من غير ما يحتاج يرجع فوق. */
+/* الشريط العلوي بيفضل ثابت فوق (position:sticky) بس في الصفحة الرئيسية
+   وصفحة السلة (اللي بيتحطلها كلاس topbar-sticky على الـ body)، لأن صفحة
+   المنتجات ليها شريط تانٍ (.filters-bar) هو المثبّت فوق بدالها */
+body.topbar-sticky .topbar{ position:sticky; top:0; }
 .topbar{
   z-index:500;
   display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
@@ -274,23 +278,31 @@ h1,h2,h3{font-family:'Baloo Bhaijaan 2', sans-serif;}
 .scroll-hint .line{width:34px; height:1px; background:var(--ink-soft); animation:pulseLine 1.8s infinite;}
 @keyframes pulseLine{0%,100%{opacity:.25;} 50%{opacity:1;}}
 
-.hero-tagcloud{position:absolute; inset:0; pointer-events:none; z-index:0;}
-.floating-tag{
-  position:absolute; font-family:'Baloo Bhaijaan 2'; font-weight:800; font-size:12.5px;
-  background:var(--paper); border:1px solid var(--line); padding:8px 16px; border-radius:100px;
-  color:var(--ink-soft); box-shadow:0 8px 20px rgba(24,23,18,.06);
-  animation:floaty 7s ease-in-out infinite;
-  pointer-events:auto; transition:.3s var(--ease); cursor:pointer;
+/* ===== زرار "التصنيفات" في الهيرو: بديل السحابة القديمة اللي كانت بتتوزع
+   وتزحم المكان لما التصنيفات تكتر. بقى زرار واحد واضح بيفتح قايمة منسدلة
+   فيها كل التصنيفات، في نفس مكان لافتة "اكسسوارات" القديمة (يسار الشاشة) ===== */
+.hero-cat-dropdown-wrap{
+  position:absolute; top:28px; left:28px; z-index:5;
+  display:flex; align-items:center; gap:12px;
 }
-.floating-tag:hover{border-color:var(--accent); color:var(--accent-dark); transform:translateY(-6px) scale(1.05); box-shadow:var(--shadow);}
-@keyframes floaty{0%,100%{transform:translateY(0);} 50%{transform:translateY(-14px);}}
+.hero-cat-dropdown{position:relative;}
+.hero-cat-toggle{
+  padding:13px 26px; font-size:15.5px; font-weight:800;
+  background:var(--paper); box-shadow:0 8px 20px rgba(24,23,18,.08);
+}
+.hero-cat-toggle:hover{border-color:var(--accent); color:var(--accent-dark); transform:translateY(-2px);}
+#heroCategoryMenu.category-menu{min-width:210px;}
+/* لما القايمة بتتفتح بتتشال من جوه الهيرو وتترسم كـ position:fixed في
+   الـ body مباشرة (شوف home.js) عشان overflow:hidden بتاع .hero متخبيهاش
+   ورا محتوى تاني — ده معناه إنها مبقتش ابن مباشر لـ .hero-cat-dropdown
+   وقتها، فالقاعدة لازم تكون عامة (.category-menu.detached بس، من غير
+   ما تتربط بالأب القديم) وإلا هتفضل position:absolute وتظهر في مكان
+   غلط تمامًا على الكمبيوتر */
+.category-menu.detached{position:fixed; z-index:9999; inset-inline-start:auto; right:auto;}
 @media(max-width:680px){
-  .hero-tagcloud{
-    position:static; order:5; inset:auto; display:flex; flex-wrap:wrap; gap:8px;
-    margin-top:22px; pointer-events:auto;
-  }
+  .hero-cat-dropdown-wrap{position:static; order:5; margin-top:22px;}
   .hero-showcase{display:none;}
-  .floating-tag{position:static; animation:none; font-size:11.5px; padding:7px 14px;}
+  .hero-cat-toggle{padding:11px 22px; font-size:14px;}
 }
 
 /* ---- hero showcase: unused, kept out of layout ---- */
@@ -422,6 +434,19 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
   transition:border-color .3s, box-shadow .3s;
 }
 .search-wrap.focused{border-color:var(--accent); box-shadow:0 0 0 4px rgba(232,93,44,.12);}
+/* شريط البحث الحقيقي بيتحرك بالحساب (JS) كل ما المستخدم يعمل سكرول،
+   فبنسيبه position:fixed دايمًا وبنحدد مكانه وحجمه بالبكسل عن طريق
+   top/left/width/height اللي الجافاسكريبت بيحدثها كل فريم، من غير أي
+   transition زيادة عشان يفضل متزامن 1:1 مع حركة السكرول نفسها */
+.search-wrap.search-wrap--floating{
+  position:fixed; top:0; left:0; margin:0; z-index:500; opacity:0; pointer-events:none;
+  transform-origin:0 0; will-change:transform;
+}
+.search-wrap.search-wrap--floating.search-wrap--ready{opacity:1; pointer-events:auto;}
+/* عناصر "الشبح": نفس شكل شريط البحث بالظبط بس مخفية، بتُستخدم بس عشان
+   نقيس منها المكان والحجم (الأصلي وجوه شريط التصنيفات) ومش المفروض
+   تظهر أو يتفاعل معاها حد */
+.search-wrap-ghost{visibility:hidden; pointer-events:none;}
 .search-icon{padding:0 14px; color:var(--ink-soft); font-size:17px;}
 .search-input{flex:1; min-width:0; background:none; border:none; outline:none; color:var(--ink); font-family:inherit; font-size:16px; padding:12px 0;}
 .search-input::placeholder{color:var(--ink-soft);}
@@ -489,6 +514,57 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
 .filters-toggle-chev{transition:transform .25s var(--ease);}
 .filters-toggle[aria-expanded="true"] .filters-toggle-chev{transform:rotate(180deg);}
 
+/* علامة صغيرة بتفضل واقفة في مكان شريط البحث الأصلي عشان نعرف نحسب صح
+   امتى نرجّعه لمكانه. لازم تفضل جوه الـ layout (مش display:none) عشان
+   getBoundingClientRect بتاعها يديّنا إحداثياتها الحقيقية بدل صفر */
+.search-wrap-anchor{display:inline-block; width:0; height:0; overflow:hidden;}
+
+/* شريط البحث (أو شبحه) لما يكون جوه شريط التصنيفات، بياخد الفراغ
+   المتاح تلقائيًا (flex) — بيتظبط لوحده على حسب حجم الشاشة. على
+   الكمبيوتر بنسيب حد أقصى معقول لعرضه عشان يفضل مكان لأزرار التنقل
+   بين الصفحات (category-bar-nav) جنبه؛ على الموبايل (تحت) مفيش حد
+   أقصى لأن أزرار التنقل مش ظاهرة أصلًا هناك (شوف initFloatingSearchWrap
+   في products.js) */
+.category-bar .search-wrap{
+  order:2; flex:1 1 auto; min-width:0; max-width:380px; margin:0 12px; padding:3px;
+}
+.category-bar .category-dropdown{order:0;}
+.category-bar .filters-toggle{order:3;}
+
+/* أزرار التنقل بين الصفحات (الرئيسية/المنتجات/السلة) جوه شريط
+   التصنيفات — بتظهر بس على شاشات الكمبيوتر الكبيرة (فيه بديل تاني،
+   الشريط السفلي bottom-nav، على الموبايل)، وبتفضل مخفية بانيميشن لحد
+   ما شريط التصنيفات نفسه "يستقر" ويلزق فوق الشاشة (category-bar.is-docked
+   بتتحط من products.js) عشان تظهر في نفس لحظة ما البار بيثبت بالظبط */
+.category-bar-nav{
+  display:none; order:1; align-items:center; gap:2px; flex-shrink:0;
+  opacity:0; transform:translateY(-8px); pointer-events:none;
+  transition:opacity .35s var(--ease), transform .35s var(--ease);
+}
+@media(min-width:781px){
+  .category-bar-nav{display:flex;}
+}
+.category-bar.is-docked .category-bar-nav{opacity:1; transform:translateY(0); pointer-events:auto;}
+.category-bar-nav-item{
+  display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:100px;
+  font-size:13px; font-weight:700; color:var(--ink-soft); white-space:nowrap;
+  position:relative; transition:.25s var(--ease);
+}
+.category-bar-nav-item svg{width:16px; height:16px; flex-shrink:0;}
+.category-bar-nav-item:hover{background:var(--paper-dim); color:var(--ink);}
+.category-bar-nav-item.active{color:var(--accent-dark); background:rgba(232,93,44,.1);}
+.category-bar-nav-item .bn-badge{
+  min-width:16px; height:16px; padding:0 4px; border-radius:20px;
+  background:var(--accent); color:#fff; font-size:10px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; line-height:1;
+}
+
+/* على شاشات الكمبيوتر الضيقة، لو مفيش مساحة كفاية لأزرار الرئيسية/المنتجات/
+   السلة بنصها الكامل جنب شريط البحث (products.js بيحسب ده بالفعل)، بنصغّرهم
+   لأيقونات بس عشان ميحصلش تراكب مع شريط البحث */
+.category-bar.nav-compact .category-bar-nav-item{ padding:8px; }
+.category-bar.nav-compact .category-bar-nav-item span{ display:none; }
+
 .filters-panel{
   max-height:0; overflow:hidden; opacity:0;
   transition:max-height .32s var(--ease), opacity .25s var(--ease), padding .32s var(--ease);
@@ -496,7 +572,28 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
   display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start;
 }
 [data-theme="dark"] .filters-panel{background:rgba(20,19,16,.94);}
-.filters-panel.open{max-height:340px; opacity:1; padding:18px min(6vw,32px) 20px;}
+.filters-panel.open{max-height:400px; opacity:1; padding:18px min(6vw,32px) 20px;}
+
+/* ===== زرارين "تطبيق" و"إعادة تعيين" أسفل لوحة الفلاتر: التغييرات جوه
+   اللوحة (سعر/ترتيب/شعارات) بتتحفظ مؤقتًا بس وما بتتفعّلش فعليًا على
+   المنتجات ولا في لينك الصفحة إلا بعد ما تدوس "تطبيق الفلاتر" — بالظبط
+   زي شريط البحث اللي محتاج تدوس "بحث" ---*/
+.filters-actions{
+  flex:1 1 100%; display:flex; justify-content:flex-end; gap:10px; padding-top:16px;
+  border-top:1px solid var(--line); margin-top:4px;
+}
+.filters-reset{
+  padding:10px 18px; border-radius:100px; border:1px solid var(--line); background:var(--paper);
+  color:var(--ink-soft); font-weight:700; font-size:13.5px; transition:.25s var(--ease);
+}
+.filters-reset:hover{border-color:var(--ink); color:var(--ink);}
+.filters-apply{
+  padding:10px 22px; border-radius:100px; border:none; background:var(--accent); color:#fff;
+  font-weight:700; font-size:13.5px; transition:.25s var(--ease);
+}
+.filters-apply:hover{background:var(--accent-dark);}
+.filters-apply.is-disabled{opacity:.5; pointer-events:none;}
+.filters-apply.has-pending{box-shadow:0 0 0 4px rgba(232,93,44,.18);}
 
 /* ===== price range filter ===== */
 .price-filter{max-width:340px; flex:1 1 260px; min-width:220px;}
@@ -722,6 +819,11 @@ body.modal-locked .whatsapp-float{opacity:0; pointer-events:none;}
   .search-submit::before{content:'⌕'; font-size:16px; line-height:1;}
   .category-bar{padding:10px 14px;}
   .category-toggle{padding:8px 16px; font-size:13px;}
+  /* على الموبايل شريط البحث الموقّف جوه الشريط الثابت بياخد مساحة أكبر
+     وأيقوناته أصغر عشان يتظبط بين الزرارين */
+  .category-bar .search-wrap{max-width:none; margin:0 8px;}
+  .category-bar .search-icon{padding:0 8px; font-size:15px;}
+  .category-bar .search-input{padding:9px 0; font-size:14px;}
   .filters-toggle{margin-inline-end:14px; padding:8px 12px; font-size:0;}
   .filters-toggle span{display:none;}
   .filters-panel.open{max-height:420px; padding:14px 16px 18px;}

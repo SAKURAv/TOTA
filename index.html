@@ -43,14 +43,14 @@
 <meta name="twitter:description" content="وجهتك المختارة لأفضل المنتجات، بجودة وثقة، وتواصل مباشر.">
 <meta name="twitter:image" content="https://tota.sakurau.workers.dev/assets/img/og-image.jpg">
 
-<link rel="stylesheet" href="assets/css/style.css?v=20260819-2">
+<link rel="stylesheet" href="assets/css/style.css?v=20260826-4">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"OnlineStore","name":"Tota","alternateName":["توتة","توته","توتا","تاتا","Toota","Totta"],"url":"https://tota.sakurau.workers.dev/","image":"https://tota.sakurau.workers.dev/assets/img/og-image.jpg","description":"وجهتك المختارة لأفضل المنتجات، بجودة وثقة، وتواصل مباشر.","sameAs":["https://wa.me/201285744331"]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Tota","alternateName":["توتة","توته","توتا","تاتا","Toota","Totta"],"url":"https://tota.sakurau.workers.dev/","potentialAction":{"@type":"SearchAction","target":"https://tota.sakurau.workers.dev/products.html?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
 <script>
   (function(){if(localStorage.getItem('theme')==='dark') document.documentElement.setAttribute('data-theme','dark');})();
 </script>
 </head>
-<body>
+<body class="topbar-sticky">
 
 <div class="curtain"><div class="tota-loader"><span>T</span><span>o</span><span>t</span><span>a</span></div></div>
 
@@ -99,7 +99,15 @@
     <a class="bg-bubble b1"></a><a class="bg-bubble b2"></a><a class="bg-bubble b3"></a>
     <a class="bg-bubble b4"></a><a class="bg-bubble b5"></a><a class="bg-bubble b6"></a>
   </div>
-  <div class="hero-tagcloud" id="tagCloud"></div>
+  <div class="hero-cat-dropdown-wrap" id="heroCatWrap">
+    <div class="category-dropdown hero-cat-dropdown" id="heroCategoryDropdown">
+      <button type="button" class="category-toggle hero-cat-toggle" id="heroCategoryToggle" aria-expanded="false" aria-controls="heroCategoryMenu">
+        <span id="heroCategoryToggleLabel">التصنيفات</span>
+        <svg class="category-toggle-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="category-menu" id="heroCategoryMenu"></div>
+    </div>
+  </div>
   <h1>
     <span class="w1">منتجات مختارة</span><br>
     <span class="w2">بعناية</span> <span class="stamp">لأجلك</span>
@@ -178,6 +186,6 @@
 <script src="assets/js/analytics.js?v=20260819-1" defer></script>
 <script src="assets/js/shared.js?v=20260817-2" defer></script>
 <script>document.addEventListener('DOMContentLoaded', function(){ if(window.buildSocials){buildSocials('footerSocials');} });</script>
-<script src="assets/js/home.js?v=20260817-2" defer></script>
+<script src="assets/js/home.js?v=20260826-2" defer></script>
 </body>
 </html>
