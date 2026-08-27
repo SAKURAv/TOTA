@@ -137,25 +137,6 @@
     while (wrap.firstElementChild) document.body.appendChild(wrap.firstElementChild);
   }
 
-  //تعديل صفحه انشاء حساب وجعلها غير قابله للفتح
-  function openModal(tab) {
-    const modal = document.getElementById('totaAuthModal');
-    modal.hidden = false;
-    lockBodyScroll();
-    // لو التسجيل معطل، ما نفتحش أبدًا على تاب الـ signup
-    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
-      tab = 'login';
-    }
-    switchTab(tab || 'login');
-  }
-
-  // قفل سكرول الصفحة اللي وراء المودال بشكل فعلي على الموبايل.
-  // overflow:hidden على الـ body لوحده مش كافي على iOS Safari — الصفحة
-  // اللي وراه بتفضل تتسكرول بالّلمس حتى لو المودال فاتح فوقها. الحل إننا
-  // نثبّت الـ body بالكامل (position:fixed) في مكانه الحالي، وبعد ما
-  // نقفل المودال نرجّعه يتسكرول من نفس المكان اللي كان واقف فيه.
-  let totaScrollLockCount = 0;
-  let totaSavedScrollY = 0;
   function lockBodyScroll() {
     if (totaScrollLockCount === 0) {
       totaSavedScrollY = window.scrollY || window.pageYOffset || 0;
@@ -208,6 +189,10 @@
     const modal = document.getElementById('totaAuthModal');
     modal.hidden = false;
     lockBodyScroll();
+    // حماية: لو التسجيل معطل، ما نفتحش أبدًا على تاب الـ signup
+    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
+      tab = 'login';
+    }
     switchTab(tab || 'login');
   }
   function closeModal() {
@@ -230,6 +215,10 @@
   }
 
   function switchTab(tab) {
+    // حماية صلبة: لو التسجيل معطل، ما نسمحش أبداً بفتح تاب الـ signup
+    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
+      tab = 'login';
+    }
     document.querySelectorAll('.tota-auth-tab').forEach(function (b) {
       b.classList.toggle('is-active', b.dataset.authTab === tab);
     });
@@ -292,11 +281,12 @@
         signupSubmitBtn.textContent = 'إنشاء الحساب (متوقف مؤقتًا)';
       }
 
-      // 3. لو الفورم ظاهر حاليًا، خفّيه وأظهر رسالة الصيانة فورًا
+      // 3. خفّي الفورم وأظهر رسالة الصيانة، وتأكد إن التاب على login
       const signupForm = document.getElementById('totaSignupForm');
       const maintenanceEl = document.getElementById('totaSignupMaintenance');
       if (signupForm) signupForm.hidden = true;
       if (maintenanceEl) maintenanceEl.hidden = false;
+      switchTab('login');
     }
 
     // الفورمز اللي فيها رقم هاتف اتضافت للـ DOM لسه دلوقتي، لازم نطلب
@@ -336,7 +326,13 @@
       }
       if (e.target.id === 'totaForgotClose' || e.target.id === 'totaForgotPasswordModal') closeForgotPasswordModal();
       const tabBtn = e.target.closest('[data-auth-tab]');
-      if (tabBtn) switchTab(tabBtn.dataset.authTab);
+      if (tabBtn) {
+        // لو التسجيل معطل وحد داس على تاب "حساب جديد"، ما نعملش حاجة
+        if (tabBtn.dataset.authTab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
+          return;
+        }
+        switchTab(tabBtn.dataset.authTab);
+      }
     });
 
     function openForgotPasswordModal() {
