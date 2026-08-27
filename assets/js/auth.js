@@ -263,14 +263,28 @@
       window.TOTA_SIGNUP_DISABLED = false;
     }
     if (window.TOTA_SIGNUP_DISABLED) {
+      // 1. عطل تاب "حساب جديد" نفسه
       const signupTabBtn = document.querySelector('[data-auth-tab="signup"]');
       if (signupTabBtn) {
         signupTabBtn.textContent = 'حساب جديد (تحت الصيانة)';
         signupTabBtn.disabled = true;
-        signupTabBtn.style.opacity = '0.45';
+        signupTabBtn.style.opacity = '0.5';
         signupTabBtn.style.cursor = 'not-allowed';
         signupTabBtn.style.pointerEvents = 'none';
       }
+
+      // 2. عطل زر "إنشاء الحساب" (الsubmit) نهائيًا
+      const signupSubmitBtn = document.querySelector('#totaSignupForm .tota-auth-submit');
+      if (signupSubmitBtn) {
+        signupSubmitBtn.disabled = true;
+        signupSubmitBtn.textContent = 'إنشاء الحساب (متوقف مؤقتًا)';
+      }
+
+      // 3. لو الفورم ظاهر حاليًا، خفّيه وأظهر رسالة الصيانة فورًا
+      const signupForm = document.getElementById('totaSignupForm');
+      const maintenanceEl = document.getElementById('totaSignupMaintenance');
+      if (signupForm) signupForm.hidden = true;
+      if (maintenanceEl) maintenanceEl.hidden = false;
     }
 
     // الفورمز اللي فيها رقم هاتف اتضافت للـ DOM لسه دلوقتي، لازم نطلب
