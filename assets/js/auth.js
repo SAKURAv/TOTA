@@ -264,7 +264,13 @@
     }
     if (window.TOTA_SIGNUP_DISABLED) {
       const signupTabBtn = document.querySelector('[data-auth-tab="signup"]');
-      if (signupTabBtn) signupTabBtn.textContent = 'حساب جديد (تحت الصيانة)';
+      if (signupTabBtn) {
+        signupTabBtn.textContent = 'حساب جديد (تحت الصيانة)';
+        signupTabBtn.disabled = true;
+        signupTabBtn.style.opacity = '0.45';
+        signupTabBtn.style.cursor = 'not-allowed';
+        signupTabBtn.style.pointerEvents = 'none';
+      }
     }
 
     // الفورمز اللي فيها رقم هاتف اتضافت للـ DOM لسه دلوقتي، لازم نطلب
