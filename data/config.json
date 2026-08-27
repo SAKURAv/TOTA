@@ -15,7 +15,7 @@
   "logo": "",
   "maintenance": {
     "_ملاحظة": "بيتحكم فيهم من زرار الترس (⚙️) في البرنامج. لو true بيوقف الخدمة في الموقع ويظهر رسالة تحت الصيانة.",
-    "disableSignup": false,
+    "disableSignup": true,
     "disableCheckout": false
   },
   "analytics": {

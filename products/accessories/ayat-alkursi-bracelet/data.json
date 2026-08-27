@@ -23,5 +23,6 @@
   "priceMode": [
     "price"
   ],
-  "priceText": "منتج"
+  "priceText": "منتج",
+  "hidden": true
 }
