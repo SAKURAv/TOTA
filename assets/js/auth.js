@@ -189,8 +189,8 @@
     const modal = document.getElementById('totaAuthModal');
     modal.hidden = false;
     lockBodyScroll();
-    // حماية: لو التسجيل معطل، ما نفتحش أبدًا على تاب الـ signup
-    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
+    // حماية: ما نفتحش على تاب الـ signup إلا لو التسجيل صراحةً مش معطل
+    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED !== false) {
       tab = 'login';
     }
     switchTab(tab || 'login');
@@ -215,8 +215,10 @@
   }
 
   function switchTab(tab) {
-    // حماية صلبة: لو التسجيل معطل، ما نسمحش أبداً بفتح تاب الـ signup
-    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
+    // حماية صلبة: ما نسمحش بفتح تاب الـ signup إلا لو التسجيل صراحةً مش معطل
+    // (window.TOTA_SIGNUP_DISABLED === false). لو لسه ما اتقرأش (undefined)
+    // أو true، نرفض.
+    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED !== false) {
       tab = 'login';
     }
     document.querySelectorAll('.tota-auth-tab').forEach(function (b) {
@@ -257,6 +259,8 @@
     // فحص حالة الصيانة بتاعة إنشاء الحسابات من data/config.json (لو
     // الأدمن فعّلها من البرنامج، بنمنع الفورم ونعرض رسالة صيانة بدل ما
     // نلمس أي كود تاني في الموقع).
+    // افتراضيًا: نمنع التسجيل لحد ما نتأكد من الإعدادات
+    window.TOTA_SIGNUP_DISABLED = true;
     try {
       const cfg = await (window.TOTA_CONFIG_READY || Promise.resolve(window.TOTA_CONFIG || {}));
       window.TOTA_SIGNUP_DISABLED = !!(cfg && cfg.maintenance && cfg.maintenance.disableSignup);
@@ -327,8 +331,8 @@
       if (e.target.id === 'totaForgotClose' || e.target.id === 'totaForgotPasswordModal') closeForgotPasswordModal();
       const tabBtn = e.target.closest('[data-auth-tab]');
       if (tabBtn) {
-        // لو التسجيل معطل وحد داس على تاب "حساب جديد"، ما نعملش حاجة
-        if (tabBtn.dataset.authTab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
+        // لو التسجيل معطل (أو لسه ما اتأكدناش) وحد داس على تاب "حساب جديد"، ما نعملش حاجة
+        if (tabBtn.dataset.authTab === 'signup' && window.TOTA_SIGNUP_DISABLED !== false) {
           return;
         }
         switchTab(tabBtn.dataset.authTab);
