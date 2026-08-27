@@ -59,6 +59,11 @@
           </label>
           <button type="submit" class="btn-primary tota-auth-submit">إنشاء الحساب</button>
         </form>
+
+        <div class="tota-auth-maintenance" id="totaSignupMaintenance" hidden style="text-align:center;padding:18px 4px;color:var(--muted);">
+          <p style="font-size:15px;margin-bottom:4px;">⚠️ خدمة إنشاء الحسابات تحت الصيانة حاليًا</p>
+          <p style="font-size:13px;">حاول تاني بعد شوية، أو استخدم الموقع كزائر من غير حساب.</p>
+        </div>
       </div>
     </div>
 
@@ -217,8 +222,17 @@
       b.classList.toggle('is-active', b.dataset.authTab === tab);
     });
     document.getElementById('totaLoginForm').hidden = tab !== 'login';
-    document.getElementById('totaSignupForm').hidden = tab !== 'signup';
-    if (tab === 'signup') renderTurnstile();
+    const signupForm = document.getElementById('totaSignupForm');
+    const maintenanceEl = document.getElementById('totaSignupMaintenance');
+    const signupDisabled = !!window.TOTA_SIGNUP_DISABLED;
+    if (tab === 'signup' && signupDisabled) {
+      signupForm.hidden = true;
+      if (maintenanceEl) maintenanceEl.hidden = false;
+    } else {
+      signupForm.hidden = tab !== 'signup';
+      if (maintenanceEl) maintenanceEl.hidden = true;
+    }
+    if (tab === 'signup' && !signupDisabled) renderTurnstile();
   }
 
   async function getClient() {
@@ -238,6 +252,21 @@
 
   async function init() {
     injectModalMarkup();
+
+    // فحص حالة الصيانة بتاعة إنشاء الحسابات من data/config.json (لو
+    // الأدمن فعّلها من البرنامج، بنمنع الفورم ونعرض رسالة صيانة بدل ما
+    // نلمس أي كود تاني في الموقع).
+    try {
+      const cfg = await (window.TOTA_CONFIG_READY || Promise.resolve(window.TOTA_CONFIG || {}));
+      window.TOTA_SIGNUP_DISABLED = !!(cfg && cfg.maintenance && cfg.maintenance.disableSignup);
+    } catch (e) {
+      window.TOTA_SIGNUP_DISABLED = false;
+    }
+    if (window.TOTA_SIGNUP_DISABLED) {
+      const signupTabBtn = document.querySelector('[data-auth-tab="signup"]');
+      if (signupTabBtn) signupTabBtn.textContent = 'حساب جديد (تحت الصيانة)';
+    }
+
     // الفورمز اللي فيها رقم هاتف اتضافت للـ DOM لسه دلوقتي، لازم نطلب
     // من country-code.js يفحصها ويضيفلها كود الدولة (لو الملف اتحمّل).
     if (window.totaScanPhoneInputs) window.totaScanPhoneInputs();
@@ -357,6 +386,7 @@
 
     signupForm && signupForm.addEventListener('submit', async function (e) {
       e.preventDefault();
+      if (window.TOTA_SIGNUP_DISABLED) return;
       const errEl = signupForm.querySelector('[data-signup-error]');
       clearError(errEl);
       const client = await getClient();

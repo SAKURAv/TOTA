@@ -11,7 +11,7 @@
 | `SUPABASE_URL` | Project URL من Supabase |
 | `SUPABASE_ANON_KEY` | anon public key من Supabase |
 | `TURNSTILE_SITE_KEY` | Site Key من Cloudflare Turnstile — **اختياري**. لو سبته فاضي/محطتوش، الموقع هيسمح بإنشاء حساب من غير أي تحقق "أنا لست روبوت" (الويدجت مش بيظهر خالص). لو عايز التحقق يشتغل لازم تحط ده مع `TURNSTILE_SECRET_KEY` تحت مع بعض — لو حطيت واحد وسبت التاني فاضي، التسجيل هيفشل بمشكلة أمنية. |
-| `SUPABASE_DB_URL` | Connection string (URI) من Supabase → Settings → Database — يُستخدم فقط بواسطة `migrate.yaml` لتطبيق قاعدة البيانات تلقائيًا، ولا يظهر أبدًا في كود الموقع |
+| `SUPABASE_DB_URL` | Connection string (URI) من Supabase → Settings → Database — يُستخدم بواسطة `migrate.yaml` لتطبيق قاعدة البيانات تلقائيًا، وكمان `keep-alive.yaml` (نبضة دورية تمنع إيقاف المشروع) و `cleanup-stale-sessions.yaml` (تنظيف جلسات تسجيل الدخول القديمة كل أسبوعين)، ولا يظهر أبدًا في كود الموقع |
 | `SUPABASE_ACCESS_TOKEN` | Personal Access Token من supabase.com → Account → Access Tokens — يُستخدم فقط لنشر Edge Functions تلقائيًا |
 | `SUPABASE_PROJECT_REF` | معرّف المشروع (Project Reference ID)، تلاقيه في Settings → General أو في رابط المشروع نفسه |
 | `TURNSTILE_SECRET_KEY` | Secret Key من Cloudflare Turnstile — سري بالكامل، بيتحط فقط داخل Supabase Edge Function عبر `deploy-functions.yaml`، ولا يظهر في كود الموقع أبدًا. سيبه فاضي لو مش هتستخدم Turnstile. |

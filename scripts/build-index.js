@@ -57,7 +57,7 @@ function build() {
   for (const catSlug of categorySlugs) {
     const catDir = path.join(PRODUCTS_DIR, catSlug);
     const catJsonPath = path.join(catDir, "category.json");
-    let catMeta = { name: catSlug, order: 999, whatsapp: null };
+    let catMeta = { name: catSlug, order: 999, whatsapp: null, hidden: false };
     if (fs.existsSync(catJsonPath)) {
       try {
         catMeta = { ...catMeta, ...JSON.parse(fs.readFileSync(catJsonPath, "utf8")) };
@@ -65,6 +65,12 @@ function build() {
         console.warn(`⚠ category.json غلط في ${catSlug}: ${e.message}`);
       }
     }
+
+    // تصنيف مخفي (hidden:true في category.json) بيتشال بالكامل هو ومنتجاته
+    // من data/products.json، يعني بيختفي من الموقع تمامًا كأنه مش موجود
+    // (ونفس الوقت بيبقى غير نشط تلقائيًا في Supabase عن طريق sync-products.js
+    // لأنه مش هيبقى موجود في الملف اللي هو بيتقرا منه).
+    if (catMeta.hidden === true) continue;
 
     const productSlugs = fs
       .readdirSync(catDir)
@@ -82,6 +88,12 @@ function build() {
         console.warn(`⚠ data.json غلط في ${catSlug}/${prodSlug}: ${e.message}`);
         continue;
       }
+      // منتج مخفي (hidden:true في data.json) بيتشال من data/products.json
+      // بالكامل، يعني بيختفي من كل قوائم/شبكات المنتجات في الموقع، وبيبقى
+      // غير نشط تلقائيًا في Supabase (is_active=false) عند أول sync جاي —
+      // لكنه بيفضل موجود فعليًا في مجلد products/ عشان الأدمن يقدر يظهره
+      // تاني في أي وقت من غير ما يفقد أي بيانات أو صور.
+      if (data.hidden === true) continue;
       const img = findImage(prodDir);
       const allImgs = findAllImages(prodDir);
       const images = allImgs.length

@@ -57,7 +57,13 @@
     try {
       const res = await fetch('data/products.json', { cache: 'no-store' });
       const json = await res.json();
-      (json.products || []).forEach(function (p) { productsCatalog[p.id] = p; });
+      // بنفهرس بالـ id (accessories/xyz) وبالـ slug (xyz) مع بعض، لأن سلة
+      // وأوردرات الزائر مخزنة بالـ slug بس، بينما جدول favorites/cart_items
+      // في Supabase بيرجع slug المنتج (من غير التصنيف) في الـ join.
+      (json.products || []).forEach(function (p) {
+        productsCatalog[p.id] = p;
+        if (p.slug) productsCatalog[p.slug] = p;
+      });
     } catch (e) { /* لو فشل تحميل الكتالوج، هنعرض بدون صورة بس */ }
 
     // ---------------- المفضلة ----------------
@@ -70,6 +76,21 @@
         if (!slugs.length) { listEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>'; return; }
         listEl.innerHTML = slugs.map(function (slug) {
           const catalog = productsCatalog[slug] || {};
+          const unavailable = !catalog.name;
+          if (unavailable) {
+            return (
+              '<div class="fav-item fav-item-unavailable" data-fav-slug="' + slug + '">' +
+              '<div class="fav-item-media"></div>' +
+              '<div class="fav-item-info">' +
+              '<span>منتج غير متاح حاليًا</span>' +
+              '<div class="fav-item-price" style="color:var(--muted);">اتشال أو مبقاش متاح</div>' +
+              '</div>' +
+              '<div class="fav-item-actions">' +
+              '<button type="button" class="fav-remove-btn" data-fav-remove>حذف من المفضلة</button>' +
+              '</div>' +
+              '</div>'
+            );
+          }
           const img = catalog.image ? ('<img src="' + catalog.image + '" alt="" loading="lazy">') : '';
           return (
             '<div class="fav-item" data-fav-slug="' + slug + '">' +
@@ -98,7 +119,23 @@
       }
       listEl.innerHTML = favorites.map(function (f) {
         const p = f.products;
-        if (!p) return '';
+        // p بيبقى null لما المنتج يتحذف فعليًا، أو يتخفي (is_active=false)
+        // فالـ RLS بتاعة جدول products بتمنع رجوعه في الـ join — في الحالتين
+        // ده معناه إن المنتج مش متاح دلوقتي، مش إن صف المفضلة يتشال بصمت.
+        if (!p) {
+          return (
+            '<div class="fav-item fav-item-unavailable" data-fav="' + f.product_id + '">' +
+            '<div class="fav-item-media"></div>' +
+            '<div class="fav-item-info">' +
+            '<span>منتج غير متاح حاليًا</span>' +
+            '<div class="fav-item-price" style="color:var(--muted);">اتشال أو مبقاش متاح</div>' +
+            '</div>' +
+            '<div class="fav-item-actions">' +
+            '<button type="button" class="fav-remove-btn" data-fav-remove>حذف من المفضلة</button>' +
+            '</div>' +
+            '</div>'
+          );
+        }
         const catalog = productsCatalog[p.slug] || {};
         const img = catalog.image ? ('<img src="' + catalog.image + '" alt="" loading="lazy">') : '';
         return (
@@ -277,6 +314,23 @@
     const submitBtn = document.getElementById('cartSubmitBtn');
     const submitStatusEl = document.getElementById('cartSubmitStatus');
 
+    // فحص حالة صيانة الطلب (السلة) من data/config.json — لو الأدمن
+    // فعّلها من البرنامج، بنعطّل زرار "اطلب الآن" ونعرض رسالة صيانة
+    // بدل ما نلمس أي كود تاني في صفحة السلة.
+    let checkoutDisabled = false;
+    try {
+      const cfg = await (window.TOTA_CONFIG_READY || Promise.resolve(window.TOTA_CONFIG || {}));
+      checkoutDisabled = !!(cfg && cfg.maintenance && cfg.maintenance.disableCheckout);
+    } catch (e) {
+      checkoutDisabled = false;
+    }
+    if (checkoutDisabled) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'الطلب متوقف مؤقتًا (تحت الصيانة)';
+      submitStatusEl.style.color = '#d64545';
+      submitStatusEl.textContent = 'خدمة استقبال الطلبات تحت الصيانة حاليًا، حاول تاني بعد شوية.';
+    }
+
     let cartRows = []; // { id (row id لو حساب / slug لو زائر), quantity, product_id, name, price, slug, image }
     let deliveryPrice = 0;
     let selectedAddressId = null;
@@ -284,7 +338,9 @@
     function money(n) { return (n || 0).toLocaleString('ar-EG'); }
 
     function computeSubtotal() {
-      return cartRows.reduce(function (sum, r) { return sum + (r.price || 0) * r.quantity; }, 0);
+      // منتجات غير متاحة (اتحذفت/اتخفت) مالهاش سعر حقيقي، فمينفعش تتحسب
+      // في الإجمالي ولا تتبعت في الأوردر أصلاً.
+      return cartRows.reduce(function (sum, r) { return r.unavailable ? sum : sum + (r.price || 0) * r.quantity; }, 0);
     }
 
     function renderSummary() {
@@ -304,6 +360,18 @@
       emptyEl.hidden = true;
       checkoutAreaEl.hidden = false;
       itemsListEl.innerHTML = cartRows.map(function (r) {
+        if (r.unavailable) {
+          return (
+            '<div class="cart-item cart-item-unavailable" data-row="' + r.id + '">' +
+            '<div class="cart-item-media"></div>' +
+            '<div class="cart-item-info">' +
+            '<span>منتج غير متاح حاليًا</span>' +
+            '<div class="cart-item-price" style="color:var(--muted);">اتشال أو مبقاش متاح — احذفه من السلة عشان تكمل الأوردر</div>' +
+            '</div>' +
+            '<button type="button" class="cart-item-remove" data-remove>حذف</button>' +
+            '</div>'
+          );
+        }
         const img = r.image ? ('<img src="' + r.image + '" alt="" loading="lazy">') : '';
         const link = r.slug ? ('p/' + r.slug + '/') : '#';
         return (
@@ -323,6 +391,14 @@
         );
       }).join('');
       renderSummary();
+      // امنع "اطلب الآن" لحد ما اليوزر يحذف كل المنتجات الغير متاحة من السلة،
+      // عشان ميتبعتش أوردر فيه سطر بسعر 0 أو منتج ملوش وجود حقيقي.
+      const hasUnavailable = cartRows.some(function (r) { return r.unavailable; });
+      if (submitBtn && !checkoutDisabled) submitBtn.disabled = hasUnavailable;
+      if (submitStatusEl && !checkoutDisabled) {
+        submitStatusEl.textContent = hasUnavailable ? 'في منتجات غير متاحة في سلتك — احذفها الأول عشان تقدر تطلب.' : '';
+        submitStatusEl.style.color = hasUnavailable ? '#d64545' : '';
+      }
     }
 
     async function loadCart() {
@@ -337,7 +413,8 @@
             name: catalog.name,
             price: catalog.price || 0,
             slug: row.slug,
-            image: catalog.image
+            image: catalog.image,
+            unavailable: !catalog.name
           };
         });
         renderItems();
@@ -349,6 +426,8 @@
         .order('created_at', { ascending: false });
       if (error || !data) { cartRows = []; renderItems(); return; }
       cartRows = data.map(function (row) {
+        // row.products بيبقى null لو المنتج اتحذف أو اتخفي (is_active=false
+        // بتمنع الـ RLS من رجوعه في الـ join) — يبقى المنتج ده مش متاح دلوقتي.
         const p = row.products || {};
         const catalog = productsCatalog[p.slug] || {};
         return {
@@ -358,7 +437,8 @@
           name: p.name || catalog.name,
           price: p.price != null ? p.price : (catalog.price || 0),
           slug: p.slug,
-          image: catalog.image
+          image: catalog.image,
+          unavailable: !row.products
         };
       });
       renderItems();
@@ -474,6 +554,7 @@
 
     // ---------------- اطلب الآن ----------------
     submitBtn.addEventListener('click', async function () {
+      if (checkoutDisabled) return;
       if (!cartRows.length) return;
 
       if (isGuest) {
@@ -543,6 +624,10 @@
     }
 
     async function placeGuestOrder(info) {
+      if (cartRows.some(function (r) { return r.unavailable; })) {
+        if (window.totaToast) window.totaToast('في منتجات غير متاحة في سلتك، احذفها الأول.', 'error');
+        return;
+      }
       try {
         const resolvedItems = [];
         for (const r of cartRows) {
@@ -597,6 +682,12 @@
     }
 
     async function placeOrder() {
+      // حماية إضافية (غير الزرار المعطّل في الواجهة): منقدرش نبعت أوردر فيه
+      // منتج غير متاح (اتحذف/اتخفي)، لأنه هيتسجل بسعر 0 ومنتج مالوش وجود حقيقي.
+      if (cartRows.some(function (r) { return r.unavailable; })) {
+        if (window.totaToast) window.totaToast('في منتجات غير متاحة في سلتك، احذفها الأول.', 'error');
+        return;
+      }
       try {
         const { data: profile } = await client.from('profiles').select('full_name, phone, country_code').eq('id', user.id).maybeSingle();
         const countryCode = (profile && profile.country_code) || '+20';

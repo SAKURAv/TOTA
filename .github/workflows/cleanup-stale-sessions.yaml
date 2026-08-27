@@ -1,0 +1,36 @@
+name: Cleanup Stale Auth Sessions
+
+# بيتشغّل تلقائيًا كل أسبوعين (يوم الأحد الساعة 2 صباحًا UTC)،
+# وبيستدعي الدالة public.cleanup_stale_auth_sessions() الموجودة
+# في قاعدة البيانات اللي بتمسح:
+#   - أي جلسة قديمة لأي مستخدم غير آخر جلسة نشطة ليه
+#   - أي جلسة (حتى لو كانت الأحدث) عملهاش نشاط من 30 يوم أو أكتر
+#   - الـ refresh_tokens التابعة لأي جلسة اتمسحت
+#
+# الجلسة النشطة الحالية لكل مستخدم بتفضل زي ما هي — محدش بيتسجّل
+# خروجه فجأة بسبب الـ workflow ده.
+#
+# منفصل تمامًا عن نشر الموقع وباقي الـ workflows — لو فشل لأي سبب
+# الموقع والبرنامج مش بيتأثروا خالص.
+on:
+  schedule:
+    - cron: '0 2 */14 * *' # كل 14 يوم (أسبوعين) الساعة 2 صباحًا UTC
+  workflow_dispatch: {} # يسمح بتشغيله يدوي من تبويب Actions لتجربته فورًا
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Run cleanup function
+        run: |
+          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ]; then
+            echo "❌ السر SUPABASE_DB_URL مش مضاف في GitHub Secrets — راجع ENV_SETUP.md"
+            exit 1
+          fi
+          psql "${{ secrets.SUPABASE_DB_URL }}" -v ON_ERROR_STOP=1 -c \
+            "SELECT deleted_sessions, deleted_refresh_tokens FROM public.cleanup_stale_auth_sessions();" \
+          | tee /tmp/cleanup_result.txt
+          echo "✅ تمّ تنظيف الجلسات المتراكمة — شوف النتيجة فوق"
