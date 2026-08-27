@@ -137,6 +137,18 @@
     while (wrap.firstElementChild) document.body.appendChild(wrap.firstElementChild);
   }
 
+  //تعديل صفحه انشاء حساب وجعلها غير قابله للفتح
+  function openModal(tab) {
+    const modal = document.getElementById('totaAuthModal');
+    modal.hidden = false;
+    lockBodyScroll();
+    // لو التسجيل معطل، ما نفتحش أبدًا على تاب الـ signup
+    if (tab === 'signup' && window.TOTA_SIGNUP_DISABLED) {
+      tab = 'login';
+    }
+    switchTab(tab || 'login');
+  }
+
   // قفل سكرول الصفحة اللي وراء المودال بشكل فعلي على الموبايل.
   // overflow:hidden على الـ body لوحده مش كافي على iOS Safari — الصفحة
   // اللي وراه بتفضل تتسكرول بالّلمس حتى لو المودال فاتح فوقها. الحل إننا
