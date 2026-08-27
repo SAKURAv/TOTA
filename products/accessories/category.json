@@ -1,4 +1,5 @@
 {
   "name": "إكسسوارات",
-  "order": 1
+  "order": 1,
+  "hidden": true
 }
