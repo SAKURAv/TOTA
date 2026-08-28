@@ -334,6 +334,42 @@
       modal.hidden = true;
       unlockBodyScroll();
     }
+    // ------------------------------------------------------------
+    // Rate limit محلي (client-side) ضد "email bombing" لنفس الإيميل:
+    // بنسجل وقت كل محاولة إرسال في localStorage لكل إيميل لوحده، وبنمنع:
+    //   - أكتر من طلب واحد كل 60 ثانية لنفس الإيميل (منع الضغط المتكرر السريع).
+    //   - أكتر من 3 طلبات لنفس الإيميل خلال الساعة.
+    // ده بس طبقة حماية إضافية من ناحية المتصفح (سهل الالتفاف حواليها لو
+    // حد مسح localStorage)، مش بديل عن أي rate limit من ناحية Supabase
+    // Auth نفسها (اللي بيفعل زي رقابة إضافية على مستوى المشروع كله).
+    // ------------------------------------------------------------
+    const RESET_RL_KEY = 'tota_reset_pw_attempts';
+    const RESET_RL_COOLDOWN_MS = 60 * 1000;
+    const RESET_RL_MAX_PER_HOUR = 3;
+    function readResetAttempts() {
+      try { return JSON.parse(localStorage.getItem(RESET_RL_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function writeResetAttempts(map) {
+      try { localStorage.setItem(RESET_RL_KEY, JSON.stringify(map)); } catch (e) { /* ignore */ }
+    }
+    function checkResetRateLimit(email) {
+      const now = Date.now();
+      const map = readResetAttempts();
+      const key = (email || '').trim().toLowerCase();
+      const list = (map[key] || []).filter(function (t) { return now - t < 60 * 60 * 1000; });
+      if (list.length && now - list[list.length - 1] < RESET_RL_COOLDOWN_MS) {
+        const waitSec = Math.ceil((RESET_RL_COOLDOWN_MS - (now - list[list.length - 1])) / 1000);
+        return { ok: false, message: 'استنى ' + waitSec + ' ثانية قبل ما تطلب تاني.' };
+      }
+      if (list.length >= RESET_RL_MAX_PER_HOUR) {
+        return { ok: false, message: 'وصلت للحد الأقصى للمحاولات، حاول تاني بعد ساعة.' };
+      }
+      list.push(now);
+      map[key] = list;
+      writeResetAttempts(map);
+      return { ok: true };
+    }
+
     const forgotForm = document.getElementById('totaForgotPasswordForm');
     forgotForm && forgotForm.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -341,12 +377,15 @@
       const successEl = forgotForm.querySelector('[data-forgot-success]');
       clearError(errEl);
       successEl.hidden = true;
+      const fd = new FormData(forgotForm);
+      const email = fd.get('email');
+      const rl = checkResetRateLimit(email);
+      if (!rl.ok) { showError(errEl, rl.message); return; }
       const client = await getClient();
       if (!client) { showError(errEl, 'الخدمة غير متاحة الآن، حاول لاحقًا.'); return; }
-      const fd = new FormData(forgotForm);
       const btn = forgotForm.querySelector('.tota-auth-submit');
       btn.disabled = true;
-      const { error } = await client.auth.resetPasswordForEmail(fd.get('email'), {
+      const { error } = await client.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + window.location.pathname
       });
       btn.disabled = false;

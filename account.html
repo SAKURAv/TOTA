@@ -191,6 +191,7 @@
 <script src="assets/js/country-code.js?v=20260821-1" defer></script>
 <script src="assets/js/telegram-notify.js?v=20260821-1" defer></script>
 <script src="assets/js/config.js?v=20260817-2" defer></script>
+<script src="assets/js/guest-store.js?v=20260822-1" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
@@ -499,19 +500,25 @@ document.addEventListener('DOMContentLoaded', async function(){
   });
 
   // ---------------- المفضلة ----------------
+  // بقت بالكامل من التخزين المحلي (TotaGuest) زي باقي الموقع، بدل ما
+  // كانت بتتقرا من جدول favorites في Supabase — نفس منطق تاب المفضلة
+  // في صفحة السلة (cart.js) بالظبط.
   var favListEl = document.getElementById('accFavoritesList');
-  var { data: favorites, error: favErr } = await client.from('favorites')
-    .select('product_id, products(id, name, slug, price)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-  if (favErr || !favorites || !favorites.length) {
+  var favSlugs = window.TotaGuest ? window.TotaGuest.getFavorites() : [];
+  if (!favSlugs.length) {
     favListEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>';
   } else {
-    favListEl.innerHTML = favorites.map(function (f) {
-      var p = f.products;
+    var favCatalog = {};
+    try {
+      var favRes = await fetch('data/products.json', { cache: 'no-store' });
+      var favJson = await favRes.json();
+      (favJson.products || []).forEach(function (p) { if (p.slug) favCatalog[p.slug] = p; });
+    } catch (e) { /* لو فشل تحميل الكتالوج، هنعرض اللي عندنا بس */ }
+    favListEl.innerHTML = favSlugs.map(function (slug) {
+      var p = favCatalog[slug];
       if (!p) return '';
       return '<div style="padding:8px 0; border-bottom:1px solid var(--line);">' +
-        '<a href="p/' + p.slug + '/">' + p.name + '</a>' +
+        '<a href="p/' + slug + '/">' + p.name + '</a>' +
         (p.price ? (' — ' + p.price + ' جنيه') : '') + '</div>';
     }).join('');
   }

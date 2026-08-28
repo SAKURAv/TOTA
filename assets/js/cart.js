@@ -3,15 +3,19 @@
 //  منتج، اختيار عنوان (أو إضافة واحد جديد)، كتابة ملاحظة، وحساب
 //  الإجمالي (منتجات + توصيل) قبل ما يتبعت الأوردر كله دفعة واحدة.
 //
-//  فيه وضعين:
-//   - مستخدم عنده حساب: زي ما كان بالظبط (cart_items/orders/favorites
-//     في Supabase، مربوطين بـ user_id).
-//   - زائر من غير حساب: السلة والمفضلة كلها محلية (localStorage عن
-//     طريق window.TotaGuest)، ولما يضغط "اطلب الآن" لازم يكتب رقم
-//     تليفونه وعنوانه، وبيتبعت الأوردر عن طريق RPC (place_guest_order)
-//     بـ user_id = null + guest_phone/guest_name/guest_address، وبعدين
-//     id الأوردر بيتخزن محليًا عشان يقدر يتابع حالته من تاب "أوردراتي"
-//     من غير ما يحتاج حساب خالص.
+//  السلة والمفضلة بقت بالكامل تخزين محلي (localStorage عن طريق
+//  window.TotaGuest) لكل الزوار، سواء عندهم حساب أو لأ — عشان منتقلش
+//  على قاعدة البيانات بكل إضافة/شيل/تعديل كمية (ده بيتغير كتير جدًا
+//  أثناء التصفح العادي). الفرق الوحيد بين الحالتين بقى في "اطلب الآن"
+//  بس:
+//   - مستخدم عنده حساب: بيختار عنوان محفوظ (أو يضيف واحد جديد)، وبيتم
+//     إدراج الأوردر مباشرة (orders/order_items) مربوط بـ user_id بتاعه،
+//     وبعدها بتتفضى السلة المحلية.
+//   - زائر من غير حساب: لازم يكتب رقم تليفونه وعنوانه، وبيتبعت الأوردر
+//     عن طريق RPC (place_guest_order) بـ user_id = null +
+//     guest_phone/guest_name/guest_address، وبعدين id الأوردر بيتخزن
+//     محليًا عشان يقدر يتابع حالته من تاب "أوردراتي" من غير ما يحتاج
+//     حساب خالص.
 // ============================================================
 (function () {
   'use strict';
@@ -67,64 +71,20 @@
     } catch (e) { /* لو فشل تحميل الكتالوج، هنعرض بدون صورة بس */ }
 
     // ---------------- المفضلة ----------------
+    // بقت بالكامل من التخزين المحلي (TotaGuest) لكل الزوار حتى أصحاب
+    // الحساب — نفس منطق زر القلب في cart-favorites.js بالظبط.
     async function loadFavorites() {
       const listEl = document.getElementById('cartFavoritesList');
       listEl.innerHTML = 'جاري التحميل...';
 
-      if (isGuest) {
-        const slugs = window.TotaGuest ? window.TotaGuest.getFavorites() : [];
-        if (!slugs.length) { listEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>'; return; }
-        listEl.innerHTML = slugs.map(function (slug) {
-          const catalog = productsCatalog[slug] || {};
-          const unavailable = !catalog.name;
-          if (unavailable) {
-            return (
-              '<div class="fav-item fav-item-unavailable" data-fav-slug="' + slug + '">' +
-              '<div class="fav-item-media"></div>' +
-              '<div class="fav-item-info">' +
-              '<span>منتج غير متاح حاليًا</span>' +
-              '<div class="fav-item-price" style="color:var(--muted);">اتشال أو مبقاش متاح</div>' +
-              '</div>' +
-              '<div class="fav-item-actions">' +
-              '<button type="button" class="fav-remove-btn" data-fav-remove>حذف من المفضلة</button>' +
-              '</div>' +
-              '</div>'
-            );
-          }
-          const img = catalog.image ? ('<img src="' + catalog.image + '" alt="" loading="lazy">') : '';
+      const slugs = window.TotaGuest ? window.TotaGuest.getFavorites() : [];
+      if (!slugs.length) { listEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>'; return; }
+      listEl.innerHTML = slugs.map(function (slug) {
+        const catalog = productsCatalog[slug] || {};
+        const unavailable = !catalog.name;
+        if (unavailable) {
           return (
-            '<div class="fav-item" data-fav-slug="' + slug + '">' +
-            '<div class="fav-item-media">' + img + '</div>' +
-            '<div class="fav-item-info">' +
-            '<a href="p/' + slug + '/">' + (catalog.name || 'منتج') + '</a>' +
-            (catalog.price ? ('<div class="fav-item-price">' + money(catalog.price) + ' ج.م</div>') : '') +
-            '</div>' +
-            '<div class="fav-item-actions">' +
-            '<button type="button" class="btn-primary" data-fav-add-cart>أضف للسلة</button>' +
-            '<button type="button" class="fav-remove-btn" data-fav-remove>حذف من المفضلة</button>' +
-            '</div>' +
-            '</div>'
-          );
-        }).join('');
-        return;
-      }
-
-      const { data: favorites, error } = await client.from('favorites')
-        .select('product_id, products(id, name, slug, price)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      if (error || !favorites || !favorites.length) {
-        listEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>';
-        return;
-      }
-      listEl.innerHTML = favorites.map(function (f) {
-        const p = f.products;
-        // p بيبقى null لما المنتج يتحذف فعليًا، أو يتخفي (is_active=false)
-        // فالـ RLS بتاعة جدول products بتمنع رجوعه في الـ join — في الحالتين
-        // ده معناه إن المنتج مش متاح دلوقتي، مش إن صف المفضلة يتشال بصمت.
-        if (!p) {
-          return (
-            '<div class="fav-item fav-item-unavailable" data-fav="' + f.product_id + '">' +
+            '<div class="fav-item fav-item-unavailable" data-fav-slug="' + slug + '">' +
             '<div class="fav-item-media"></div>' +
             '<div class="fav-item-info">' +
             '<span>منتج غير متاح حاليًا</span>' +
@@ -136,14 +96,13 @@
             '</div>'
           );
         }
-        const catalog = productsCatalog[p.slug] || {};
         const img = catalog.image ? ('<img src="' + catalog.image + '" alt="" loading="lazy">') : '';
         return (
-          '<div class="fav-item" data-fav="' + p.id + '" data-slug="' + p.slug + '">' +
+          '<div class="fav-item" data-fav-slug="' + slug + '">' +
           '<div class="fav-item-media">' + img + '</div>' +
           '<div class="fav-item-info">' +
-          '<a href="p/' + p.slug + '/">' + (p.name || 'منتج') + '</a>' +
-          (p.price ? ('<div class="fav-item-price">' + money(p.price) + ' ج.م</div>') : '') +
+          '<a href="p/' + slug + '/">' + (catalog.name || 'منتج') + '</a>' +
+          (catalog.price ? ('<div class="fav-item-price">' + money(catalog.price) + ' ج.م</div>') : '') +
           '</div>' +
           '<div class="fav-item-actions">' +
           '<button type="button" class="btn-primary" data-fav-add-cart>أضف للسلة</button>' +
@@ -155,37 +114,15 @@
     }
 
     document.getElementById('cartFavoritesList').addEventListener('click', async function (e) {
-      if (isGuest) {
-        const row = e.target.closest('[data-fav-slug]');
-        if (!row) return;
-        const slug = row.dataset.favSlug;
-        if (e.target.closest('[data-fav-remove]')) {
-          window.TotaGuest.removeFavorite(slug);
-          row.remove();
-          window.dispatchEvent(new CustomEvent('tota:favorite-updated'));
-        } else if (e.target.closest('[data-fav-add-cart]')) {
-          window.TotaGuest.addToCart(slug, 1);
-          if (window.totaToast) window.totaToast('اتضاف للسلة ✓', 'success');
-          window.dispatchEvent(new CustomEvent('tota:cart-updated'));
-          await loadCart();
-        }
-        return;
-      }
-      const row = e.target.closest('[data-fav]');
+      const row = e.target.closest('[data-fav-slug]');
       if (!row) return;
-      const productId = row.dataset.fav;
+      const slug = row.dataset.favSlug;
       if (e.target.closest('[data-fav-remove]')) {
-        await client.from('favorites').delete().eq('user_id', user.id).eq('product_id', productId);
+        window.TotaGuest.removeFavorite(slug);
         row.remove();
         window.dispatchEvent(new CustomEvent('tota:favorite-updated'));
       } else if (e.target.closest('[data-fav-add-cart]')) {
-        const { data: existing } = await client.from('cart_items')
-          .select('id, quantity').eq('user_id', user.id).eq('product_id', productId).maybeSingle();
-        if (existing) {
-          await client.from('cart_items').update({ quantity: existing.quantity + 1 }).eq('id', existing.id);
-        } else {
-          await client.from('cart_items').insert({ user_id: user.id, product_id: productId, quantity: 1 });
-        }
+        window.TotaGuest.addToCart(slug, 1);
         if (window.totaToast) window.totaToast('اتضاف للسلة ✓', 'success');
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
         await loadCart();
@@ -401,44 +338,23 @@
       }
     }
 
+    // السلة بقت بالكامل من التخزين المحلي (TotaGuest) لكل الزوار حتى
+    // أصحاب الحساب — المصدر الحقيقي لسعر/اسم المنتج بيفضل data/products.json
+    // (productsCatalog) هنا للعرض بس، وبيتحل الـ id الحقيقي وقت "اطلب
+    // الآن" فقط (resolveProductId) عشان نبعته في الأوردر الفعلي.
     async function loadCart() {
-      if (isGuest) {
-        const local = window.TotaGuest ? window.TotaGuest.getCart() : [];
-        cartRows = local.map(function (row) {
-          const catalog = productsCatalog[row.slug] || {};
-          return {
-            id: row.slug,
-            quantity: row.quantity,
-            product_id: null, // بيتحل فعليًا وقت الطلب
-            name: catalog.name,
-            price: catalog.price || 0,
-            slug: row.slug,
-            image: catalog.image,
-            unavailable: !catalog.name
-          };
-        });
-        renderItems();
-        return;
-      }
-      const { data, error } = await client.from('cart_items')
-        .select('id, quantity, product_id, products(id, name, slug, price)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      if (error || !data) { cartRows = []; renderItems(); return; }
-      cartRows = data.map(function (row) {
-        // row.products بيبقى null لو المنتج اتحذف أو اتخفي (is_active=false
-        // بتمنع الـ RLS من رجوعه في الـ join) — يبقى المنتج ده مش متاح دلوقتي.
-        const p = row.products || {};
-        const catalog = productsCatalog[p.slug] || {};
+      const local = window.TotaGuest ? window.TotaGuest.getCart() : [];
+      cartRows = local.map(function (row) {
+        const catalog = productsCatalog[row.slug] || {};
         return {
-          id: row.id,
+          id: row.slug,
           quantity: row.quantity,
-          product_id: row.product_id,
-          name: p.name || catalog.name,
-          price: p.price != null ? p.price : (catalog.price || 0),
-          slug: p.slug,
+          product_id: null, // بيتحل فعليًا وقت الطلب
+          name: catalog.name,
+          price: catalog.price || 0,
+          slug: row.slug,
           image: catalog.image,
-          unavailable: !row.products
+          unavailable: !catalog.name
         };
       });
       renderItems();
@@ -459,20 +375,17 @@
 
       if (e.target.closest('[data-qty-plus]')) {
         item.quantity += 1;
-        if (isGuest) window.TotaGuest.setCartQty(item.slug, item.quantity);
-        else await client.from('cart_items').update({ quantity: item.quantity }).eq('id', id);
+        window.TotaGuest.setCartQty(item.slug, item.quantity);
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
       } else if (e.target.closest('[data-qty-minus]')) {
         if (item.quantity <= 1) return;
         item.quantity -= 1;
-        if (isGuest) window.TotaGuest.setCartQty(item.slug, item.quantity);
-        else await client.from('cart_items').update({ quantity: item.quantity }).eq('id', id);
+        window.TotaGuest.setCartQty(item.slug, item.quantity);
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
       } else if (e.target.closest('[data-remove]')) {
-        if (isGuest) window.TotaGuest.removeFromCart(item.slug);
-        else await client.from('cart_items').delete().eq('id', id);
+        window.TotaGuest.removeFromCart(item.slug);
         cartRows = cartRows.filter(function (r) { return r.id !== id; });
         renderItems();
         window.dispatchEvent(new CustomEvent('tota:cart-updated'));
@@ -675,7 +588,9 @@
         ordersLoaded = false;
       } catch (e) {
         submitStatusEl.style.color = '#d64545';
-        submitStatusEl.textContent = 'حصل خطأ وإحنا بنبعت الطلب، حاول تاني.';
+        // لو الرفض جاي من حد rate limit في الدالة (place_guest_order)،
+        // بيبقى فيه رسالة عربي واضحة جاهزة (بدل الرسالة العامة).
+        submitStatusEl.textContent = (e && e.message) ? e.message : 'حصل خطأ وإحنا بنبعت الطلب، حاول تاني.';
       } finally {
         submitBtn.disabled = false;
       }
@@ -698,6 +613,17 @@
         const subtotal = computeSubtotal();
         const note = (document.getElementById('cartNoteInput').value || '').trim();
 
+        // السلة المحلية بتخزن slug بس، فمحتاجين نحل الـ UUID الحقيقي بتاع
+        // كل منتج قبل ما نسجل الأوردر (نفس منطق resolveProductId في تدفق
+        // الزائر بالظبط).
+        const resolvedRows = [];
+        for (const r of cartRows) {
+          if (r.unavailable) continue;
+          const productId = await resolveProductId(r.slug);
+          if (productId) resolvedRows.push(Object.assign({}, r, { product_id: productId }));
+        }
+        if (!resolvedRows.length) throw new Error('no valid items');
+
         const { data: order, error: orderErr } = await client.from('orders').insert({
           user_id: user.id,
           address_id: selectedAddressId,
@@ -711,7 +637,7 @@
         }).select().single();
         if (orderErr || !order) throw orderErr || new Error('order insert failed');
 
-        const itemsPayload = cartRows.map(function (r) {
+        const itemsPayload = resolvedRows.map(function (r) {
           return {
             order_id: order.id,
             product_id: r.product_id,
@@ -723,7 +649,9 @@
         const { error: itemsErr } = await client.from('order_items').insert(itemsPayload);
         if (itemsErr) throw itemsErr;
 
-        await client.from('cart_items').delete().eq('user_id', user.id);
+        // السلة تخزين محلي بالكامل دلوقتي، فبعد ما الأوردر يتسجل بنفضيها
+        // من المتصفح بس (مفيش جدول cart_items نتصله بيه خالص).
+        window.TotaGuest.clearCart();
 
         if (window.totaNotifyOrderTelegram) {
           window.totaNotifyOrderTelegram({
