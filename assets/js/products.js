@@ -902,10 +902,10 @@
       favBtn.textContent = '♡ أضف للمفضلة';
       favBtn.classList.remove('is-favorited');
       if (window.totaCheckFavorite) {
-        window.totaCheckFavorite(p.id).then(function (isFav) {
-          favBtn.classList.toggle('is-favorited', isFav);
-          favBtn.textContent = isFav ? '♥ في المفضلة' : '♡ أضف للمفضلة';
-        });
+        // totaCheckFavorite بترجع boolean عادي مش Promise، فمفيش داعي لـ .then
+        const isFav = window.totaCheckFavorite(p.id);
+        favBtn.classList.toggle('is-favorited', isFav);
+        favBtn.textContent = isFav ? '♥ في المفضلة' : '♡ أضف للمفضلة';
       }
     }
     document.getElementById('modalShare').onclick = (e)=>{
