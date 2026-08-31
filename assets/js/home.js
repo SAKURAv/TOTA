@@ -134,8 +134,11 @@
     const price = p.price != null ? `${p.price.toLocaleString('ar-EG')} ${p.currency||''}` : '';
     const old = p.oldPrice ? `<span class="card-old-price">${p.oldPrice.toLocaleString('ar-EG')} ${p.currency||''}</span>` : '';
     const badge = p.badge ? `<span class="card-badge">${p.badge}</span>` : '';
+    // لو المنتج ده عليه تخصيص شكل من برنامج الأدمن، هيتحقن CSS خاص
+    // بيه بس — لو مفيش، بيسيبه بشكله الافتراضي بهدوء
+    window.TotaProductTheme && window.TotaProductTheme.apply(p.id);
     return `
-    <a class="card" href="products.html?p=${encodeURIComponent(p.id)}">
+    <a class="card" href="products.html?p=${encodeURIComponent(p.id)}" data-id="${p.id}">
       ${badge}
       <span class="card-cat-tag">${p.categoryName}</span>
       <button type="button" class="card-fav-btn" data-favorite-toggle-slug="${p.id}" aria-label="أضف للمفضلة" onclick="event.preventDefault();event.stopPropagation();">♡</button>

@@ -722,6 +722,9 @@
   function cardHTML(p, query){
     const badge = p.badge ? `<span class="card-badge">${p.badge}</span>` : '';
     const name = query ? FuzzySearch.highlight(p.name, query) : p.name;
+    // لو المنتج ده عليه تخصيص شكل من برنامج الأدمن (ألوان/إطار/ظل)،
+    // هيتحقن CSS خاص بيه بس — لو مفيش، بيسيبه بشكله الافتراضي بهدوء
+    window.TotaProductTheme && window.TotaProductTheme.apply(p.id);
     return `
     <a class="card" href="#" data-id="${p.id}">
       ${badge}
@@ -857,6 +860,11 @@
       return;
     }
     renderGallery(p);
+    // بنحط data-id على نافذة المودال نفسها عشان أي تخصيص شكل خاص
+    // بالمنتج ده (شوف product-theme.js) يتطبّق عليها بنفس طريقة الكارت
+    const modalEl = overlay.querySelector('.modal');
+    if (modalEl) modalEl.setAttribute('data-id', p.id);
+    window.TotaProductTheme && window.TotaProductTheme.apply(p.id);
     // بتوصل لسكريبت "شفتها مؤخرًا" (recently-viewed.js) عشان يسجل المنتج
     // ده ويحدّث الشريط — بدون أي ربط مباشر بين الملفين.
     window.dispatchEvent(new CustomEvent('tota:product-viewed', { detail: p }));

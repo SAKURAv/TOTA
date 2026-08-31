@@ -35,6 +35,17 @@
   color-scheme:dark;
 }
 
+/* ============================================================================
+   تخصيص شكل منتج واحد بس (اختياري) — شوف assets/js/product-theme.js
+   بيشتغل بإعادة تعريف نفس متغيرات CSS اللي فوق دي، لكن بـ scope محلي
+   بس على .card[data-id="..."] أو .modal[data-id="..."] بتاعة المنتج ده.
+   لو مفيش تخصيص، المتغيرات دي كلها بترجع لقيمتها الافتراضية زي فوق:
+   --border-style (افتراضي: solid) — شكل خط الإطار حوالين الكارت/الأزرار
+   --radius-mobile (افتراضي: 14px) — استدارة زوايا الكارت على الموبايل
+   --modal-radius  (افتراضي: 22px) — استدارة زوايا نافذة تفاصيل المنتج
+   --card-shadow   (افتراضي: none) — ظل ثابت (مش بس عند الهوفر) للكارت
+   --wa-btn        (افتراضي: #25D366) — لون زرار واتساب جوه الكارت
+   ============================================================================ */
 *{box-sizing:border-box; margin:0; padding:0;}
 html{scroll-behavior:auto; overflow-x:hidden;}
 body{
@@ -270,7 +281,7 @@ body.topbar-sticky .topbar{ position:sticky; top:0; }
 }
 .btn-primary:hover{background:var(--accent); color:#fff; transform:translateY(-3px); box-shadow:0 14px 30px rgba(232,93,44,.3);}
 .btn-ghost{
-  border:1px solid var(--line); padding:14px 26px; border-radius:100px; font-weight:700; font-size:14px;
+  border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); padding:14px 26px; border-radius:100px; font-weight:700; font-size:14px;
   transition:.3s var(--ease);
 }
 .btn-ghost:hover{border-color:var(--ink);}
@@ -349,8 +360,9 @@ body.topbar-sticky .topbar{ position:sticky; top:0; }
 
 /* ===== card ===== */
 .card{
-  position:relative; background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
-  overflow:hidden; cursor:pointer; transition:border-color .3s var(--ease), box-shadow .3s var(--ease), transform .4s var(--ease);
+  position:relative; background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); border-radius:var(--radius);
+  overflow:hidden; cursor:pointer; box-shadow:var(--card-shadow,none);
+  transition:border-color .3s var(--ease), box-shadow .3s var(--ease), transform .4s var(--ease);
 }
 .card:hover{border-color:var(--ink); box-shadow:var(--shadow); transform:translateY(-3px);}
 .card-media{position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--paper-dim); display:flex; align-items:center; justify-content:center;}
@@ -360,7 +372,7 @@ body.topbar-sticky .topbar{ position:sticky; top:0; }
   position:absolute; top:12px; right:12px; background:var(--accent); color:#fff;
   font-size:11px; font-weight:700; padding:5px 13px; border-radius:100px; transform:rotate(-3deg); z-index:2;
 }
-.card-cat-tag{position:absolute; top:12px; left:12px; font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--paper); border:1px solid var(--line); padding:5px 11px; border-radius:100px;}
+.card-cat-tag{position:absolute; top:12px; left:12px; font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); padding:5px 11px; border-radius:100px;}
 .card-body{padding:18px;}
 .card-cat{font-size:12px; color:var(--ink-soft); margin-bottom:6px; font-weight:600;}
 .card-name{font-family:'Baloo Bhaijaan 2'; font-weight:700; font-size:16.5px; margin-bottom:10px; line-height:1.4;}
@@ -370,7 +382,7 @@ body.topbar-sticky .topbar{ position:sticky; top:0; }
 .card-old-price{font-size:13px; color:var(--ink-soft); text-decoration:line-through;}
 .card-price-whatsapp{
   display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:100px;
-  background:#25D366; color:#fff; font-size:12.5px; font-weight:800; transition:.2s var(--ease);
+  background:var(--wa-btn,#25D366); color:#fff; font-size:12.5px; font-weight:800; transition:.2s var(--ease);
   border:none; cursor:pointer; font-family:inherit;
 }
 .card-price-whatsapp:hover{filter:brightness(.95); transform:translateY(-1px);}
@@ -677,13 +689,13 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
 }
 .modal-overlay.open{opacity:1; pointer-events:auto;}
 .modal{
-  width:min(880px,100%); max-height:92vh; background:var(--paper); border-radius:22px 22px 0 0;
+  width:min(880px,100%); max-height:92vh; background:var(--paper); border-radius:var(--modal-radius,22px) var(--modal-radius,22px) 0 0;
   overflow-y:auto; transform:translateY(3%); transition:transform .4s var(--ease);
 }
 .modal-overlay.open .modal{transform:translateY(0);}
 @media(min-width:760px){
   .modal-overlay{align-items:center; padding:30px;}
-  .modal{border-radius:22px; transform:scale(.96); opacity:0; display:grid; grid-template-columns:1fr 1fr;}
+  .modal{border-radius:var(--modal-radius,22px); transform:scale(.96); opacity:0; display:grid; grid-template-columns:1fr 1fr;}
   .modal-overlay.open .modal{transform:scale(1); opacity:1;}
 }
 .modal-media{background:var(--paper-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0; aspect-ratio:1/1; overflow:hidden;}
@@ -694,7 +706,7 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
 .gallery-track img{width:100%; height:100%; max-width:none; flex:0 0 100%; margin:0 auto; object-fit:cover;}
 .gallery-arrow{
   position:absolute; top:50%; transform:translateY(-50%); z-index:2;
-  width:34px; height:34px; border-radius:50%; background:var(--paper); border:1px solid var(--line);
+  width:34px; height:34px; border-radius:50%; background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line);
   display:flex; align-items:center; justify-content:center; font-size:20px; line-height:1;
   color:var(--ink); opacity:0; pointer-events:none; transition:.25s var(--ease);
 }
@@ -715,7 +727,7 @@ mark{background:none; color:var(--accent-dark); font-weight:800;}
 }
 @media(min-width:760px){.modal-topbar{grid-column:1/-1; background:var(--paper); padding:16px 20px;}}
 .modal-close{
-  width:36px; height:36px; border-radius:50%; background:var(--paper); border:1px solid var(--line);
+  width:36px; height:36px; border-radius:50%; background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line);
   display:flex; align-items:center; justify-content:center; transition:.3s; flex-shrink:0;
 }
 .modal-close:hover{background:var(--accent); border-color:var(--accent); color:#fff; transform:rotate(90deg);}
@@ -835,7 +847,7 @@ body.modal-locked .whatsapp-float{opacity:0; pointer-events:none;}
   .modal-media{padding:24px;}
   .social-row{gap:10px;}
   .social-pill{padding:12px 18px; font-size:13px;}
-  .card{border-radius:14px;}
+  .card{border-radius:var(--radius-mobile,14px);}
   .btn-primary, .btn-ghost{padding:14px 24px; font-size:14px;}
   .btn-whatsapp{width:100%; justify-content:center;}
   .modal-actions{flex-direction:column;}
@@ -1046,7 +1058,7 @@ body.tota-tab-hidden .scroll-hint .line{
 .card{ position:relative; }
 .card-fav-btn{
   position:absolute; top:12px; left:12px; z-index:2; width:34px; height:34px;
-  border-radius:50%; border:1px solid var(--line); background:var(--paper);
+  border-radius:50%; border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); background:var(--paper);
   color:var(--muted); font-size:17px; cursor:pointer; display:flex;
   align-items:center; justify-content:center; transition:all .2s var(--ease);
 }
@@ -1056,7 +1068,7 @@ body.tota-tab-hidden .scroll-hint .line{
 /* زرار الإضافة للسلة على بطاقة المنتج، جنب زرار المفضلة */
 .card-cart-btn{
   position:absolute; top:12px; left:54px; z-index:2; width:34px; height:34px;
-  border-radius:50%; border:1px solid var(--line); background:var(--paper);
+  border-radius:50%; border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); background:var(--paper);
   color:var(--muted); font-size:15px; cursor:pointer; display:flex;
   align-items:center; justify-content:center; transition:all .2s var(--ease);
 }
