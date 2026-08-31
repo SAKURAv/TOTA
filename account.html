@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script>
+  (function(){
+    var dir = location.pathname.replace(/[^/]*$/, '');
+    var base = document.createElement('base');
+    base.href = location.origin + dir;
+    document.head.appendChild(base);
+  })();
+</script>
+<title>حسابي | Tota</title>
+<meta name="description" content="بيانات حسابك، عناوينك، وطلباتك في متجر Tota.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tota">
+<meta property="og:title" content="حسابي | Tota">
+<meta property="og:description" content="بيانات حسابك، عناوينك، وطلباتك في متجر Tota.">
+<meta property="og:image" content="https://tota.sakurau.workers.dev/assets/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:url" content="https://tota.sakurau.workers.dev/account.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="حسابي | Tota">
+<meta name="twitter:description" content="بيانات حسابك، عناوينك، وطلباتك في متجر Tota.">
+<meta name="twitter:image" content="https://tota.sakurau.workers.dev/assets/img/og-image.jpg">
+<link rel="icon" href="https://tota.sakurau.workers.dev/assets/img/site-logo.jpg" type="image/jpeg">
+<link rel="shortcut icon" href="https://tota.sakurau.workers.dev/assets/img/site-logo.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="https://tota.sakurau.workers.dev/assets/img/icons/icon-apple-touch.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tota">
+<link rel="stylesheet" href="assets/css/style.css?v=20260826-4">
+<script>
+  (function(){if(localStorage.getItem('theme')==='dark') document.documentElement.setAttribute('data-theme','dark');})();
+</script>
+<style>
+  .acc-layout{display:flex; gap:24px; align-items:flex-start; max-width:920px; margin:40px auto; padding:0 20px;}
+  .acc-sidebar{flex:0 0 200px; position:sticky; top:90px; display:flex; flex-direction:column; gap:4px;}
+  .acc-sidebar button{text-align:right; padding:10px 14px; border-radius:12px; border:1px solid transparent; background:none; color:var(--ink); cursor:pointer; font-size:14.5px; font-family:inherit; transition:background .15s,border-color .15s;}
+  .acc-sidebar button:hover{background:var(--paper);}
+  .acc-sidebar button.is-active{background:var(--accent, #f3e9ff); border-color:var(--line); font-weight:700;}
+  .acc-main{flex:1; min-width:0;}
+  .acc-panel{display:none;}
+  .acc-panel.is-active{display:block;}
+  .acc-card{margin:0 0 20px; padding:20px; border:1px solid var(--line); border-radius:var(--radius);}
+  .acc-avatar-row{display:flex; align-items:center; gap:16px; margin-bottom:18px;}
+  .acc-avatar-wrap{width:76px; height:76px; border-radius:50%; overflow:hidden; border:1px solid var(--line); flex:0 0 auto; background:var(--paper);}
+  .acc-avatar-wrap img{width:100%; height:100%; object-fit:cover; display:block;}
+  @media (max-width: 720px){
+    .acc-layout{flex-direction:column;}
+    .acc-sidebar{position:static; flex-direction:row; overflow-x:auto; width:100%; flex:none; padding-bottom:6px;}
+    .acc-sidebar button{white-space:nowrap;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span data-site-name>Tota</span><span>.</span></div>
+  <nav class="nav-links">
+    <a href="index.html">الرئيسية</a>
+    <a href="products.html">المنتجات</a>
+  </nav>
+  <div class="topbar-actions">
+    <a class="page-switch-btn magnetic" href="products.html">
+      <span>المنتجات</span>
+    </a>
+  </div>
+</header>
+
+<main>
+  <div id="totaAccountGuest" hidden style="max-width:640px;margin:40px auto;padding:0 20px;">
+    <p>لازم تسجّل الدخول الأول عشان تشوف حسابك.</p>
+    <a href="index.html" class="btn-primary">رجوع للرئيسية</a>
+  </div>
+
+  <div id="totaAccountBody" hidden class="acc-layout">
+    <!-- القائمة الجانبية -->
+    <nav class="acc-sidebar" id="accSidebar">
+      <button type="button" data-acc-tab="profile" class="is-active">الملف الشخصي</button>
+      <button type="button" data-acc-tab="orders">أوردراتي</button>
+      <button type="button" data-acc-tab="favorites">المفضلة</button>
+      <button type="button" data-acc-tab="addresses">عناويني</button>
+      <button type="button" data-acc-tab="danger" style="color:#d64545;">حذف الحساب</button>
+      <button type="button" id="totaLogoutBtn">تسجيل الخروج</button>
+    </nav>
+
+    <div class="acc-main">
+      <h1 style="font-family:'Baloo Bhaijaan 2'; margin-top:0;">حسابي</h1>
+
+      <!-- الملف الشخصي -->
+      <section class="acc-panel is-active" data-acc-panel="profile">
+        <div class="acc-card">
+          <div class="acc-avatar-row">
+            <div class="acc-avatar-wrap"><img id="accAvatarImg" src="assets/img/placeholder.svg" alt="صورة الحساب"></div>
+            <div>
+              <input type="file" id="accAvatarInput" accept="image/*" hidden>
+              <button type="button" id="accAvatarBtn" class="btn-primary" style="font-size:13px; padding:8px 16px;">تغيير الصورة</button>
+              <div id="accAvatarStatus" style="font-size:12.5px; color:var(--muted); margin-top:6px;"></div>
+            </div>
+          </div>
+          <p><strong>البريد الإلكتروني:</strong> <span id="accEmail">—</span></p>
+          <form id="accNameForm" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:flex-end;">
+            <label style="flex:1; min-width:160px; display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted);">
+              الاسم الكامل
+              <input type="text" name="full_name" id="accFullNameInput" placeholder="اسمك بالكامل"
+                style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
+            </label>
+            <button type="submit" class="btn-primary" style="font-size:13px; padding:10px 18px;">حفظ الاسم</button>
+          </form>
+          <p style="margin-top:14px;"><strong>رقم الهاتف:</strong> <span id="accPhone">—</span>
+            <span id="accPhoneMissing" hidden style="display:inline-block; margin-inline-start:8px; padding:2px 10px; border-radius:20px; background:#fff3cd; color:#8a6300; font-size:12.5px;">أضف رقمك</span>
+          </p>
+          <form id="accPhoneForm" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center;">
+            <span data-phone-country-wrap style="flex:1; min-width:220px;">
+              <input type="tel" name="phone" data-phone-local placeholder="1xxxxxxxxx">
+            </span>
+            <button type="submit" class="btn-primary" style="font-size:13px; padding:10px 18px;">حفظ الرقم</button>
+          </form>
+          <div id="accProfileStatus" style="font-size:12.5px; color:#2e7d32; margin-top:8px;"></div>
+        </div>
+      </section>
+
+      <!-- الأوردرات -->
+      <section class="acc-panel" data-acc-panel="orders">
+        <div class="acc-card">
+          <h2 style="margin-top:0; font-size:18px;">أوردراتي</h2>
+          <h3 style="font-size:14px; color:var(--muted); margin-bottom:8px;">لسه ما وصلتش</h3>
+          <div id="accOrdersPending">جاري التحميل...</div>
+          <h3 style="font-size:14px; color:var(--muted); margin:16px 0 8px;">مكتملة</h3>
+          <div id="accOrdersDone"></div>
+        </div>
+      </section>
+
+      <!-- المفضلة -->
+      <section class="acc-panel" data-acc-panel="favorites">
+        <div class="acc-card">
+          <h2 style="margin-top:0; font-size:18px;">منتجاتي المفضلة</h2>
+          <div id="accFavoritesList">جاري التحميل...</div>
+        </div>
+      </section>
+
+      <!-- العناوين -->
+      <section class="acc-panel" data-acc-panel="addresses">
+        <div class="acc-card">
+          <h2 style="margin-top:0; font-size:18px;">عناويني</h2>
+          <div id="accAddressesList"></div>
+          <form id="accAddressForm" style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+            <input type="text" name="label" placeholder="اسم العنوان (مثلاً: المنزل)" required
+              style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
+            <textarea name="full_address" placeholder="العنوان بالتفصيل" required rows="2"
+              style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:inherit;"></textarea>
+            <input type="text" name="city" placeholder="المدينة"
+              style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
+            <input type="tel" name="phone" placeholder="رقم التواصل لهذا العنوان"
+              style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">
+            <button type="submit" class="btn-primary">إضافة عنوان</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- حذف الحساب -->
+      <section class="acc-panel" data-acc-panel="danger">
+        <div class="acc-card" style="border-color:#f0b8b8;">
+          <h2 style="margin-top:0; font-size:18px; color:#d64545;">حذف الحساب</h2>
+          <p style="color:var(--muted); font-size:14px;">
+            حذف الحساب نهائي وبيشيل بياناتك وطلباتك ومفضلتك وعناوينك. الطلب مش بيتنفذ فورًا —
+            بيتراجع من فريقنا الأول وبنوافق عليه قبل الحذف الفعلي، فممكن ياخد شوية وقت.
+          </p>
+          <div id="accDeleteRequestStatus"></div>
+          <form id="accDeleteRequestForm" style="display:flex; flex-direction:column; gap:10px; margin-top:12px; max-width:420px;">
+            <textarea name="reason" rows="2" placeholder="ليه عايز تحذف حسابك؟ (اختياري)"
+              style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:inherit;"></textarea>
+            <button type="submit" class="btn-primary" style="background:#d64545;">تأكيد طلب حذف الحساب</button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="assets/js/env.js?v=20260820-1" defer></script>
+<script src="assets/js/supabase-client.js?v=20260820-1" defer></script>
+<script src="assets/js/country-code.js?v=20260821-1" defer></script>
+<script src="assets/js/telegram-notify.js?v=20260821-1" defer></script>
+<script src="assets/js/config.js?v=20260817-2" defer></script>
+<script src="assets/js/guest-store.js?v=20260822-1" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', async function(){
+  if (window.totaScanPhoneInputs) window.totaScanPhoneInputs();
+  var client = window.TOTA_SUPABASE || await window.TOTA_SUPABASE_READY;
+  if (!client) {
+    // فشل الاتصال بـ Supabase (غالبًا data/env.json مش موجود أو ناقص) —
+    // بدل ما الصفحة تفضل فاضية بصمت، نورّي شاشة الضيف مع رسالة واضحة
+    document.getElementById('totaAccountGuest').hidden = false;
+    var guestErr = document.createElement('p');
+    guestErr.style.color = '#d64545';
+    guestErr.style.fontSize = '13.5px';
+    guestErr.textContent = 'تعذر الاتصال بالخدمة الآن، حاول تاني بعد شوية.';
+    document.getElementById('totaAccountGuest').appendChild(guestErr);
+    return;
+  }
+  var { data } = await client.auth.getSession();
+  if (!data.session) {
+    document.getElementById('totaAccountGuest').hidden = false;
+    return;
+  }
+  var user = data.session.user;
+  document.getElementById('totaAccountBody').hidden = false;
+  document.getElementById('accEmail').textContent = user.email || '—';
+
+  // ---------------- التنقل الداخلي بين الأقسام (من غير خروج من الصفحة) ----------------
+  var sidebar = document.getElementById('accSidebar');
+  function activateTab(tab) {
+    document.querySelectorAll('[data-acc-tab]').forEach(function (b) {
+      b.classList.toggle('is-active', b.dataset.accTab === tab);
+    });
+    document.querySelectorAll('[data-acc-panel]').forEach(function (p) {
+      p.classList.toggle('is-active', p.dataset.accPanel === tab);
+    });
+    if (history.replaceState) history.replaceState(null, '', '#' + tab);
+  }
+  sidebar.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-acc-tab]');
+    if (!btn) return;
+    activateTab(btn.dataset.accTab);
+  });
+  var initialTab = (location.hash || '').replace('#', '');
+  var validTabs = ['profile', 'orders', 'favorites', 'addresses', 'danger'];
+  if (validTabs.includes(initialTab)) activateTab(initialTab);
+
+  // ---------------- الملف الشخصي (الاسم + الهاتف) ----------------
+  var profileRow = null;
+  async function loadProfile() {
+    var { data: profile } = await client.from('profiles').select('full_name, phone, country_code, avatar_path').eq('id', user.id).single();
+    profileRow = profile;
+    if (profile) {
+      document.getElementById('accFullNameInput').value = profile.full_name || '';
+      // ملحوظة: profile.phone بيتخزن دلوقتي محلي بس (من غير كود الدولة)،
+      // فلازم نضيف country_code هنا عشان العرض يفضل صحيح ومتوافق مع
+      // إصلاح مشكلة تكرار كود الدولة في إشعارات الأوردر.
+      document.getElementById('accPhone').textContent = profile.phone ? ((profile.country_code || '+20') + profile.phone) : '—';
+      document.getElementById('accPhoneMissing').hidden = !!profile.phone;
+      var img = document.getElementById('accAvatarImg');
+      if (profile.avatar_path) {
+        var pub = client.storage.from('avatars').getPublicUrl(profile.avatar_path);
+        img.src = pub.data.publicUrl + '?t=' + Date.now();
+      }
+    }
+  }
+  await loadProfile();
+
+  var profileStatusEl = document.getElementById('accProfileStatus');
+  function flashProfileStatus(msg) {
+    profileStatusEl.textContent = msg;
+    setTimeout(function () { profileStatusEl.textContent = ''; }, 2500);
+  }
+
+  document.getElementById('accNameForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var fd = new FormData(e.target);
+    var fullName = (fd.get('full_name') || '').trim();
+    if (!fullName) { alert('من فضلك اكتب اسمك.'); return; }
+    var { error } = await client.from('profiles').update({ full_name: fullName }).eq('id', user.id);
+    if (error) { alert('تعذر حفظ الاسم، حاول تاني.'); return; }
+    await loadProfile();
+    flashProfileStatus('تم حفظ الاسم ✓');
+  });
+
+  document.getElementById('accPhoneForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var localInput = e.target.querySelector('[data-phone-local]');
+    var wrap = localInput.closest('[data-phone-country-wrap]');
+    var countryCode = wrap && wrap._totaCountrySelect ? wrap._totaCountrySelect.value : '+20';
+    var fullPhone = window.totaGetFullPhone ? window.totaGetFullPhone(localInput) : (countryCode + (localInput.value || '').replace(/\D/g,'').replace(/^0+/, ''));
+    if (!fullPhone || fullPhone.length < 6) { alert('رقم الهاتف غير صحيح.'); return; }
+    var { error } = await client.from('profiles').update({ phone: fullPhone, country_code: countryCode }).eq('id', user.id);
+    if (error) { alert('تعذر حفظ الرقم، حاول تاني.'); return; }
+    e.target.reset();
+    if (window.totaScanPhoneInputs) window.totaScanPhoneInputs();
+    await loadProfile();
+    flashProfileStatus('تم حفظ الرقم ✓');
+  });
+
+  // ---------------- طلب حذف الحساب (يحتاج موافقة الأدمن) ----------------
+  var deleteStatusEl = document.getElementById('accDeleteRequestStatus');
+  var deleteForm = document.getElementById('accDeleteRequestForm');
+  async function loadDeleteRequest() {
+    var { data: reqs } = await client.from('account_delete_requests')
+      .select('id, status, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    var latest = reqs && reqs[0];
+    if (latest && latest.status === 'pending') {
+      deleteStatusEl.innerHTML = '<div style="padding:10px 12px; border-radius:12px; background:#fff3cd; color:#8a6300; font-size:13.5px; margin-bottom:10px;">' +
+        'طلب حذف الحساب قيد المراجعة من فريقنا. ' +
+        '<button type="button" id="accCancelDeleteReq" style="background:none; border:none; text-decoration:underline; color:#8a6300; cursor:pointer; font-size:13.5px;">إلغاء الطلب</button>' +
+        '</div>';
+      deleteForm.hidden = true;
+      document.getElementById('accCancelDeleteReq').addEventListener('click', async function () {
+        await client.from('account_delete_requests').delete().eq('id', latest.id).eq('user_id', user.id);
+        await loadDeleteRequest();
+      });
+    } else if (latest && latest.status === 'rejected') {
+      deleteStatusEl.innerHTML = '<div style="padding:10px 12px; border-radius:12px; background:#f4f4f4; color:var(--muted); font-size:13.5px; margin-bottom:10px;">' +
+        'كان فيه طلب سابق واتراجع، وقررنا نأجّل الحذف. تقدر تبعت طلب جديد لو لسه عايز.</div>';
+      deleteForm.hidden = false;
+    } else {
+      deleteStatusEl.innerHTML = '';
+      deleteForm.hidden = false;
+    }
+  }
+  await loadDeleteRequest();
+
+  deleteForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var sure = confirm('متأكد إنك عايز تحذف حسابك؟ الطلب هيتبعت لفريقنا للموافقة، وبعد الموافقة هتتشال بياناتك نهائيًا.');
+    if (!sure) return;
+    var fd = new FormData(deleteForm);
+    var btn = deleteForm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    var { data: data, error: error } = await client.from('account_delete_requests').insert({
+      user_id: user.id,
+      reason: (fd.get('reason') || '').trim() || null
+    }).select().single();
+    btn.disabled = false;
+    if (error) { alert('تعذر إرسال الطلب، حاول تاني.'); return; }
+    // إشعار تليجرام فوري بطلب حذف الحساب — مباشرة من هنا، مش منتظرين
+    // Database Webhook. فشل الإشعار (لو حصل) مبيمنعش الطلب من إنه
+    // يتسجل ويتفتح للمراجعة.
+    if (window.totaNotifyTextTelegram) {
+      var delName = (fd.get('reason') || '').trim();
+      window.totaNotifyTextTelegram(
+        '⚠️ <b>طلب حذف حساب جديد</b>\n' +
+        (delName ? ('📝 السبب: ' + delName + '\n') : '') +
+        'يحتاج مراجعة من برنامج الأدمن.'
+      );
+    }
+    deleteForm.reset();
+    await loadDeleteRequest();
+  });
+
+  // ---------------- تغيير صورة الحساب (تحويل لـ WebP في المتصفح قبل الرفع) ----------------
+  var avatarBtn = document.getElementById('accAvatarBtn');
+  var avatarInput = document.getElementById('accAvatarInput');
+  var avatarStatus = document.getElementById('accAvatarStatus');
+  avatarBtn.addEventListener('click', function () { avatarInput.click(); });
+
+  function fileToWebpBlob(file, maxSize) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var reader = new FileReader();
+      reader.onload = function (e) { img.src = e.target.result; };
+      reader.onerror = reject;
+      img.onload = function () {
+        var w = img.width, h = img.height;
+        var scale = Math.min(1, maxSize / Math.max(w, h));
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(w * scale);
+        canvas.height = Math.round(h * scale);
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function (blob) {
+          if (!blob) { reject(new Error('فشل تجهيز الصورة')); return; }
+          resolve(blob);
+        }, 'image/webp', 0.85);
+      };
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  avatarInput.addEventListener('change', async function () {
+    var file = avatarInput.files && avatarInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { avatarStatus.textContent = 'اختار ملف صورة صحيح.'; return; }
+    avatarStatus.textContent = 'جاري الرفع...';
+    try {
+      var webpBlob = await fileToWebpBlob(file, 512);
+      var path = user.id + '/avatar.webp';
+      var { error: upErr } = await client.storage.from('avatars').upload(path, webpBlob, {
+        upsert: true, contentType: 'image/webp'
+      });
+      if (upErr) { avatarStatus.textContent = 'حصل خطأ أثناء الرفع، حاول تاني.'; return; }
+      await client.from('profiles').update({ avatar_path: path }).eq('id', user.id);
+      await loadProfile();
+      avatarStatus.textContent = 'تم تحديث الصورة ✓';
+      setTimeout(function () { avatarStatus.textContent = ''; }, 2500);
+    } catch (err) {
+      avatarStatus.textContent = 'حصل خطأ، حاول تاني.';
+    } finally {
+      avatarInput.value = '';
+    }
+  });
+
+  // ---------------- الأوردرات ----------------
+  var ORDER_STATUS_LABELS = {
+    pending_payment: 'لسه ما اتدفعش',
+    paid: 'تم الدفع',
+    shipped: 'تم الشحن',
+    delivered: 'تم التوصيل',
+    cancelled: 'ملغي',
+    issue: 'فيه مشكلة'
+  };
+  var PAYMENT_STATUS_LABELS = { unpaid: 'لم يتم الدفع', partial: 'تم دفع جزء من المبلغ', paid: 'تم الدفع بالكامل' };
+  var DELIVERY_STATUS_LABELS = { not_shipped: 'لم يشحن', out_for_delivery: 'خرج للتوصيل', shipping: 'جار التوصيل', delivered: 'تم التوصيل' };
+  (async function loadOrders(){
+    var pendingEl = document.getElementById('accOrdersPending');
+    var doneEl = document.getElementById('accOrdersDone');
+    var { data: orders, error } = await client.from('orders')
+      .select('id, status, payment_status, delivery_status, paid_amount, total, created_at, order_items(id, product_name_snapshot, unit_price, quantity)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error || !orders || !orders.length) {
+      pendingEl.innerHTML = '<p style="color:var(--muted);">مفيش أوردرات لسه.</p>';
+      return;
+    }
+    function renderOrder(o) {
+      var itemsHtml = (o.order_items || []).map(function (it) {
+        return '<li>' + it.product_name_snapshot + ' × ' + it.quantity + ' — ' + it.unit_price + ' ج.م</li>';
+      }).join('');
+      var paymentLabel = PAYMENT_STATUS_LABELS[o.payment_status] || o.payment_status || 'لم يتم الدفع';
+      var deliveryLabel = DELIVERY_STATUS_LABELS[o.delivery_status] || o.delivery_status || 'لم يشحن';
+      var paymentClass = o.payment_status === 'paid' ? 'is-done' : (o.payment_status === 'partial' ? 'is-progress' : 'is-cancelled');
+      var deliveryClass = o.delivery_status === 'delivered' ? 'is-done' : 'is-progress';
+      return '<div style="padding:12px 0; border-bottom:1px solid var(--line);">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+        '<strong>أوردر #' + o.id.slice(0, 8) + '</strong>' +
+        '<span style="padding:3px 10px; border-radius:20px; font-size:12.5px; background:var(--paper); border:1px solid var(--line);">' +
+        (ORDER_STATUS_LABELS[o.status] || o.status) + '</span></div>' +
+        '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">' +
+        '<span class="orders-status-badge ' + paymentClass + '">💳 ' + paymentLabel + '</span>' +
+        '<span class="orders-status-badge ' + deliveryClass + '">🚚 ' + deliveryLabel + '</span>' +
+        '</div>' +
+        '<ul style="margin:8px 0 4px; padding-inline-start:18px; color:var(--muted); font-size:14px;">' + itemsHtml + '</ul>' +
+        '<div style="font-size:13px; color:var(--muted);">الإجمالي: ' + o.total + ' ج.م' +
+        (o.payment_status === 'partial' ? (' (اتدفع ' + (o.paid_amount || 0) + ' ج.م)') : '') + '</div>' +
+        '</div>';
+    }
+    var pending = orders.filter(function (o) { return o.status !== 'delivered' && o.status !== 'cancelled'; });
+    var done = orders.filter(function (o) { return o.status === 'delivered' || o.status === 'cancelled'; });
+    pendingEl.innerHTML = pending.length ? pending.map(renderOrder).join('') : '<p style="color:var(--muted);">مفيش أوردرات لسه ما وصلتش.</p>';
+    doneEl.innerHTML = done.length ? done.map(renderOrder).join('') : '<p style="color:var(--muted);">مفيش أوردرات مكتملة لسه.</p>';
+  })();
+
+  // ---------------- العناوين ----------------
+  var addrListEl = document.getElementById('accAddressesList');
+  async function loadAddresses() {
+    var { data: addresses, error } = await client.from('addresses')
+      .select('id, label, full_address, city, phone, is_default')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error || !addresses || !addresses.length) {
+      addrListEl.innerHTML = '<p style="color:var(--muted);">مفيش عناوين مضافة لسه.</p>';
+      return;
+    }
+    addrListEl.innerHTML = addresses.map(function (a) {
+      return '<div style="padding:10px 0; border-bottom:1px solid var(--line);">' +
+        '<strong>' + (a.label || 'عنوان') + '</strong><br>' +
+        a.full_address + (a.city ? (' — ' + a.city) : '') +
+        (a.phone ? ('<br>هاتف: ' + a.phone) : '') +
+        ' <button type="button" data-del-address="' + a.id + '" style="margin-inline-start:10px; background:none; border:none; color:#d64545; cursor:pointer;">حذف</button>' +
+        '</div>';
+    }).join('');
+  }
+  await loadAddresses();
+
+  document.getElementById('accAddressForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var fd = new FormData(e.target);
+    await client.from('addresses').insert({
+      user_id: user.id,
+      label: fd.get('label'),
+      full_address: fd.get('full_address'),
+      city: fd.get('city'),
+      phone: fd.get('phone')
+    });
+    e.target.reset();
+    await loadAddresses();
+  });
+
+  addrListEl.addEventListener('click', async function (e) {
+    var btn = e.target.closest('[data-del-address]');
+    if (!btn) return;
+    await client.from('addresses').delete().eq('id', btn.dataset.delAddress).eq('user_id', user.id);
+    await loadAddresses();
+  });
+
+  // ---------------- المفضلة ----------------
+  // بقت بالكامل من التخزين المحلي (TotaGuest) زي باقي الموقع، بدل ما
+  // كانت بتتقرا من جدول favorites في Supabase — نفس منطق تاب المفضلة
+  // في صفحة السلة (cart.js) بالظبط.
+  var favListEl = document.getElementById('accFavoritesList');
+  var favSlugs = window.TotaGuest ? window.TotaGuest.getFavorites() : [];
+  if (!favSlugs.length) {
+    favListEl.innerHTML = '<p style="color:var(--muted);">مفيش منتجات في المفضلة لسه.</p>';
+  } else {
+    var favCatalog = {};
+    try {
+      var favRes = await fetch('data/products.json', { cache: 'no-store' });
+      var favJson = await favRes.json();
+      (favJson.products || []).forEach(function (p) { if (p.slug) favCatalog[p.slug] = p; });
+    } catch (e) { /* لو فشل تحميل الكتالوج، هنعرض اللي عندنا بس */ }
+    favListEl.innerHTML = favSlugs.map(function (slug) {
+      var p = favCatalog[slug];
+      if (!p) return '';
+      return '<div style="padding:8px 0; border-bottom:1px solid var(--line);">' +
+        '<a href="p/' + slug + '/">' + p.name + '</a>' +
+        (p.price ? (' — ' + p.price + ' جنيه') : '') + '</div>';
+    }).join('');
+  }
+
+  document.getElementById('totaLogoutBtn').addEventListener('click', async function(){
+    await client.auth.signOut();
+    window.location.href = 'index.html';
+  });
+});
+</script>
+</body>
+</html>

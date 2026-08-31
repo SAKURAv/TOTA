@@ -1,0 +1,391 @@
+{
+  "generatedAt": "2026-08-31T19:55:06.392Z",
+  "categories": [
+    {
+      "slug": "accessories",
+      "name": "إكسسوارات",
+      "order": 1,
+      "whatsapp": null,
+      "products": [
+        {
+          "id": "accessories/ayat-alkursi-bracelet",
+          "slug": "ayat-alkursi-bracelet",
+          "category": "accessories",
+          "categoryName": "إكسسوارات",
+          "name": "اسورة آية الكرسي",
+          "price": 85,
+          "oldPrice": 130,
+          "currency": "EGP",
+          "badge": "الأكثر مبيعًا",
+          "description": "اسورة آية الكرسي بكل ألوانها 🙈 أعلى جودة وأقل سعر في السوق",
+          "specs": [
+            {
+              "label": "الخامة",
+              "value": "أعلى جودة"
+            },
+            {
+              "label": "الألوان المتاحة",
+              "value": "جميع الألوان"
+            },
+            {
+              "label": "التصميم",
+              "value": "آية الكرسي"
+            }
+          ],
+          "priceMode": [
+            "price"
+          ],
+          "priceText": "منتج",
+          "whatsapp": null,
+          "categoryWhatsapp": null,
+          "image": "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+          "images": [
+            "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/2.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/3.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/4.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/5.jpeg",
+            "products/accessories/ayat-alkursi-bracelet/6.jpeg"
+          ]
+        },
+        {
+          "id": "accessories/angel-necklace",
+          "slug": "angel-necklace",
+          "category": "accessories",
+          "categoryName": "إكسسوارات",
+          "name": "سلسلة الملاك ترندي",
+          "price": 110,
+          "oldPrice": 150,
+          "currency": "EGP",
+          "badge": "جديد",
+          "description": "سلسلة الملاك الترند 🙈 متوفرة باللون السيلفر والجولد، من أعلى ماتريل وأقل سعر 😻☝️♥️",
+          "specs": [
+            {
+              "label": "الخامة",
+              "value": "أعلى ماتريل"
+            },
+            {
+              "label": "الألوان المتاحة",
+              "value": "سيلفر / جولد"
+            },
+            {
+              "label": "التصميم",
+              "value": "جناحين ملاك مرصع بالزركون"
+            }
+          ],
+          "priceMode": [
+            "price"
+          ],
+          "priceText": null,
+          "whatsapp": null,
+          "categoryWhatsapp": null,
+          "image": "products/accessories/angel-necklace/1.jpg",
+          "images": [
+            "products/accessories/angel-necklace/1.jpg",
+            "products/accessories/angel-necklace/2.jpg",
+            "products/accessories/angel-necklace/3.jpg"
+          ]
+        },
+        {
+          "id": "accessories/horse-necklace",
+          "slug": "horse-necklace",
+          "category": "accessories",
+          "categoryName": "إكسسوارات",
+          "name": "سلسلة حصان ترند",
+          "price": 70,
+          "oldPrice": 100,
+          "currency": "EGP",
+          "badge": "جديد",
+          "description": "سلسلة حصان ترند 🙈♥️ تصميم أنيق ومميز يناسب كل الإطلالات",
+          "specs": [
+            {
+              "label": "الخامة",
+              "value": "استانلس ستيل مطلي جولد"
+            },
+            {
+              "label": "التصميم",
+              "value": "شكل رأس حصان مفرغ"
+            },
+            {
+              "label": "الاستخدام",
+              "value": "يومي - مناسبات"
+            }
+          ],
+          "priceMode": [
+            "price"
+          ],
+          "priceText": null,
+          "whatsapp": null,
+          "categoryWhatsapp": null,
+          "image": "products/accessories/horse-necklace/1.jpg",
+          "images": [
+            "products/accessories/horse-necklace/1.jpg",
+            "products/accessories/horse-necklace/2.jpg"
+          ]
+        },
+        {
+          "id": "accessories/butterfly-necklace",
+          "slug": "butterfly-necklace",
+          "category": "accessories",
+          "categoryName": "إكسسوارات",
+          "name": "سلسلة فراشة",
+          "price": 140,
+          "oldPrice": 190,
+          "currency": "EGP",
+          "badge": "جديد",
+          "description": "سلسلة فراشة جامدة أوي 🙈♥️ استانلس ستيل بيور 😉👌",
+          "specs": [
+            {
+              "label": "الخامة",
+              "value": "استانلس ستيل بيور"
+            },
+            {
+              "label": "التصميم",
+              "value": "شكل فراشة"
+            },
+            {
+              "label": "الاستخدام",
+              "value": "يومي - مناسبات"
+            }
+          ],
+          "priceMode": [
+            "price"
+          ],
+          "priceText": null,
+          "whatsapp": null,
+          "categoryWhatsapp": null,
+          "image": "products/accessories/butterfly-necklace/1.jpeg",
+          "images": [
+            "products/accessories/butterfly-necklace/1.jpeg",
+            "products/accessories/butterfly-necklace/2.jpeg"
+          ]
+        },
+        {
+          "id": "accessories/tiger-necklace",
+          "slug": "tiger-necklace",
+          "category": "accessories",
+          "categoryName": "إكسسوارات",
+          "name": "سلسلة تايجر ترندي",
+          "price": 130,
+          "oldPrice": 170,
+          "currency": "EGP",
+          "badge": "ترند",
+          "description": "سلسلة تايجر ترندي بكل أشكالها 🙈",
+          "specs": [
+            {
+              "label": "الخامة",
+              "value": "أعلى جودة"
+            },
+            {
+              "label": "التصميم",
+              "value": "شكل نمر"
+            }
+          ],
+          "priceMode": [
+            "price"
+          ],
+          "priceText": null,
+          "whatsapp": null,
+          "categoryWhatsapp": null,
+          "image": "products/accessories/tiger-necklace/1.jpeg",
+          "images": [
+            "products/accessories/tiger-necklace/1.jpeg",
+            "products/accessories/tiger-necklace/2.jpeg",
+            "products/accessories/tiger-necklace/3.jpeg",
+            "products/accessories/tiger-necklace/4.jpeg"
+          ]
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": "accessories/ayat-alkursi-bracelet",
+      "slug": "ayat-alkursi-bracelet",
+      "category": "accessories",
+      "categoryName": "إكسسوارات",
+      "name": "اسورة آية الكرسي",
+      "price": 85,
+      "oldPrice": 130,
+      "currency": "EGP",
+      "badge": "الأكثر مبيعًا",
+      "description": "اسورة آية الكرسي بكل ألوانها 🙈 أعلى جودة وأقل سعر في السوق",
+      "specs": [
+        {
+          "label": "الخامة",
+          "value": "أعلى جودة"
+        },
+        {
+          "label": "الألوان المتاحة",
+          "value": "جميع الألوان"
+        },
+        {
+          "label": "التصميم",
+          "value": "آية الكرسي"
+        }
+      ],
+      "priceMode": [
+        "price"
+      ],
+      "priceText": "منتج",
+      "whatsapp": null,
+      "categoryWhatsapp": null,
+      "image": "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+      "images": [
+        "products/accessories/ayat-alkursi-bracelet/1.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/2.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/3.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/4.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/5.jpeg",
+        "products/accessories/ayat-alkursi-bracelet/6.jpeg"
+      ]
+    },
+    {
+      "id": "accessories/angel-necklace",
+      "slug": "angel-necklace",
+      "category": "accessories",
+      "categoryName": "إكسسوارات",
+      "name": "سلسلة الملاك ترندي",
+      "price": 110,
+      "oldPrice": 150,
+      "currency": "EGP",
+      "badge": "جديد",
+      "description": "سلسلة الملاك الترند 🙈 متوفرة باللون السيلفر والجولد، من أعلى ماتريل وأقل سعر 😻☝️♥️",
+      "specs": [
+        {
+          "label": "الخامة",
+          "value": "أعلى ماتريل"
+        },
+        {
+          "label": "الألوان المتاحة",
+          "value": "سيلفر / جولد"
+        },
+        {
+          "label": "التصميم",
+          "value": "جناحين ملاك مرصع بالزركون"
+        }
+      ],
+      "priceMode": [
+        "price"
+      ],
+      "priceText": null,
+      "whatsapp": null,
+      "categoryWhatsapp": null,
+      "image": "products/accessories/angel-necklace/1.jpg",
+      "images": [
+        "products/accessories/angel-necklace/1.jpg",
+        "products/accessories/angel-necklace/2.jpg",
+        "products/accessories/angel-necklace/3.jpg"
+      ]
+    },
+    {
+      "id": "accessories/horse-necklace",
+      "slug": "horse-necklace",
+      "category": "accessories",
+      "categoryName": "إكسسوارات",
+      "name": "سلسلة حصان ترند",
+      "price": 70,
+      "oldPrice": 100,
+      "currency": "EGP",
+      "badge": "جديد",
+      "description": "سلسلة حصان ترند 🙈♥️ تصميم أنيق ومميز يناسب كل الإطلالات",
+      "specs": [
+        {
+          "label": "الخامة",
+          "value": "استانلس ستيل مطلي جولد"
+        },
+        {
+          "label": "التصميم",
+          "value": "شكل رأس حصان مفرغ"
+        },
+        {
+          "label": "الاستخدام",
+          "value": "يومي - مناسبات"
+        }
+      ],
+      "priceMode": [
+        "price"
+      ],
+      "priceText": null,
+      "whatsapp": null,
+      "categoryWhatsapp": null,
+      "image": "products/accessories/horse-necklace/1.jpg",
+      "images": [
+        "products/accessories/horse-necklace/1.jpg",
+        "products/accessories/horse-necklace/2.jpg"
+      ]
+    },
+    {
+      "id": "accessories/butterfly-necklace",
+      "slug": "butterfly-necklace",
+      "category": "accessories",
+      "categoryName": "إكسسوارات",
+      "name": "سلسلة فراشة",
+      "price": 140,
+      "oldPrice": 190,
+      "currency": "EGP",
+      "badge": "جديد",
+      "description": "سلسلة فراشة جامدة أوي 🙈♥️ استانلس ستيل بيور 😉👌",
+      "specs": [
+        {
+          "label": "الخامة",
+          "value": "استانلس ستيل بيور"
+        },
+        {
+          "label": "التصميم",
+          "value": "شكل فراشة"
+        },
+        {
+          "label": "الاستخدام",
+          "value": "يومي - مناسبات"
+        }
+      ],
+      "priceMode": [
+        "price"
+      ],
+      "priceText": null,
+      "whatsapp": null,
+      "categoryWhatsapp": null,
+      "image": "products/accessories/butterfly-necklace/1.jpeg",
+      "images": [
+        "products/accessories/butterfly-necklace/1.jpeg",
+        "products/accessories/butterfly-necklace/2.jpeg"
+      ]
+    },
+    {
+      "id": "accessories/tiger-necklace",
+      "slug": "tiger-necklace",
+      "category": "accessories",
+      "categoryName": "إكسسوارات",
+      "name": "سلسلة تايجر ترندي",
+      "price": 130,
+      "oldPrice": 170,
+      "currency": "EGP",
+      "badge": "ترند",
+      "description": "سلسلة تايجر ترندي بكل أشكالها 🙈",
+      "specs": [
+        {
+          "label": "الخامة",
+          "value": "أعلى جودة"
+        },
+        {
+          "label": "التصميم",
+          "value": "شكل نمر"
+        }
+      ],
+      "priceMode": [
+        "price"
+      ],
+      "priceText": null,
+      "whatsapp": null,
+      "categoryWhatsapp": null,
+      "image": "products/accessories/tiger-necklace/1.jpeg",
+      "images": [
+        "products/accessories/tiger-necklace/1.jpeg",
+        "products/accessories/tiger-necklace/2.jpeg",
+        "products/accessories/tiger-necklace/3.jpeg",
+        "products/accessories/tiger-necklace/4.jpeg"
+      ]
+    }
+  ]
+}

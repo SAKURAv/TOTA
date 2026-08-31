@@ -1,0 +1,29 @@
+{
+  "siteUrl": "https://tota.sakurau.workers.dev",
+  "siteName": "Tota",
+  "whatsapp": "201285744331",
+  "whatsappMessage": "أهلاً، عايز أستفسر عن",
+  "socials": {
+    "whatsapp": "https://wa.me/201285744331",
+    "telegram": "https://t.me/tota_cute_site",
+    "facebook": "",
+    "instagram": "",
+    "tiktok": "",
+    "email": "kahmdhatm@gmail.com"
+  },
+  "featuredProducts": [],
+  "logo": "",
+  "maintenance": {
+    "_ملاحظة": "بيتحكم فيهم من زرار الترس (⚙️) في البرنامج. لو true بيوقف الخدمة في الموقع ويظهر رسالة تحت الصيانة.",
+    "disableSignup": false,
+    "disableCheckout": false
+  },
+  "analytics": {
+    "_ملاحظة": "توكن Cloudflare Web Analytics بتاع موقعك (يتاخد من Cloudflare Dashboard → Analytics & Logs → Web Analytics → Manage site → JS Snippet، وتاخد قيمة \"token\" من جوه data-cf-beacon من غير أي حاجة تانية). سيبه فاضي عشان توقف التتبع بالكامل من غير ما تلمس أي كود.",
+    "cloudflareToken": "b6854443bf7e4ff2942de028dfaba0f9"
+  },
+  "adminApp": {
+    "_ملاحظة": "المكان ده محجوز لبرنامج الأدمن (Dart) لو حبينا نضيف متغيرات جديدة له مستقبلاً من غير ما نلمس كود الموقع. البرنامج الحالي مش بيقرا أو بيكتب هنا لسه.",
+    "version": ""
+  }
+}

@@ -1,0 +1,1096 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap');
+
+:root{
+  /* ---- Cozy cream / cute & calm theme (default) ---- */
+  --paper:#FFFBF6;
+  --paper-dim:#FBF0E4;
+  --ink:#3E362D;
+  --ink-soft:#93876F;
+  --line:#F0E3D2;
+  --accent:#E8927C;
+  --accent-dark:#D97957;
+  --accent-2:#7FA98D;
+  --accent-3:#93A8C9;
+  --stock-bg:#EDF3EE;
+  --shadow:0 14px 34px rgba(90,70,50,.08);
+  --scrim:rgba(46,38,28,.5);
+  --radius:20px;
+  --ease:cubic-bezier(.22,1,.36,1);
+  color-scheme:light;
+}
+
+[data-theme="dark"]{
+  --paper:#28221D;
+  --paper-dim:#332B23;
+  --ink:#F4EBE0;
+  --ink-soft:#B7A995;
+  --line:#3C332A;
+  --accent:#F0A48C;
+  --accent-dark:#F5B79F;
+  --accent-2:#8FC29E;
+  --accent-3:#A6BEE0;
+  --stock-bg:#2A3830;
+  --shadow:0 14px 34px rgba(0,0,0,.38);
+  --scrim:rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+
+/* ============================================================================
+   تخصيص شكل منتج واحد بس (اختياري) — شوف assets/js/product-theme.js
+   بيشتغل بإعادة تعريف نفس متغيرات CSS اللي فوق دي، لكن بـ scope محلي
+   بس على .card[data-id="..."] أو .modal[data-id="..."] بتاعة المنتج ده.
+   لو مفيش تخصيص، المتغيرات دي كلها بترجع لقيمتها الافتراضية زي فوق:
+   --border-style (افتراضي: solid) — شكل خط الإطار حوالين الكارت/الأزرار
+   --radius-mobile (افتراضي: 14px) — استدارة زوايا الكارت على الموبايل
+   --modal-radius  (افتراضي: 22px) — استدارة زوايا نافذة تفاصيل المنتج
+   --card-shadow   (افتراضي: none) — ظل ثابت (مش بس عند الهوفر) للكارت
+   --wa-btn        (افتراضي: #25D366) — لون زرار واتساب جوه الكارت
+   ============================================================================ */
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:auto; overflow-x:hidden;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans Arabic', sans-serif;
+  direction:rtl;
+  /* ملحوظة: overflow-x:hidden اتشالت من هنا (وخلّيناها بس على html فوق) لأن
+     ضبطها على الاتنين (html و body) مع عدم ضبط overflow-y بيخلي المتصفح
+     يحوّل overflow-y الافتراضي (visible) لـ auto تلقائيًا حسب سبك CSS، وده
+     بيخلي الـ body نفسه "container" له scroll خاص بيه. الأثر العملي: أي
+     عنصر position:sticky جوه الصفحة (زي شريط الكاتيجوري وشريط الفلاتر) بيبطل
+     يلزّق وهو بينزل، خصوصًا على موبايل سفاري. شيل overflow-x من الـ body
+     بيمنع المشكلة دي وبيخلي الـ sticky يشتغل صح على الموبايل والكمبيوتر. */
+  line-height:1.65;
+  transition:background .4s var(--ease), color .4s var(--ease);
+}
+img{max-width:100%; display:block;}
+a{color:inherit; text-decoration:none;}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+h1,h2,h3{font-family:'Baloo Bhaijaan 2', sans-serif;}
+::selection{background:var(--accent); color:#fff;}
+.container{width:min(1200px, 92%); margin-inline:auto;}
+
+::-webkit-scrollbar{width:9px;}
+::-webkit-scrollbar-track{background:var(--paper);}
+::-webkit-scrollbar-thumb{background:var(--line); border-radius:8px;}
+
+/* ===== Intro curtain ===== */
+.curtain{
+  position:fixed; inset:0; z-index:9998; background:var(--paper);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .9s var(--ease), opacity .5s ease .35s;
+}
+.curtain-word{
+  font-family:'Baloo Bhaijaan 2',sans-serif; font-weight:900; font-size:clamp(26px,6vw,54px);
+  opacity:0; transform:translateY(14px);
+  animation:curtainIn .65s var(--ease) .1s forwards;
+}
+@keyframes curtainIn{to{opacity:1; transform:translateY(0);}}
+.curtain.hide{transform:translateY(-100%); opacity:0; pointer-events:none;}
+
+/* ===== Tota loading mark — letters fade out/in in sequence, reusable anywhere something is loading ===== */
+.tota-loader{
+  display:inline-flex; align-items:center; gap:.06em; direction:ltr;
+  font-family:'Baloo Bhaijaan 2',sans-serif; font-weight:900; color:var(--ink);
+  font-size:clamp(26px,6vw,54px); line-height:1;
+}
+.tota-loader span{ display:inline-block; animation:totaLetterFade 1.6s ease-in-out infinite; }
+.tota-loader span:nth-child(1){animation-delay:0s;}
+.tota-loader span:nth-child(2){animation-delay:.15s;}
+.tota-loader span:nth-child(3){animation-delay:.3s;}
+.tota-loader span:nth-child(4){animation-delay:.45s;}
+.tota-loader span:last-child{color:var(--accent);}
+@keyframes totaLetterFade{0%,100%{opacity:1;} 50%{opacity:.12;}}
+/* smaller inline size, used inside grids/cards while content is still loading */
+.tota-loader.sm{font-size:15px; gap:.05em;}
+/* small centred wrapper used to show the mark inside a content area (grid, card, image) while it loads */
+.tota-loading-box{
+  display:flex; align-items:center; justify-content:center;
+  width:100%; min-height:120px; padding:40px 0;
+}
+.card-media.is-loading, .modal-media.is-loading{ position:relative; }
+.card-media.is-loading img, .modal-media.is-loading img{ opacity:0; }
+.card-media.is-loading::after, .modal-media.is-loading::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent), var(--paper-dim);
+  background-size:200% 100%;
+  animation:totaShimmer 1.3s ease-in-out infinite;
+}
+@keyframes totaShimmer{0%{background-position:150% 0;} 100%{background-position:-50% 0;}}
+.card-media img, .modal-media img{ transition:opacity .35s var(--ease); }
+
+/* ===== Top bar ===== */
+/* ملحوظة: شريط العنوان ده مبقاش sticky عمدًا — المثبّت فوق دلوقتي هو
+   شريط التصنيفات/الفلاتر (.filters-bar) بس، سواء على الموبايل أو الكمبيوتر،
+   عشان يفضل باين وهو المستخدم بينزل في الصفحة من غير ما يحتاج يرجع فوق. */
+/* الشريط العلوي بيفضل ثابت فوق (position:sticky) بس في الصفحة الرئيسية
+   وصفحة السلة (اللي بيتحطلها كلاس topbar-sticky على الـ body)، لأن صفحة
+   المنتجات ليها شريط تانٍ (.filters-bar) هو المثبّت فوق بدالها */
+body.topbar-sticky .topbar{ position:sticky; top:0; }
+.topbar{
+  z-index:500;
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+  padding:16px min(6vw,60px);
+  background:rgba(255,251,246,.86);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+[data-theme="dark"] .topbar{background:rgba(20,19,16,.82);}
+.brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:21px; letter-spacing:-.5px; justify-self:start;}
+.brand span{color:var(--accent);}
+.nav-links{display:flex; gap:30px; font-weight:600; font-size:14.5px; justify-self:center;}
+.nav-links a{position:relative; padding:4px 0; color:var(--ink-soft); transition:color .3s;}
+.nav-links a:hover, .nav-links a.active{color:var(--ink);}
+.nav-links a::after{content:""; position:absolute; right:0; bottom:0; height:2px; width:0; background:var(--accent); transition:width .3s var(--ease);}
+.nav-links a:hover::after, .nav-links a.active::after{width:100%;}
+@media(max-width:780px){.nav-links{display:none;}}
+.topbar-actions{display:flex; gap:8px; align-items:center; justify-self:end;}
+@media(max-width:780px){.topbar{display:flex; justify-content:space-between;}}
+
+/* ===== mobile menu ===== */
+/* ===== mobile page-switch button (replaces hamburger — site only has 2 pages) ===== */
+.page-switch-btn{
+  display:none; align-items:center; gap:8px; padding:9px 18px; border-radius:100px;
+  border:1px solid var(--line); background:var(--paper); font-weight:700; font-size:13.5px;
+  color:var(--ink); transition:.3s var(--ease);
+}
+.page-switch-btn svg{width:16px; height:16px; flex-shrink:0;}
+.page-switch-btn:hover{border-color:var(--accent); color:var(--accent-dark); transform:translateY(-2px);}
+/* على الموبايل بقى فيه شريط تبديل صفحات سفلي (bottom-nav) بديل، فمفيش
+   داعي لزرار التبديل ده فوق تاني — بيفضل ظاهر على الديسكتوب بس. */
+@media(max-width:780px){.page-switch-btn{display:none;}}
+
+/* ===== شريط التبديل السفلي بين الصفحات (موبايل بس) ===== */
+.bottom-nav{
+  display:none;
+  position:fixed; inset-inline:0; bottom:0; z-index:600;
+  align-items:stretch; justify-content:space-around;
+  background:rgba(255,251,246,.94); backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom, 0);
+}
+[data-theme="dark"] .bottom-nav{background:rgba(20,19,16,.92);}
+@media(max-width:780px){.bottom-nav{display:flex;}}
+.bottom-nav-item{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; padding:9px 4px 8px; color:var(--ink-soft); font-size:11.5px; font-weight:700;
+  position:relative; transition:color .2s;
+}
+.bottom-nav-item svg{width:22px; height:22px;}
+.bottom-nav-item.active{color:var(--accent-dark);}
+.bottom-nav-item .bn-badge{
+  position:absolute; top:4px; inset-inline-start:calc(50% + 6px);
+  min-width:16px; height:16px; padding:0 4px; border-radius:20px;
+  background:var(--accent); color:#fff; font-size:10px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; line-height:1;
+}
+/* بودي الصفحة محتاج مسافة تحت عشان الشريط الثابت ميغطيش آخر المحتوى */
+@media(max-width:780px){body{padding-bottom:64px;}}
+
+/* ===== كود الدولة جنب أي حقل تليفون ===== */
+[data-phone-country-wrap]{display:flex; gap:6px; align-items:stretch;}
+.tota-phone-country-select{
+  flex:0 0 auto; max-width:118px; padding:10px 6px; border-radius:12px;
+  border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:13px;
+}
+[data-phone-local]{flex:1; min-width:0;}
+.icon-btn{
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--line); font-size:17px;
+  transition:.3s var(--ease);
+}
+.icon-btn:hover{background:var(--ink); color:var(--paper); border-color:var(--ink); transform:translateY(-2px);}
+
+/* ===== theme toggle ===== */
+.theme-toggle{
+  position:relative; width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+  overflow:hidden; transition:.3s var(--ease);
+}
+.theme-toggle:hover{border-color:var(--accent); transform:translateY(-2px);}
+.theme-toggle svg{width:17px; height:17px; position:absolute; transition:transform .5s var(--ease), opacity .4s ease; color:var(--ink);}
+.theme-toggle .i-sun{opacity:1; transform:rotate(0) scale(1);}
+.theme-toggle .i-moon{opacity:0; transform:rotate(90deg) scale(.5);}
+[data-theme="dark"] .theme-toggle .i-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
+[data-theme="dark"] .theme-toggle .i-moon{opacity:1; transform:rotate(0) scale(1);}
+
+/* ===== Hero — mixed colors & fonts headline ===== */
+.hero{
+  position:relative; min-height:66vh;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:44px min(6vw,60px) 34px;
+  overflow:hidden;
+}
+.hero-eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:13px; letter-spacing:.06em; color:var(--ink-soft);
+  border:1px solid var(--line); padding:7px 16px; border-radius:100px;
+  width:fit-content; margin-bottom:30px;
+  opacity:0; animation:fadeUp .7s var(--ease) .1s forwards;
+}
+.hero-eyebrow::before{content:''; width:7px; height:7px; border-radius:50%; background:var(--accent);}
+.hero h1{
+  font-size:clamp(34px,7vw,88px); line-height:1.04; letter-spacing:-.02em; max-width:16ch;
+}
+.hero h1 .w1{font-weight:900; color:var(--ink); display:inline-block; opacity:0; transform:translateY(30px); animation:fadeUp .8s var(--ease) .18s forwards;}
+.hero h1 .w2{
+  font-weight:900; color:var(--ink);
+  display:inline-block; opacity:0; transform:translateY(30px); animation:fadeUp .8s var(--ease) .3s forwards;
+}
+.hero h1 .stamp{
+  display:inline-block; color:var(--accent-dark); font-weight:900;
+  opacity:0; transform:translateY(30px); animation:fadeUp .8s var(--ease) .42s forwards;
+}
+@keyframes wiggle{0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(2deg);}}
+@keyframes fadeUp{from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);}}
+.hero-sub{
+  margin-top:20px; font-size:clamp(14.5px,1.8vw,18px); max-width:46ch; color:var(--ink-soft);
+  opacity:0; animation:fadeUp .7s var(--ease) .62s forwards;
+}
+/* ===== hero-sub highlight sweep: an animated marker-highlight that
+   glides across the text once it's revealed, then stays lightly tinted;
+   hovering re-triggers a soft glow so it feels alive while browsing ===== */
+.hero-sub-highlight{
+  position:relative; display:inline-block; width:fit-content;
+  background-image:linear-gradient(color-mix(in srgb, var(--accent) 30%, transparent), color-mix(in srgb, var(--accent) 30%, transparent));
+  background-repeat:no-repeat;
+  background-size:0% 55%;
+  background-position:0 88%;
+  border-radius:4px;
+  padding:2px 4px;
+  transition:background-size 1.1s cubic-bezier(.22,.9,.28,1), background-position .3s ease;
+}
+.hero-sub-highlight.sweep-in{
+  animation:fadeUp .7s var(--ease) .62s forwards, heroHighlightSweep 1.1s cubic-bezier(.22,.9,.28,1) 1.3s forwards;
+}
+@keyframes heroHighlightSweep{
+  0%{background-size:0% 55%;}
+  100%{background-size:100% 55%;}
+}
+.hero-sub-highlight:hover{
+  background-size:100% 62%;
+  background-position:0 86%;
+}
+.hero-cta{margin-top:30px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+  opacity:0; animation:fadeUp .7s var(--ease) .72s forwards;}
+.btn-primary{
+  background:var(--ink); color:var(--paper); padding:16px 32px; border-radius:100px;
+  font-weight:700; font-size:15px; display:inline-flex; align-items:center; gap:10px;
+  transition:.35s var(--ease);
+}
+.btn-primary:hover{background:var(--accent); color:#fff; transform:translateY(-3px); box-shadow:0 14px 30px rgba(232,93,44,.3);}
+.btn-ghost{
+  border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); padding:14px 26px; border-radius:100px; font-weight:700; font-size:14px;
+  transition:.3s var(--ease);
+}
+.btn-ghost:hover{border-color:var(--ink);}
+.scroll-hint{font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:8px;}
+.scroll-hint .line{width:34px; height:1px; background:var(--ink-soft); animation:pulseLine 1.8s infinite;}
+@keyframes pulseLine{0%,100%{opacity:.25;} 50%{opacity:1;}}
+
+/* ===== زرار "التصنيفات" في الهيرو: بديل السحابة القديمة اللي كانت بتتوزع
+   وتزحم المكان لما التصنيفات تكتر. بقى زرار واحد واضح بيفتح قايمة منسدلة
+   فيها كل التصنيفات، في نفس مكان لافتة "اكسسوارات" القديمة (يسار الشاشة) ===== */
+.hero-cat-dropdown-wrap{
+  position:absolute; top:28px; left:28px; z-index:5;
+  display:flex; align-items:center; gap:12px;
+}
+.hero-cat-dropdown{position:relative;}
+.hero-cat-toggle{
+  padding:13px 26px; font-size:15.5px; font-weight:800;
+  background:var(--paper); box-shadow:0 8px 20px rgba(24,23,18,.08);
+}
+.hero-cat-toggle:hover{border-color:var(--accent); color:var(--accent-dark); transform:translateY(-2px);}
+#heroCategoryMenu.category-menu{min-width:210px;}
+/* لما القايمة بتتفتح بتتشال من جوه الهيرو وتترسم كـ position:fixed في
+   الـ body مباشرة (شوف home.js) عشان overflow:hidden بتاع .hero متخبيهاش
+   ورا محتوى تاني — ده معناه إنها مبقتش ابن مباشر لـ .hero-cat-dropdown
+   وقتها، فالقاعدة لازم تكون عامة (.category-menu.detached بس، من غير
+   ما تتربط بالأب القديم) وإلا هتفضل position:absolute وتظهر في مكان
+   غلط تمامًا على الكمبيوتر */
+.category-menu.detached{position:fixed; z-index:9999; inset-inline-start:auto; right:auto;}
+@media(max-width:680px){
+  .hero-cat-dropdown-wrap{position:static; order:5; margin-top:22px;}
+  .hero-showcase{display:none;}
+  .hero-cat-toggle{padding:11px 22px; font-size:14px;}
+}
+
+/* ---- hero showcase: unused, kept out of layout ---- */
+.hero-showcase{display:none;}
+
+/* ===== section head ===== */
+.section-head{display:flex; align-items:baseline; justify-content:space-between; margin:56px 0 30px; flex-wrap:wrap; gap:10px;}
+.section-head h2{font-size:clamp(26px,3.6vw,40px); font-weight:800; letter-spacing:-.5px;}
+.section-count{font-size:13px; color:var(--ink-soft); font-weight:600;}
+
+/* ===== reveal on scroll ===== */
+.reveal{opacity:0; transform:translateY(18px); transition:opacity .5s var(--ease), transform .5s var(--ease); will-change:opacity, transform;}
+.reveal.in{opacity:1; transform:translateY(0);}
+.reveal-stagger > *{opacity:0; transform:translateY(18px); transition:opacity .45s var(--ease), transform .45s var(--ease);}
+.reveal-stagger.in > *{opacity:1; transform:translateY(0);}
+.reveal-stagger.in > *:nth-child(1){transition-delay:.02s;}
+.reveal-stagger.in > *:nth-child(2){transition-delay:.06s;}
+.reveal-stagger.in > *:nth-child(3){transition-delay:.1s;}
+.reveal-stagger.in > *:nth-child(4){transition-delay:.14s;}
+.reveal-stagger.in > *:nth-child(5){transition-delay:.18s;}
+.reveal-stagger.in > *:nth-child(6){transition-delay:.22s;}
+.reveal-stagger.in > *:nth-child(7){transition-delay:.26s;}
+.reveal-stagger.in > *:nth-child(8){transition-delay:.3s;}
+
+/* ===== featured editorial layout (home) ===== */
+.featured-grid{
+  display:grid; grid-template-columns:repeat(6, 1fr); gap:20px;
+}
+.featured-grid .card:nth-child(1){grid-column:span 4;}
+.featured-grid .card:nth-child(2){grid-column:span 2;}
+.featured-grid .card:nth-child(3){grid-column:span 2;}
+.featured-grid .card:nth-child(4){grid-column:span 4;}
+.featured-grid .card:nth-child(n+5){grid-column:span 3;}
+.featured-grid .card:nth-child(1) .card-media, .featured-grid .card:nth-child(4) .card-media{aspect-ratio:16/10;}
+@media(max-width:880px){
+  .featured-grid{grid-template-columns:repeat(2,1fr);}
+  .featured-grid .card{grid-column:span 1 !important;}
+  .featured-grid .card-media{aspect-ratio:1/1 !important;}
+}
+.view-all-row{text-align:center; margin-top:50px;}
+
+/* ===== product grid (catalog) ===== */
+.grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:22px;}
+
+/* ===== card ===== */
+.card{
+  position:relative; background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); border-radius:var(--radius);
+  overflow:hidden; cursor:pointer; box-shadow:var(--card-shadow,none);
+  transition:border-color .3s var(--ease), box-shadow .3s var(--ease), transform .4s var(--ease);
+}
+.card:hover{border-color:var(--ink); box-shadow:var(--shadow); transform:translateY(-3px);}
+.card-media{position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--paper-dim); display:flex; align-items:center; justify-content:center;}
+.card-media img{width:100%; height:100%; object-fit:cover; transition:transform .6s var(--ease);}
+.card:hover .card-media img{transform:scale(1.08);}
+.card-badge{
+  position:absolute; top:12px; right:12px; background:var(--accent); color:#fff;
+  font-size:11px; font-weight:700; padding:5px 13px; border-radius:100px; transform:rotate(-3deg); z-index:2;
+}
+.card-cat-tag{position:absolute; top:12px; left:12px; font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); padding:5px 11px; border-radius:100px;}
+.card-body{padding:18px;}
+.card-cat{font-size:12px; color:var(--ink-soft); margin-bottom:6px; font-weight:600;}
+.card-name{font-family:'Baloo Bhaijaan 2'; font-weight:700; font-size:16.5px; margin-bottom:10px; line-height:1.4;}
+.card-price-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.card-price{font-family:'Baloo Bhaijaan 2'; font-weight:800; font-size:18.5px; color:var(--accent-dark);}
+.card-price-text{font-family:inherit; font-size:14px; font-weight:700;}
+.card-old-price{font-size:13px; color:var(--ink-soft); text-decoration:line-through;}
+.card-price-whatsapp{
+  display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:100px;
+  background:var(--wa-btn,#25D366); color:#fff; font-size:12.5px; font-weight:800; transition:.2s var(--ease);
+  border:none; cursor:pointer; font-family:inherit;
+}
+.card-price-whatsapp:hover{filter:brightness(.95); transform:translateY(-1px);}
+
+mark{background:none; color:var(--accent-dark); font-weight:800;}
+
+/* ===== socials ===== */
+.socials{padding:100px 0; text-align:center;}
+.socials h2{font-size:clamp(24px,4vw,38px); font-weight:800; margin-bottom:12px;}
+.socials p{color:var(--ink-soft); margin-bottom:40px;}
+.social-row{display:flex; justify-content:center; gap:14px; flex-wrap:wrap;}
+.social-pill{
+  display:flex; align-items:center; gap:9px; padding:14px 24px; border:1px solid var(--line); border-radius:100px;
+  font-weight:700; font-size:14px; transition:.3s var(--ease); background:var(--paper);
+}
+.social-pill svg{width:17px; height:17px; flex-shrink:0;}
+.social-pill:hover{border-color:var(--accent); color:var(--accent-dark); transform:translateY(-3px); box-shadow:var(--shadow);}
+.social-pill.disabled{opacity:.5; cursor:not-allowed; color:var(--ink-soft);}
+.social-pill.disabled:hover{transform:none; border-color:var(--line); box-shadow:none; color:var(--ink-soft);}
+.social-pill.disabled em{font-style:normal; font-size:11px; background:var(--paper-dim); padding:3px 9px; border-radius:100px;}
+
+/* ===== زرار تواصل مع المصمم ===== */
+.designer-contact{padding:28px 0 6px; text-align:center;}
+.designer-contact-btn{
+  display:inline-flex; align-items:center; gap:9px; padding:13px 26px; border-radius:100px;
+  font-weight:700; font-size:14px; color:#0b0b0b;
+  background:linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow:0 8px 22px -8px rgba(0,0,0,.5); transition:.3s var(--ease);
+}
+.designer-contact-btn svg{width:16px; height:16px; flex-shrink:0;}
+.designer-contact-btn:hover{transform:translateY(-3px); box-shadow:0 12px 26px -8px rgba(0,0,0,.6); filter:brightness(1.05);}
+
+/* ===== footer ===== */
+/* الفوتر دايمًا غامق بخط فاتح بتصميمه الأصلي، فبنستخدم لون ثابت مش المتغيرات
+   اللي بتتقلب مع الوضع الليلي (--ink/--paper بيتبدل معناهم في dark)، عشان
+   ألوانه متتلخبطش لما نبدّل الوضع */
+.footer{margin-top:60px; background:#28221D; color:#F5F3EE; padding:70px min(6vw,60px) 30px;}
+.footer-top{display:flex; justify-content:space-between; flex-wrap:wrap; gap:40px; padding-bottom:44px; border-bottom:1px solid rgba(245,243,238,.14);}
+.footer-brand{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:26px;}
+.footer-brand span{color:var(--accent);}
+.footer-desc{color:rgba(245,243,238,.6); margin-top:14px; max-width:34ch; font-size:14px;}
+.footer-links{display:flex; gap:56px; flex-wrap:wrap;}
+.footer-col h4{font-size:12.5px; color:rgba(245,243,238,.5); margin-bottom:14px; font-weight:600;}
+.footer-col a{
+  display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:700;
+  color:rgba(245,243,238,.85); background:rgba(245,243,238,.06); border:1px solid rgba(245,243,238,.14);
+  padding:10px 20px; border-radius:100px; transition:.3s var(--ease);
+}
+.footer-col a:hover{color:var(--accent); border-color:var(--accent); transform:translateY(-3px);}
+.footer-bottom{padding-top:22px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:12.5px; color:rgba(245,243,238,.45);}
+
+/* ================= PRODUCTS PAGE ================= */
+.page-hero{padding:54px 0 18px;}
+.page-hero-row{display:flex; justify-content:space-between; align-items:flex-end; gap:26px; flex-wrap:wrap;}
+.page-hero h1{font-size:clamp(30px,5vw,50px); font-weight:900; letter-spacing:-1px; margin-top:8px;}
+
+.search-wrap{
+  position:relative; display:flex; align-items:center; min-width:300px; flex:1; max-width:420px;
+  background:var(--paper); border:1px solid var(--line); border-radius:100px; padding:4px;
+  box-sizing:border-box; overflow:hidden;
+  transition:border-color .3s, box-shadow .3s;
+}
+.search-wrap.focused{border-color:var(--accent); box-shadow:0 0 0 4px rgba(232,93,44,.12);}
+/* شريط البحث الحقيقي بيتحرك بالحساب (JS) كل ما المستخدم يعمل سكرول،
+   فبنسيبه position:fixed دايمًا وبنحدد مكانه وحجمه بالبكسل عن طريق
+   top/left/width/height اللي الجافاسكريبت بيحدثها كل فريم، من غير أي
+   transition زيادة عشان يفضل متزامن 1:1 مع حركة السكرول نفسها */
+.search-wrap.search-wrap--floating{
+  position:fixed; top:0; left:0; margin:0; z-index:500; opacity:0; pointer-events:none;
+  transform-origin:0 0; will-change:transform;
+}
+.search-wrap.search-wrap--floating.search-wrap--ready{opacity:1; pointer-events:auto;}
+/* عناصر "الشبح": نفس شكل شريط البحث بالظبط بس مخفية، بتُستخدم بس عشان
+   نقيس منها المكان والحجم (الأصلي وجوه شريط التصنيفات) ومش المفروض
+   تظهر أو يتفاعل معاها حد */
+.search-wrap-ghost{visibility:hidden; pointer-events:none;}
+.search-icon{padding:0 14px; color:var(--ink-soft); font-size:17px;}
+.search-input{flex:1; min-width:0; background:none; border:none; outline:none; color:var(--ink); font-family:inherit; font-size:16px; padding:12px 0;}
+.search-input::placeholder{color:var(--ink-soft);}
+.search-clear{width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); opacity:0; transform:scale(.7); transition:.25s;}
+.search-clear.show{opacity:1; transform:scale(1);}
+.search-clear:hover{background:var(--paper-dim); color:var(--ink);}
+.search-submit{
+  flex-shrink:0; border-radius:100px; padding:10px 18px; font-size:13.5px; font-weight:700;
+  background:var(--accent); color:#fff; transition:.25s;
+}
+.search-submit:hover{background:var(--accent-dark);}
+.search-meta{margin-top:14px; font-size:13px; color:var(--ink-soft); min-height:18px;}
+.search-meta b{color:var(--accent-dark);}
+
+.filters-bar{position:sticky; top:0; z-index:400;}
+.category-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(255,251,246,.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); padding:14px min(6vw,32px);}
+[data-theme="dark"] .category-bar{background:rgba(20,19,16,.9);}
+
+/* ===== قائمة التصنيفات (زرار بيفتح قائمة منسدلة تحته بدل الشريط الأفقي القديم) ===== */
+.category-dropdown{position:relative; flex-shrink:0;}
+.category-toggle{
+  display:flex; align-items:center; gap:8px; padding:10px 20px; border-radius:100px;
+  border:1px solid var(--line); font-size:14px; font-weight:700; color:var(--ink);
+  background:var(--paper); transition:.25s var(--ease); white-space:nowrap;
+}
+.category-toggle:hover{border-color:var(--ink);}
+.category-toggle.has-active{border-color:var(--accent); color:var(--accent-dark);}
+.category-toggle-chev{flex-shrink:0; transition:transform .25s var(--ease);}
+.category-toggle[aria-expanded="true"] .category-toggle-chev{transform:rotate(180deg);}
+
+/* القائمة نفسها بتفضل مقفولة (max-height:0) لحد ما تتفتح، وليها سقف
+   ارتفاع وoverflow-y:auto عشان لو التصنيفات كتروا القائمة تسكرول جواها
+   بدل ما تملا الشاشة كلها */
+.category-menu{
+  position:absolute; top:calc(100% + 8px); inset-inline-start:0; min-width:190px; max-width:min(80vw,300px);
+  max-height:0; overflow-y:auto; opacity:0; visibility:hidden; pointer-events:none;
+  background:rgba(255,251,246,.98); backdrop-filter:blur(12px); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); display:flex; flex-direction:column; padding:0;
+  transition:max-height .3s var(--ease), opacity .25s var(--ease), padding .3s var(--ease), visibility 0s .3s;
+  z-index:410;
+}
+[data-theme="dark"] .category-menu{background:rgba(20,19,16,.98);}
+.category-menu.open{
+  max-height:min(60vh,280px); opacity:1; visibility:visible; pointer-events:auto; padding:8px;
+  transition:max-height .3s var(--ease), opacity .25s var(--ease), padding .3s var(--ease);
+}
+.category-menu-item{
+  padding:11px 14px; border-radius:10px; font-size:14px; font-weight:600; color:var(--ink-soft);
+  transition:.2s var(--ease); white-space:nowrap;
+}
+.category-menu-item:hover{background:var(--paper-dim); color:var(--ink);}
+.category-menu-item.active{background:var(--ink); color:var(--paper);}
+
+/* toggle button that shows/hides the price+sort+badge filters panel — keeps
+   the sticky bar compact (especially on mobile) while still reachable from
+   anywhere on the page, since .filters-bar stays pinned at the top of the
+   viewport (the topbar itself is no longer sticky). */
+.filters-toggle{
+  flex-shrink:0; margin-inline-end:min(6vw,32px); display:flex; align-items:center; gap:6px;
+  padding:9px 16px; border-radius:100px; border:1px solid var(--line); font-size:13px; font-weight:700;
+  color:var(--ink-soft); background:var(--paper); transition:.25s var(--ease); white-space:nowrap;
+}
+.filters-toggle:hover{border-color:var(--ink); color:var(--ink);}
+.filters-toggle.has-active{border-color:var(--accent); color:var(--accent-dark);}
+.filters-toggle-chev{transition:transform .25s var(--ease);}
+.filters-toggle[aria-expanded="true"] .filters-toggle-chev{transform:rotate(180deg);}
+
+/* علامة صغيرة بتفضل واقفة في مكان شريط البحث الأصلي عشان نعرف نحسب صح
+   امتى نرجّعه لمكانه. لازم تفضل جوه الـ layout (مش display:none) عشان
+   getBoundingClientRect بتاعها يديّنا إحداثياتها الحقيقية بدل صفر */
+.search-wrap-anchor{display:inline-block; width:0; height:0; overflow:hidden;}
+
+/* شريط البحث (أو شبحه) لما يكون جوه شريط التصنيفات، بياخد الفراغ
+   المتاح تلقائيًا (flex) — بيتظبط لوحده على حسب حجم الشاشة. على
+   الكمبيوتر بنسيب حد أقصى معقول لعرضه عشان يفضل مكان لأزرار التنقل
+   بين الصفحات (category-bar-nav) جنبه؛ على الموبايل (تحت) مفيش حد
+   أقصى لأن أزرار التنقل مش ظاهرة أصلًا هناك (شوف initFloatingSearchWrap
+   في products.js) */
+.category-bar .search-wrap{
+  order:2; flex:1 1 auto; min-width:0; max-width:380px; margin:0 12px; padding:3px;
+}
+.category-bar .category-dropdown{order:0;}
+.category-bar .filters-toggle{order:3;}
+
+/* أزرار التنقل بين الصفحات (الرئيسية/المنتجات/السلة) جوه شريط
+   التصنيفات — بتظهر بس على شاشات الكمبيوتر الكبيرة (فيه بديل تاني،
+   الشريط السفلي bottom-nav، على الموبايل)، وبتفضل مخفية بانيميشن لحد
+   ما شريط التصنيفات نفسه "يستقر" ويلزق فوق الشاشة (category-bar.is-docked
+   بتتحط من products.js) عشان تظهر في نفس لحظة ما البار بيثبت بالظبط */
+.category-bar-nav{
+  display:none; order:1; align-items:center; gap:2px; flex-shrink:0;
+  opacity:0; transform:translateY(-8px); pointer-events:none;
+  transition:opacity .35s var(--ease), transform .35s var(--ease);
+}
+@media(min-width:781px){
+  .category-bar-nav{display:flex;}
+}
+.category-bar.is-docked .category-bar-nav{opacity:1; transform:translateY(0); pointer-events:auto;}
+.category-bar-nav-item{
+  display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:100px;
+  font-size:13px; font-weight:700; color:var(--ink-soft); white-space:nowrap;
+  position:relative; transition:.25s var(--ease);
+}
+.category-bar-nav-item svg{width:16px; height:16px; flex-shrink:0;}
+.category-bar-nav-item:hover{background:var(--paper-dim); color:var(--ink);}
+.category-bar-nav-item.active{color:var(--accent-dark); background:rgba(232,93,44,.1);}
+.category-bar-nav-item .bn-badge{
+  min-width:16px; height:16px; padding:0 4px; border-radius:20px;
+  background:var(--accent); color:#fff; font-size:10px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; line-height:1;
+}
+
+/* على شاشات الكمبيوتر الضيقة، لو مفيش مساحة كفاية لأزرار الرئيسية/المنتجات/
+   السلة بنصها الكامل جنب شريط البحث (products.js بيحسب ده بالفعل)، بنصغّرهم
+   لأيقونات بس عشان ميحصلش تراكب مع شريط البحث */
+.category-bar.nav-compact .category-bar-nav-item{ padding:8px; }
+.category-bar.nav-compact .category-bar-nav-item span{ display:none; }
+
+.filters-panel{
+  max-height:0; overflow:hidden; opacity:0;
+  transition:max-height .32s var(--ease), opacity .25s var(--ease), padding .32s var(--ease);
+  background:rgba(255,251,246,.96); backdrop-filter:blur(12px); border-bottom:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start;
+}
+[data-theme="dark"] .filters-panel{background:rgba(20,19,16,.94);}
+.filters-panel.open{max-height:400px; opacity:1; padding:18px min(6vw,32px) 20px;}
+
+/* ===== زرارين "تطبيق" و"إعادة تعيين" أسفل لوحة الفلاتر: التغييرات جوه
+   اللوحة (سعر/ترتيب/شعارات) بتتحفظ مؤقتًا بس وما بتتفعّلش فعليًا على
+   المنتجات ولا في لينك الصفحة إلا بعد ما تدوس "تطبيق الفلاتر" — بالظبط
+   زي شريط البحث اللي محتاج تدوس "بحث" ---*/
+.filters-actions{
+  flex:1 1 100%; display:flex; justify-content:flex-end; gap:10px; padding-top:16px;
+  border-top:1px solid var(--line); margin-top:4px;
+}
+.filters-reset{
+  padding:10px 18px; border-radius:100px; border:1px solid var(--line); background:var(--paper);
+  color:var(--ink-soft); font-weight:700; font-size:13.5px; transition:.25s var(--ease);
+}
+.filters-reset:hover{border-color:var(--ink); color:var(--ink);}
+.filters-apply{
+  padding:10px 22px; border-radius:100px; border:none; background:var(--accent); color:#fff;
+  font-weight:700; font-size:13.5px; transition:.25s var(--ease);
+}
+.filters-apply:hover{background:var(--accent-dark);}
+.filters-apply.is-disabled{opacity:.5; pointer-events:none;}
+.filters-apply.has-pending{box-shadow:0 0 0 4px rgba(232,93,44,.18);}
+
+/* ===== price range filter ===== */
+.price-filter{max-width:340px; flex:1 1 260px; min-width:220px;}
+.price-filter-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:10px; flex-wrap:wrap;}
+.price-filter-label{font-size:13px; font-weight:700; color:var(--ink-soft);}
+.price-filter-values{font-size:13.5px; font-weight:800; color:var(--accent-dark); font-family:'Baloo Bhaijaan 2';}
+.price-inputs-row{display:flex; align-items:center; gap:8px; margin-bottom:12px;}
+.price-number-input{
+  width:100%; min-width:0; padding:9px 10px; border-radius:10px; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink); font-family:inherit; font-size:13.5px; font-weight:700;
+  text-align:center; -moz-appearance:textfield;
+}
+.price-number-input::-webkit-outer-spin-button, .price-number-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.price-number-input:focus{outline:none; border-color:var(--accent);}
+.price-inputs-sep{color:var(--ink-soft); font-size:13px;}
+.price-slider{position:relative; height:20px; display:flex; align-items:center;}
+.price-slider-track{position:absolute; right:0; left:0; height:4px; border-radius:4px; background:var(--line);}
+.price-slider-range{position:absolute; height:4px; border-radius:4px; background:var(--accent);}
+.price-range-input{
+  position:absolute; width:100%; height:20px; margin:0; background:transparent;
+  -webkit-appearance:none; appearance:none; pointer-events:none;
+}
+.price-range-input::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none; pointer-events:auto;
+  width:18px; height:18px; border-radius:50%; background:var(--paper);
+  border:3px solid var(--accent-dark); cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.15);
+  transition:.2s var(--ease);
+}
+.price-range-input::-webkit-slider-thumb:hover{transform:scale(1.15);}
+.price-range-input::-moz-range-thumb{
+  pointer-events:auto; width:18px; height:18px; border-radius:50%; background:var(--paper);
+  border:3px solid var(--accent-dark); cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+.price-range-input::-moz-range-track{background:transparent;}
+
+/* ===== sort ===== */
+.sort-filter{flex:0 0 auto;}
+.sort-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+.sort-btn{
+  padding:8px 16px; border-radius:100px; border:1px solid var(--line); font-size:12.5px; font-weight:700;
+  color:var(--ink-soft); background:var(--paper); transition:.2s var(--ease); white-space:nowrap;
+}
+.sort-btn:hover{border-color:var(--ink); color:var(--ink);}
+.sort-btn.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+
+/* ===== badge/tag filter (auto-detected from products in the current category) ===== */
+.badge-filter{flex:1 1 220px; min-width:200px;}
+.badge-chip-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+.badge-chip{
+  padding:8px 16px; border-radius:100px; border:1px solid var(--line); font-size:12.5px; font-weight:700;
+  color:var(--ink-soft); background:var(--paper); transition:.2s var(--ease); white-space:nowrap;
+}
+.badge-chip:hover{border-color:var(--ink); color:var(--ink);}
+.badge-chip.active{background:var(--ink); border-color:var(--ink); color:var(--paper);}
+
+/* ===== pagination ===== */
+.pagination{display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:36px;}
+.page-btn{
+  min-width:38px; height:38px; padding:0 12px; border-radius:10px; border:1px solid var(--line);
+  font-size:13.5px; font-weight:700; color:var(--ink-soft); background:var(--paper); transition:.2s var(--ease);
+}
+.page-btn:hover:not(:disabled){border-color:var(--ink); color:var(--ink);}
+.page-btn.active{background:var(--ink); border-color:var(--ink); color:var(--paper);}
+.page-btn:disabled{opacity:.4; cursor:default;}
+.page-dots{color:var(--ink-soft); font-size:13px; padding:0 4px;}
+
+.catalog{padding:26px 0 100px;}
+.no-results{display:none; text-align:center; padding:70px 20px; color:var(--ink-soft);}
+.no-results.show{display:block;}
+.no-results-icon{font-size:38px; margin-bottom:16px; opacity:.5;}
+.no-results h3{color:var(--ink); font-size:19px; margin-bottom:8px;}
+.suggestion-chips{display:flex; gap:10px; justify-content:center; margin-top:20px; flex-wrap:wrap;}
+.suggestion-chips button{padding:9px 18px; border:1px solid var(--line); border-radius:100px; font-size:13px; font-weight:700; transition:.3s;}
+.suggestion-chips button:hover{border-color:var(--ink);}
+
+/* ===== product modal ===== */
+.modal-overlay{
+  position:fixed; inset:0; z-index:1000; background:var(--scrim); backdrop-filter:blur(4px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .35s var(--ease);
+}
+.modal-overlay.open{opacity:1; pointer-events:auto;}
+.modal{
+  width:min(880px,100%); max-height:92vh; background:var(--paper); border-radius:var(--modal-radius,22px) var(--modal-radius,22px) 0 0;
+  overflow-y:auto; transform:translateY(3%); transition:transform .4s var(--ease);
+}
+.modal-overlay.open .modal{transform:translateY(0);}
+@media(min-width:760px){
+  .modal-overlay{align-items:center; padding:30px;}
+  .modal{border-radius:var(--modal-radius,22px); transform:scale(.96); opacity:0; display:grid; grid-template-columns:1fr 1fr;}
+  .modal-overlay.open .modal{transform:scale(1); opacity:1;}
+}
+.modal-media{background:var(--paper-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0; aspect-ratio:1/1; overflow:hidden;}
+
+/* ===== modal image gallery / slider ===== */
+.modal-gallery{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+.gallery-track{display:flex; width:100%; height:100%; transition:transform .45s var(--ease);}
+.gallery-track img{width:100%; height:100%; max-width:none; flex:0 0 100%; margin:0 auto; object-fit:cover;}
+.gallery-arrow{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:2;
+  width:34px; height:34px; border-radius:50%; background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line);
+  display:flex; align-items:center; justify-content:center; font-size:20px; line-height:1;
+  color:var(--ink); opacity:0; pointer-events:none; transition:.25s var(--ease);
+}
+.modal-gallery.has-multi .gallery-arrow{opacity:1; pointer-events:auto;}
+.gallery-arrow:hover{background:var(--accent); border-color:var(--accent); color:#fff;}
+.gallery-prev{right:6px;}
+.gallery-next{left:6px;}
+.gallery-dots{display:none; gap:7px; justify-content:center; margin-top:14px;}
+.modal-gallery.has-multi ~ .gallery-dots, .gallery-dots.show{display:flex;}
+.gallery-dot{width:7px; height:7px; border-radius:50%; background:var(--line); border:none; padding:0; cursor:pointer; transition:.25s;}
+.gallery-dot.active{background:var(--accent-dark); width:18px; border-radius:4px;}
+.modal-body{padding:0 26px 34px; position:relative;}
+@media(min-width:760px){.modal-body{padding:0 40px 40px;}}
+/* sticky top bar keeps the close button pinned while the modal content scrolls */
+.modal-topbar{
+  position:sticky; top:0; z-index:10; display:flex; justify-content:flex-end;
+  padding:14px 18px; background:linear-gradient(var(--paper) 65%, transparent);
+}
+@media(min-width:760px){.modal-topbar{grid-column:1/-1; background:var(--paper); padding:16px 20px;}}
+.modal-close{
+  width:36px; height:36px; border-radius:50%; background:var(--paper); border-width:1px; border-style:var(--border-style,solid); border-color:var(--line);
+  display:flex; align-items:center; justify-content:center; transition:.3s; flex-shrink:0;
+}
+.modal-close:hover{background:var(--accent); border-color:var(--accent); color:#fff; transform:rotate(90deg);}
+.modal-cat{color:var(--ink-soft); font-size:13px; font-weight:600; margin-bottom:8px;}
+.modal-title{font-family:'Baloo Bhaijaan 2'; font-weight:800; font-size:clamp(22px,3vw,30px); margin-bottom:14px;}
+.modal-desc{color:var(--ink-soft); font-size:14.5px; line-height:1.85; margin-bottom:22px; white-space:pre-line;}
+.modal-desc a{color:var(--accent-dark); font-weight:700; text-decoration:underline; text-underline-offset:2px;}
+.modal-desc a:hover{color:var(--accent);}
+.modal-price-whatsapp{display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:100px; background:#25D366; color:#fff; font-weight:800; font-size:14px; border:none; cursor:pointer; font-family:inherit;}
+.modal-price-whatsapp:hover{filter:brightness(.95);}
+.modal-price-text{font-family:inherit; font-size:16px;}
+.modal-price-row{display:flex; align-items:baseline; gap:12px; margin-bottom:24px;}
+.modal-price{font-family:'Baloo Bhaijaan 2'; font-weight:900; font-size:28px; color:var(--accent-dark);}
+.modal-old-price{font-size:15px; color:var(--ink-soft); text-decoration:line-through;}
+.modal-specs{display:grid; gap:0; margin-bottom:28px;}
+.modal-spec{display:flex; justify-content:space-between; font-size:13.5px; padding:11px 0; border-bottom:1px solid var(--line);}
+.modal-spec span:first-child{color:var(--ink-soft);}
+.modal-spec span:last-child{font-weight:700;}
+.modal-actions{display:flex; gap:12px; flex-wrap:wrap;}
+
+/* شريط "شفتها مؤخرًا" — هادئ، مش لافت للنظر، جوه نافذة المنتج نفسها */
+.recently-viewed{ margin-top:22px; padding-top:16px; border-top:1px solid var(--line); }
+.recently-viewed-title{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; }
+.recently-viewed-track{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; }
+.recently-viewed-item{
+  flex:0 0 auto; width:92px; display:flex; flex-direction:column; gap:4px;
+  background:none; border:none; cursor:pointer; text-align:right; padding:0; opacity:.9;
+}
+.recently-viewed-item:hover{ opacity:1; }
+.recently-viewed-item img{ width:92px; height:92px; object-fit:cover; border-radius:12px; border:1px solid var(--line); background:var(--paper-dim); }
+.recently-viewed-name{ font-size:11.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.recently-viewed-price{ font-size:11px; color:var(--ink-soft); }
+.btn-whatsapp{
+  background:var(--accent-2); color:#fff; padding:15px 26px; border-radius:100px; font-weight:700; font-size:14.5px;
+  display:inline-flex; align-items:center; gap:10px; transition:.3s var(--ease);
+}
+.btn-whatsapp:hover{background:#245a41; transform:translateY(-2px);}
+
+body.modal-locked{overflow:hidden;}
+
+/* ===== floating whatsapp button ===== */
+.whatsapp-float{
+  position:fixed; bottom:22px; left:22px; z-index:900;
+  width:56px; height:56px; border-radius:50%;
+  background:var(--accent-2); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 26px rgba(0,0,0,.22);
+  transform:scale(0) translateY(20px); opacity:0;
+  transition:transform .45s var(--ease), opacity .4s var(--ease), background .3s;
+}
+.whatsapp-float.show{transform:scale(1) translateY(0); opacity:1;}
+.whatsapp-float:hover{background:#245a41; transform:scale(1.08) translateY(-2px);}
+.whatsapp-float-pulse{
+  position:absolute; inset:0; border-radius:50%; background:var(--accent-2);
+  animation:wa-pulse 2.4s ease-out infinite; z-index:-1;
+}
+@keyframes wa-pulse{
+  0%{transform:scale(1); opacity:.55;}
+  100%{transform:scale(1.7); opacity:0;}
+}
+@media(max-width:780px){
+  /* على الموبايل الشريط السفلي (bottom-nav) بيبقى فوق زرار الواتساب
+     العائم بالظبط، فبنرفعه فوق ارتفاع الشريط ده + هامش أمان، عشان
+     ميدّاريش على زراير التبديل بين الصفحات. */
+  .whatsapp-float{bottom:calc(72px + env(safe-area-inset-bottom, 0) + 14px); left:16px;}
+}
+@media(max-width:600px){
+  .whatsapp-float{width:50px; height:50px;}
+  .whatsapp-float svg{width:22px; height:22px;}
+}
+body.modal-locked .whatsapp-float{opacity:0; pointer-events:none;}
+
+/* ===== misc ===== */
+
+@media(max-width:780px){
+  .topbar{padding:14px 18px;}
+  .brand{font-size:19px;}
+  .icon-btn, .theme-toggle{width:37px; height:37px;}
+  .hero{min-height:auto; padding:30px 18px 26px;}
+  .hero-eyebrow{margin-bottom:16px; padding:6px 13px; font-size:11.5px;}
+  .hero h1{font-size:clamp(28px,9vw,42px);}
+  .hero-sub{margin-top:14px; padding-inline-end:6px; font-size:14px;}
+  .hero-cta{margin-top:20px; gap:14px;}
+  .btn-primary{padding:13px 24px; font-size:13.5px;}
+  .marquee{padding:14px 0;}
+  .marquee-track{gap:26px;}
+  .marquee-track span{font-size:14.5px;}
+  .section-head{margin:32px 0 16px;}
+  .grid{grid-template-columns:repeat(2,1fr); gap:12px;}
+  .card-body{padding:12px;}
+  .card-name{font-size:13.5px; margin-bottom:6px;}
+  .card-price{font-size:16px;}
+  .socials{padding:64px 0;}
+  .footer{padding:50px 18px 24px;}
+  .footer-links{gap:34px;}
+  .page-hero{padding:20px 0 10px;}
+  .page-hero h1{font-size:clamp(24px,7vw,34px); margin-top:4px;}
+  .page-hero-row{flex-direction:column; align-items:stretch;}
+  .search-wrap{max-width:none; min-width:0; width:100%; box-sizing:border-box;}
+  .search-submit{padding:0; width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:0; flex-shrink:0;}
+  .search-submit::before{content:'⌕'; font-size:16px; line-height:1;}
+  .category-bar{padding:10px 14px;}
+  .category-toggle{padding:8px 16px; font-size:13px;}
+  /* على الموبايل شريط البحث الموقّف جوه الشريط الثابت بياخد مساحة أكبر
+     وأيقوناته أصغر عشان يتظبط بين الزرارين */
+  .category-bar .search-wrap{max-width:none; margin:0 8px;}
+  .category-bar .search-icon{padding:0 8px; font-size:15px;}
+  .category-bar .search-input{padding:9px 0; font-size:14px;}
+  .filters-toggle{margin-inline-end:14px; padding:8px 12px; font-size:0;}
+  .filters-toggle span{display:none;}
+  .filters-panel.open{max-height:420px; padding:14px 16px 18px;}
+  .price-filter, .badge-filter{flex:1 1 100%; min-width:0; max-width:none;}
+  .sort-filter{flex:1 1 100%;}
+  .catalog{padding:18px 0 80px;}
+  .modal-body{padding:0 20px 26px;}
+  .modal-topbar{padding:10px 14px;}
+  .modal-media{padding:24px;}
+  .social-row{gap:10px;}
+  .social-pill{padding:12px 18px; font-size:13px;}
+  .card{border-radius:var(--radius-mobile,14px);}
+  .btn-primary, .btn-ghost{padding:14px 24px; font-size:14px;}
+  .btn-whatsapp{width:100%; justify-content:center;}
+  .modal-actions{flex-direction:column;}
+  .modal-actions .btn-ghost{width:100%; text-align:center;}
+}
+@media(max-width:420px){
+  .grid{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ===== hero page nav buttons ===== */
+.hero-pages{margin-top:34px; display:flex; gap:14px; flex-wrap:wrap;
+  opacity:0; animation:fadeUp .7s var(--ease) .72s forwards;}
+.hero-page-btn{
+  padding:16px 34px; border-radius:100px; font-weight:700; font-size:15px;
+  border:1.5px solid var(--line); background:var(--paper); transition:.3s var(--ease);
+}
+.hero-page-btn.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+.hero-page-btn:not(.active):hover{border-color:var(--accent); color:var(--accent-dark); transform:translateY(-3px);}
+.hero-page-btn.active:hover{transform:translateY(-3px); box-shadow:var(--shadow);}
+
+/* ===== scroll-triggered CTA card (home) ===== */
+.scroll-cta{margin:70px auto; padding:0;}
+.scroll-cta-card{
+  display:flex; align-items:center; gap:34px; padding:38px min(6vw,48px);
+  background:var(--paper-dim); border:1px solid var(--line); border-radius:28px;
+  transition:.4s var(--ease); flex-wrap:wrap;
+}
+.scroll-cta-card:hover{border-color:var(--accent); box-shadow:var(--shadow); transform:translateY(-4px);}
+.scroll-cta-visual{position:relative; width:96px; height:96px; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+.scc-img{width:52px; height:52px; opacity:.85; object-fit:contain;}
+.scc-cart{color:var(--accent-dark, var(--accent));}
+.scc-orbit{
+  position:absolute; inset:0; border:1.5px dashed var(--accent); border-radius:50%; opacity:.5;
+  animation:orbitSpin 9s linear infinite;
+}
+.scc-orbit::before{content:''; position:absolute; top:-4px; right:calc(50% - 4px); width:8px; height:8px; border-radius:50%; background:var(--accent);}
+@keyframes orbitSpin{to{transform:rotate(360deg);}}
+.scroll-cta-text{flex:1; min-width:220px;}
+.scroll-cta-text h2{font-size:clamp(21px,3vw,28px); font-weight:800; margin-bottom:8px;}
+.scroll-cta-text p{color:var(--ink-soft); font-size:14.5px; max-width:52ch; margin-bottom:14px;}
+.scroll-cta-arrow{display:inline-flex; align-items:center; gap:8px; font-weight:700; color:var(--accent-dark); font-size:14.5px; transition:gap .3s var(--ease);}
+.scroll-cta-card:hover .scroll-cta-arrow{gap:14px;}
+
+
+/* ===== suggested products (home) ===== */
+.suggested-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px;}
+
+/* ===== footer social row ===== */
+.footer-social{padding:34px 0; border-bottom:1px solid rgba(245,243,238,.14);}
+.footer-social h4{font-size:12.5px; color:rgba(245,243,238,.5); margin-bottom:16px; font-weight:600;}
+.footer-social .social-row{justify-content:flex-start;}
+.footer-social .social-pill{background:rgba(245,243,238,.06); border-color:rgba(245,243,238,.14); color:rgba(245,243,238,.85);}
+.footer-social .social-pill:hover{border-color:var(--accent); color:var(--accent);}
+.footer-social .social-pill.disabled{opacity:.4;}
+.footer-social .social-pill.disabled em{background:rgba(245,243,238,.1); color:rgba(245,243,238,.6);}
+
+@media(max-width:780px){
+  .hero-pages{gap:10px; margin-top:22px;}
+  .hero-page-btn{padding:13px 24px; font-size:13.5px;}
+  .scroll-cta{margin:44px auto;}
+  .scroll-cta-card{padding:26px 20px; gap:20px; border-radius:20px;}
+  .scroll-cta-visual{width:64px; height:64px;}
+  .scc-img{width:36px; height:36px;}
+  .suggested-grid{grid-template-columns:repeat(2,1fr); gap:12px;}
+}
+
+/* ===== floating product bubbles + scroll parallax (home) ===== */
+.bg-bubbles{position:absolute; inset:0; top:0; height:100%; overflow:hidden; pointer-events:none; z-index:0;}
+/* وراء كل فقاعة توهج شفاف بلون الموقع بس (مفيش شكل مربع صلب قدامها) */
+.bg-bubble{
+  position:absolute; display:block; will-change:transform;
+  transform:translateY(var(--scrollY,0px)); animation:bubbleDrift ease-in-out infinite;
+  border-radius:50%; overflow:hidden; text-decoration:none;
+  background:var(--paper); box-shadow:0 10px 26px rgba(90,70,50,.16);
+  pointer-events:auto; transition:transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.bg-bubble::before{
+  /* التوهج الشفاف اللي بيحوط الفقاعة، بلون الفقاعة نفسه */
+  content:''; position:absolute; inset:-10px; border-radius:50%; z-index:-1;
+  background:var(--bubble-color, var(--accent)); filter:blur(14px); opacity:.4;
+}
+.bg-bubble img{width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;}
+.bg-bubble:hover{transform:translateY(var(--scrollY,0px)) scale(1.08); box-shadow:var(--shadow);}
+
+.bg-bubble.b1{width:104px; height:104px; top:4%;  right:8%;  --bubble-color:var(--accent);   border:3px solid var(--bubble-color);} .bg-bubble.b1{animation-duration:9s;}
+.bg-bubble.b2{width:70px;  height:70px;  top:38%; left:6%;   --bubble-color:var(--accent-2); border:3px solid var(--bubble-color);} .bg-bubble.b2{animation-duration:7s; animation-delay:.6s;}
+.bg-bubble.b3{width:52px;  height:52px;  top:20%; left:30%;  --bubble-color:var(--accent-3); border:3px solid var(--bubble-color);} .bg-bubble.b3{animation-duration:6s; animation-delay:1.1s;}
+.bg-bubble.b4{width:88px;  height:88px;  top:65%; right:14%; --bubble-color:var(--accent-3); border:3px solid var(--bubble-color);} .bg-bubble.b4{animation-duration:10s; animation-delay:.3s;}
+.bg-bubble.b5{width:58px;  height:58px;  top:82%; left:16%;  --bubble-color:var(--accent);   border:3px solid var(--bubble-color);} .bg-bubble.b5{animation-duration:8s; animation-delay:.8s;}
+.bg-bubble.b6{width:40px;  height:40px;  top:52%; right:38%; --bubble-color:var(--accent-2); border:3px solid var(--bubble-color);} .bg-bubble.b6{animation-duration:5.5s; animation-delay:1.4s;}
+@keyframes bubbleDrift{0%,100%{transform:translateY(var(--scrollY,0px)) translateX(0);} 50%{transform:translateY(calc(var(--scrollY,0px) - 22px)) translateX(10px);}}
+
+@media(max-width:680px){
+  .bg-bubble{opacity:.5;}
+  .bg-bubble.b1{width:64px; height:64px;} .bg-bubble.b4{width:56px; height:56px;}
+}
+
+/* ============================================================
+   تسجيل الدخول / إنشاء حساب — المودال
+   ============================================================ */
+.tota-modal-overlay{
+  /* لازم z-index أعلى من مودال المنتج (z-index:1000) عشان مودالات
+     تسجيل الدخول / بوابة رقم الهاتف تظهر فوقه، مش تحته. كانت قيمتها
+     200 قبل كده فكانت بتظهر مختفية ورا مودال المنتج المفتوح. */
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1100;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  animation: totaModalFadeIn .25s var(--ease, ease-out);
+}
+.tota-modal-overlay[hidden]{ display:none; }
+/* الـ position:fixed + top الفعليين بيتحطوا من الـ JS (auth.js) عشان
+   نقفل سكرول الصفحة اللي وراء المودال فعليًا على الموبايل/iOS، مش بس
+   overflow:hidden اللي مش كافي لوحده هناك. overflow:hidden هنا للمتصفحات
+   اللي بتحترمها عادي كمان.
+   لازم نقفل الـ html كمان مش بس الـ body: html في الملف ده عنده
+   overflow-x:hidden متعرّف صراحةً (اتحطت أول الملف)، وده بيوقف الـ
+   "propagation" التلقائي لخاصية overflow من body للـ viewport اللي
+   المفروض تحصل بشكل تلقائي. لما الـ propagation بيتوقف، اللي بيتحكم
+   في سكرول الصفحة فعليًا بقى هو الـ html نفسه مش الـ body — فلو قفلنا
+   الـ body بس، السكرول هيفضل شغال على الصفحة اللي وراء المودال
+   (زي ما بيحصل في كروم على الكمبيوتر). عشان كده لازم overflow:hidden
+   على الاتنين مع بعض. */
+html.tota-modal-open, body.tota-modal-open{ overflow:hidden; height:100%; }
+@keyframes totaModalFadeIn{
+  from{ opacity:0; }
+  to{ opacity:1; }
+}
+@keyframes totaModalPopIn{
+  from{ opacity:0; transform:translateY(14px) scale(.96); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+.tota-modal{
+  position:relative; background:var(--paper); border-radius:var(--radius);
+  padding:32px 28px; width:100%; max-width:400px; box-shadow:var(--shadow);
+  border:1px solid var(--line);
+  /* لازم المودال يقدر يسكرول جوه نفسه لو المحتوى (خصوصًا فورم حساب
+     جديد) أطول من ارتفاع الشاشة، خصوصًا على الموبايل، بدل ما يتقطع
+     أو يخرج برة حدود الشاشة من غير أي طريقة نقرأ بيها باقي الفورم. */
+  max-height:calc(100vh - 40px); overflow-y:auto; -webkit-overflow-scrolling:touch;
+  /* أنيميشن إجباري لظهور المودال (تسجيل الدخول / إنشاء حساب / بوابة
+     الهاتف) — بيتنفذ تلقائيًا في كل مرة يتشال منها [hidden] بغض النظر
+     عن أي حاجة تانية، مش محتاج JS إضافي. */
+  animation: totaModalPopIn .3s cubic-bezier(.16,1,.3,1);
+}
+@media (prefers-reduced-motion: reduce){
+  .tota-modal-overlay, .tota-modal{ animation: none; }
+}
+/* الأنيميشن الزخرفي (فقاعات، الدايرة الدوارة، نبضة واتساب) فاضل شغال
+   لكل الزوار زي ما هو (قرار صاحب الموقع) — بس أخف: بيتوقف تلقائيًا لما
+   العنصر يبقى برّه الشاشة (مش ظاهر للمستخدم أصلاً) أو لما التاب يبقى
+   مخفي، بدل ما يفضل شغال 24 ساعة على الفاضي. الكلاسات دي بتتحط/بتتشال
+   بـ JS في shared.js (IntersectionObserver + visibilitychange). */
+.tota-anim-offscreen, body.tota-tab-hidden .bg-bubble,
+body.tota-tab-hidden .scc-orbit, body.tota-tab-hidden .whatsapp-float-pulse,
+body.tota-tab-hidden .scroll-hint .line{
+  animation-play-state: paused !important;
+}
+.tota-modal-close{
+  position:absolute; top:14px; left:14px; background:none; border:none;
+  font-size:26px; line-height:1; cursor:pointer; color:var(--muted);
+}
+.tota-modal-close:hover{ color:var(--ink); }
+.tota-modal-title{ margin:0 0 18px; font-family:'Baloo Bhaijaan 2'; font-weight:800; }
+.tota-auth-tabs{ display:flex; gap:8px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+.tota-auth-tab{
+  flex:1; background:none; border:none; padding:10px 0; cursor:pointer;
+  font-weight:700; color:var(--muted); border-bottom:2px solid transparent;
+}
+.tota-auth-tab.is-active{ color:var(--accent-dark); border-color:var(--accent); }
+.tota-auth-form{ display:flex; flex-direction:column; gap:14px; }
+.tota-auth-form[hidden]{ display:none; }
+.tota-auth-form label{ display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:600; }
+.tota-auth-form input{
+  padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink); font-family:inherit; font-size:15px;
+}
+.tota-auth-form input:focus{ outline:none; border-color:var(--accent); }
+.tota-auth-submit{ margin-top:4px; width:100%; text-align:center; }
+.tota-auth-error{ color:#d64545; font-size:13.5px; }
+.tota-auth-privacy{ font-size:12px; color:var(--muted); margin:0; }
+.tota-terms-note{ font-size:11.5px; color:#9a9a9a; margin:2px 0 0; text-align:center; }
+.tota-terms-note a{ color:#9a9a9a; text-decoration:underline; cursor:pointer; }
+.tota-terms-note a:hover{ color:#777; }
+.tota-auth-form label.tota-terms-check{
+  display:flex; flex-direction:row; align-items:center; gap:10px; cursor:pointer;
+  font-size:14px; font-weight:600; color:var(--ink); margin:6px 0 0; line-height:1.4; text-align:right;
+}
+.tota-terms-check input[type="checkbox"]{
+  width:22px; height:22px; margin-top:0; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
+}
+.tota-terms-check a{ color:inherit; text-decoration:underline; }
+.tota-terms-check a:hover{ color:var(--muted); }
+.cart-terms-note{ font-size:11.5px; color:#9a9a9a; margin:8px 0 0; text-align:center; }
+.cart-terms-note a{ color:#9a9a9a; text-decoration:underline; cursor:pointer; }
+.cart-terms-note a:hover{ color:#777; }
+.cart-terms-check{
+  display:flex; flex-direction:row; align-items:center; gap:10px; cursor:pointer;
+  font-size:14px; font-weight:600; color:var(--ink); margin:12px 0 0; line-height:1.4; text-align:right;
+}
+.cart-terms-check[hidden]{ display:none; }
+.cart-terms-check input[type="checkbox"]{
+  width:22px; height:22px; margin-top:0; flex:0 0 auto; accent-color:var(--ink); cursor:pointer;
+}
+.cart-terms-check a{ color:inherit; text-decoration:underline; }
+.cart-terms-check a:hover{ color:var(--muted); }
+[data-account-link].is-logged-in{ color:var(--accent-dark); }
+
+/* زرار المفضلة على بطاقة المنتج */
+.card{ position:relative; }
+.card-fav-btn{
+  position:absolute; top:12px; left:12px; z-index:2; width:34px; height:34px;
+  border-radius:50%; border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); background:var(--paper);
+  color:var(--muted); font-size:17px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; transition:all .2s var(--ease);
+}
+.card-fav-btn:hover{ border-color:var(--accent); color:var(--accent-dark); transform:scale(1.08); }
+.card-fav-btn.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }
+
+/* زرار الإضافة للسلة على بطاقة المنتج، جنب زرار المفضلة */
+.card-cart-btn{
+  position:absolute; top:12px; left:54px; z-index:2; width:34px; height:34px;
+  border-radius:50%; border-width:1px; border-style:var(--border-style,solid); border-color:var(--line); background:var(--paper);
+  color:var(--muted); font-size:15px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; transition:all .2s var(--ease);
+}
+.card-cart-btn:hover{ border-color:var(--accent); color:var(--accent-dark); transform:scale(1.08); }
+
+/* حالة الطلب (دفع/توصيل) — نفس الشكل في صفحة السلة وصفحة الحساب */
+.orders-status-badge{padding:3px 12px; border-radius:20px; font-size:12px; font-weight:700; white-space:nowrap; background:var(--paper); border:1px solid var(--line); display:inline-block;}
+.orders-status-badge.is-done{background:#e6f4ea; color:#2e7d32; border-color:#c5e6cd;}
+.orders-status-badge.is-progress{background:#fff3cd; color:#8a6300; border-color:#f0e0a6;}
+.orders-status-badge.is-cancelled{background:#fbe4e4; color:#b23b3b; border-color:#f2c6c6;}
+
+/* زرار المفضلة/العربة تفضل ظاهرة حتى للزوار اللي مسجّلوش حساب —
+   لو دوسوا عليها هيتفتحله تسجيل الدخول تلقائيًا (شوف cart-favorites.js) */
+#modalFavorite.is-favorited{ color:var(--accent-dark); border-color:var(--accent); }
+
+/* إظهار/إخفاء كلمة المرور */
+.tota-pass-wrap{ position:relative; display:flex; }
+.tota-pass-wrap .tota-pass-input{ width:100%; padding-left:40px; }
+.tota-pass-toggle{
+  position:absolute; left:6px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; font-size:16px; padding:4px 6px;
+  color:var(--muted); line-height:1;
+}
+.tota-pass-toggle:hover{ color:var(--accent-dark); }
+.tota-auth-success{ font-size:13.5px; }

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tota.sakurau.workers.dev/sitemap.xml
